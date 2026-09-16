@@ -1,0 +1,51 @@
+---
+/* WHY WE EXIST — the aperture: two joined panels that open width-then-height,
+  revealing text, with a video exposed alongside. See HERO_CHOREOGRAPHY.md-
+  adjacent notes in STATUS.md for the taste-loop history behind this shape. */
+---
+<section class="why g-ink" id="why" data-fade>
+  <div class="why__inner" data-placeholder="P8">
+    <p class="eyebrow">Why we exist</p>
+
+    <p class="why__lead">It started with a handful of people in a room in Warri,
+       trading half-finished songs and rough cuts.</p>
+
+    <div class="why__stage">
+      <!-- THE APERTURE: two illustrations joined, which open — width first,
+           then height, and the height is what reveals the text. -->
+      <div class="why__aperture" id="whyAp">
+        <div class="why__panels">
+          <div class="why__panel" data-placeholder="P4"><img src="/img/who-01.webp" alt=""></div>
+          <div class="why__panel" data-placeholder="P4"><img src="/img/who-03.webp" alt=""></div>
+        </div>
+
+        <div class="why__rooms">
+          <p class="why__text"><span class="why__reveal">The places that took the craft seriously didn&rsquo;t know what to do
+             with the faith.</span></p>
+          <p class="why__text"><span class="why__reveal">The places that took the faith seriously didn&rsquo;t take the craft
+             seriously at all.</span></p>
+        </div>
+
+        <p class="why__mid"><span class="why__reveal">Everyone we knew was choosing between two rooms, and losing something
+           in whichever one they picked.</span></p>
+
+        <div class="why__third">
+          <p class="why__resolve"><span class="why__reveal">So we stopped choosing,<br>and made a third room.</span></p>
+          <p class="why__tail"><span class="why__reveal">That&rsquo;s all The Glow Tribe is: the room we couldn&rsquo;t find.</span></p>
+        </div>
+      </div>
+
+      <!-- the film, exposed as the aperture opens. preload="none" and
+           poster-first: 3MB on a Nigerian mobile connection (SC7) is not
+           something to spend before a visitor has reached the section. -->
+      <figure class="why__film">
+        <video id="whyFilm" muted loop playsinline preload="none"
+               poster="/vid/film-poster.jpg" data-placeholder="P6">
+          <source src="/vid/film.webm" type="video/webm">
+          <source src="/vid/film.mp4"  type="video/mp4">
+        </video>
+        <figcaption class="why__cap">On the set</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>

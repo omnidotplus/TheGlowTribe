@@ -1,0 +1,201 @@
+/* Shared footer CSS — extracted from home.css (the correct, newer version).
+   conference.css previously carried its own stale duplicate that never
+   received the mobile rounded-card rework (15 Sept); that copy has been
+   discarded, not merged. Loaded on every page via Layout.astro so the
+   footer can never drift between pages again. */
+
+  /* ============ FOOTER — back to paper, ruled, two registers ============ */
+  .ft { background: var(--paper); color: var(--ink); padding: 0 clamp(16px,6vw,96px) 0; overflow: hidden; }
+
+  .ft__grid {
+    max-width: 1184px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(0,1.6fr) repeat(3, minmax(0,1fr));
+    gap: 0 clamp(18px,3vw,44px);
+    align-items: stretch;                 /* equal-height columns, no dead gap */
+    border-top: 1px solid var(--ink);
+    padding-top: clamp(22px,3vw,34px);
+  }
+  /* the wrapper only groups content for the mobile 2-col treatment below;
+     at every wider width it must not participate in .ft__grid's own grid
+     placement at all, or Site/Elsewhere collapse into one cell */
+  .ft__linkcols { display: contents; }
+  @media (max-width: 900px) {
+    .ft__grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 26px clamp(18px,4vw,34px); }
+    .ft__cell:nth-child(3) { border-left: 0; padding-left: 0; }
+  }
+  @media (max-width: 520px) {
+    /* Client, 15 Sept: "the layout look for the footer on mobile" was not
+       working. The reference was a soft rounded card with a plain
+       two-column link list and no ruled dividers -- the opposite of what
+       was here, which was the DESKTOP ruled-grid device (vertical rules,
+       then horizontal rules once stacked) simply carried down in size. A
+       ruled directory grid is a desktop-density device; at 390px, the same
+       rules read as clutter, not structure. */
+    .ft { padding-inline: clamp(14px,4vw,20px); }
+    .ft__grid {
+      grid-template-columns: minmax(0,1fr);
+      gap: 0;
+      border: 1px solid var(--line);
+      border-top: 1px solid var(--line);   /* override the desktop --ink rule -- softer on a card */
+      border-radius: 20px;
+      padding: 22px 18px;
+    }
+    .ft__cell { border-left: 0; padding: 0; }
+    .ft__cell:first-child { padding-left: 0; }
+    .ft__cell + .ft__cell { border-top: 0; margin-top: 22px; padding-top: 0; }
+
+    /* Site and Elsewhere sit SIDE BY SIDE as two plain columns -- the
+       client's reference alternates two link groups left/right, not one
+       merged list. Wrapper around both navs, each nav stays a normal
+       vertical list inside its own column. */
+    .ft__linkcols {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px;
+    }
+    .ft__linkcols .ft__cell { margin-top: 0; }
+
+    .ft__cell a, .ft__soon { padding-block: 8px; margin-block: -8px; line-height: 1.9; }
+  }
+
+  .ft__cell {
+    min-width: 0;
+    padding: 0 0 clamp(26px,4vw,52px) clamp(14px,2vw,30px);
+    border-left: 1px solid var(--line);   /* the rules the grid was missing */
+  }
+  .ft__cell:first-child { padding-left: 0; border-left: 0; }
+  .ft__k {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--dim); margin: 0 0 16px;
+  }
+  .ft__lead { margin: 0 0 18px; font-size: clamp(15px,1.7vw,20px); line-height: 1.35; letter-spacing: -.015em; max-width: 30ch; }
+
+  .ft__form { display: flex; align-items: stretch; border-bottom: 1px solid var(--ink); max-width: 340px; }
+  .ft__form input {
+    flex: 1 1 auto; min-width: 0;
+    padding: 10px 0; font: inherit; font-size: 15px;
+    background: transparent; border: none; border-radius: 0; color: var(--ink);
+  }
+  .ft__form input:focus { outline: none; }
+  .ft__form input::placeholder { color: var(--hint); }
+  .ft__form button {
+    flex: 0 0 auto; border: none; background: transparent; cursor: pointer;
+    font-size: 19px; line-height: 1; padding: 0 4px; color: var(--ink);
+    transition: transform .2s cubic-bezier(.2,.7,.3,1);
+  }
+  .ft__form button:hover { transform: translateX(4px); }
+  .ft__form[data-sent="1"] input { visibility: hidden; }
+  .ft__form[data-sent="1"]::before {
+    content: 'Thanks — you are on the list.';
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+    text-transform: uppercase; padding: 12px 0;
+  }
+
+  /* numbered index on every link — the seed's digit-among-letters, small scale */
+  .ft__cell a, .ft__soon {
+    display: flex; gap: 12px; align-items: baseline;
+    font-size: 14px; line-height: 2.1;
+    color: var(--ink); text-decoration: none;
+    width: fit-content;
+  }
+  .ft__cell a i, .ft__soon i {
+    font-family: var(--mono); font-style: normal; font-size: 9px;
+    letter-spacing: .1em; color: var(--dim);
+  }
+  .ft__cell a { position: relative; }
+  .ft__cell a::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: .45em;
+    height: 1px; background: var(--ink);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .28s cubic-bezier(.2,.7,.3,1);
+  }
+  .ft__cell a:hover::after { transform: scaleX(1); }
+  /* SC11 — Phase 2 reserved, honestly inactive */
+  .ft__soon { color: var(--hint); cursor: default; }  /* F1: was #a2a2a2 at
+     2.43:1. Phase 2 items (SC11) must read as inactive, not as illegible. 4.76:1 */
+  .ft__soon::after {
+    content: 'soon'; font-family: var(--mono); font-size: 8px;
+    letter-spacing: .12em; text-transform: uppercase;
+    border: 1px solid var(--line); padding: 1px 5px; border-radius: 3px;
+  }
+
+  /* register 2 — the colossal wordmark, bleeding off the bottom edge */
+  /* ============ THE FOOTER WORDMARK — the glow, as physics ===============
+     "The Glow Tribe" has never actually glowed anywhere on this site. The
+     footer is the right place for it: nothing competes, and it is the last
+     thing seen. The band inverts to --d-0 so a bloom has something to bloom
+     against — on paper a glow is invisible, which is why this was flat before.
+
+     Guardrail held: exposure, bloom and falloff. No lamp, no candle, no rays
+     drawn as an object. The light comes OFF the letterforms, it is not an
+     illustration placed near them. ==================================== */
+  .ft__mark {
+    position: relative; isolation: isolate;
+    margin-inline: calc(-1 * clamp(16px,6vw,96px));
+    margin-top: clamp(30px,5vw,70px);
+    padding: clamp(34px,6vw,80px) clamp(16px,6vw,96px) clamp(26px,4vw,56px);
+    background: var(--d-0);
+    border-top: 0;
+    display: grid; place-items: center;
+    overflow: hidden;
+  }
+  /* the bloom sitting behind the letters — hot core, fast falloff */
+  .ft__mark::before {
+    content: ''; position: absolute; inset: -30% -10%; z-index: 0;
+    background:
+      radial-gradient(46% 60% at 50% 58%, rgba(255,224,74,.34) 0%,
+                      rgba(255,75,18,.26) 34%, transparent 72%);
+    pointer-events: none;
+  }
+  /* a fine scanline keeps it reading as EXPOSURE rather than as a gradient */
+  .ft__mark::after {
+    content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(to bottom,
+                rgba(255,248,244,.045) 0 1px, transparent 1px 3px);
+  }
+
+  .ft__word {
+    position: relative; z-index: 1; transform-origin: center top;
+    display: block; width: max-content; white-space: nowrap;
+    font-family: var(--f-display);
+    font-variation-settings: 'wdth' 118, 'wght' 900;
+    font-size: clamp(48px, 15.5vw, 232px);
+    line-height: .84; letter-spacing: -.05em;
+    color: var(--n-50);
+    text-shadow:
+      0 0 .04em rgba(255,248,244,.55),
+      0 0 .16em rgba(255,224,74,.50),
+      0 0 .42em rgba(255,75,18,.42),
+      0 0 .90em rgba(255,75,18,.22);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* a slow breath, not a blink. 8s, and it never fully dims. */
+    .ft__word { animation: ftGlow 8s ease-in-out infinite; }
+    @keyframes ftGlow {
+      0%,100% { text-shadow: 0 0 .04em rgba(255,248,244,.55),
+                             0 0 .16em rgba(255,224,74,.50),
+                             0 0 .42em rgba(255,75,18,.42),
+                             0 0 .90em rgba(255,75,18,.22); }
+      50%     { text-shadow: 0 0 .05em rgba(255,248,244,.72),
+                             0 0 .22em rgba(255,224,74,.66),
+                             0 0 .58em rgba(255,75,18,.55),
+                             0 0 1.25em rgba(255,75,18,.32); }
+    }
+  }
+  /* the one colon-numeral the brand is allowed, set as a mark against the mass */
+  .ft__verse {
+    flex: 0 0 auto; align-self: flex-start;
+    font-family: var(--mono); font-weight: 400;
+    font-size: clamp(9px,1.05vw,13px); letter-spacing: .16em;
+    color: var(--dim); line-height: 1;
+    padding-top: .4em;
+  }
+
+  /* digits clustered at the very end */
+  .ft__strip {
+    max-width: 1184px; margin: 0 auto;
+    border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; gap: 6px clamp(14px,3vw,44px);
+    padding: clamp(14px,2vw,18px) 0 clamp(26px,5vw,34px);
+    line-height: 1.9;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--dim);
+  }

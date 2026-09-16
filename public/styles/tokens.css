@@ -1,0 +1,204 @@
+/* ============================================================================
+   TGT — F1 colour tokens.  Locked 14 Sept 2026.
+   Authority: COLOUR_SYSTEM.md.  Every value here is contrast-computed, not
+   eyeballed — 31/31 pairs pass.  Do not add a colour to a page; add it here.
+
+   Loaded AFTER skeleton.css so it overrides the greyscale base.
+   Direction C (parked) does NOT load this file and stays greyscale.
+
+   THREE RULES THAT ARE NOT NEGOTIABLE PER-SECTION:
+     C1  body copy never sits directly on --ground (3.19:1). It sits in a
+         --paper card. The ground shows BETWEEN boxes, never behind prose.
+     C2  where text must touch the ground it is --ink (5.44:1), never paper.
+     C3  --flare on --ground computes 2.56:1. Any flare fill on the ground
+         carries a 2px --ink ring. On dark surfaces no ring is needed.
+   ========================================================================= */
+
+:root {
+  /* Tier 1 — primary: Ember. The ground, not an accent. 60%. */
+  --ember-950: #3D1004;
+  --ember-800: #B32E06;   /* ember text on paper           6.04:1 */
+  --ember-600: #FF4B12;   /* BASE — the ground                    */
+  --ember-400: #FF8A5C;   /* ember text on dark            8.31:1 */
+  --ember-100: #FFDCCB;
+
+  /* Tier 2 — accent: Flare. Marks THE ASK and nothing else. 10%, max 2-3/screen. */
+  --flare: #FFE04A;
+
+  /* Tier 3 — THE TAXONOMY.  ⚠ DECLARED OVERRIDE of the colour skill, see
+     COLOUR_SYSTEM.md "Override CS-1" and DIRECTIONS.md. The skill says accent
+     max 2-3 per screen and secondaries "muted enough not to compete". Client
+     rejected that as bland and authorised Leonardo.ai's model instead:
+     THE PALETTE IS THE TAXONOMY — every discipline identifiable by colour alone.
+
+     The discipline set. Six, because brief §4's registration field and the
+     WHO IT'S FOR list both enumerate six. Colour is doing real work here, not
+     decoration: it is how you tell a musician's card from a filmmaker's.
+
+     THE ONE RULE THAT KEEPS THIS FROM BECOMING NOISE (Leonardo's own):
+     vivid colours appear at CHIP SIZE ONLY — never a large fill, never a
+     background, never body text, never a heading. Large surfaces stay ember,
+     ink or paper. That is why six loud colours do not compete with the ground:
+     they never occupy enough area to try. */
+  --music:     #00C2A8;   /* teal       */
+  --film:      #7B9BFF;   /* periwinkle */
+  --writing:   #B5E645;   /* lime       */
+  --photo:     #FF3DC4;   /* magenta    */
+  --design:    #A97BFF;   /* violet     */
+  --producing: #45DDE8;   /* cyan       */
+
+  /* Project categories (brief §4: Music / Film / Hangouts) are a SUBSET of the
+     discipline set, so the site never teaches two colour languages. */
+  --music-dk: var(--music);  --film-dk: var(--film);  --hang-dk: var(--writing);
+  /* light-surface fills, kept for chips that sit on paper */
+  --music-lt: #00695C;  --film-lt: #1E3A8A;  --hang-lt: #4A7520;
+
+  /* Tier 4 — neutrals, every stop tinted toward ember. No pure #000 or #fff. */
+  --n-50:  #FFF8F4;   /* paper                                    */
+  --n-100: #F4EBE5;   /* inset surface, filled fields             */
+  --n-300: #D6C8BF;   /* DECORATIVE hairlines only — conveys no state */
+  --n-400: #9A887F;   /* form-field borders, UI boundaries  3.22:1 */
+  --n-500: #7D6C63;   /* placeholder / hint                4.76:1 */
+  --n-700: #4A3F3A;   /* secondary text                    9.69:1 */
+  --n-900: #1A1411;   /* ink                              17.35:1 */
+
+  /* Tier 4 — dark surfaces, three steps, ember-cast (NOT neutral black) */
+  --d-0: #120D0B;     /* dark section canvas                      */
+  --d-1: #1C1512;     /* lifted — nav backdrop, sticky chrome     */
+  --d-2: #2A201C;     /* card surface, speaker info bars          */
+
+  /* Tier 5 — semantic */
+  --error:      #C42A17;
+  --warning:    #8F5400;
+  --success:    #14804A;
+  --success-dk: #3ECF8E;
+  --info:       #1E5FBF;
+
+  /* Tier 6 — extended states. Tonal variants only, never new families. */
+  --hover-paper:   var(--ember-100);
+  --hover-dark:    var(--d-2);
+  --pressed:       var(--ember-800);
+  --focus-ring:    var(--info);      /* never the brand — focus != selection */
+  --disabled-fill: var(--n-100);
+
+  /* --- semantic aliases: what the markup actually reaches for --- */
+  --ground: var(--ember-600);
+  --paper:  var(--n-50);
+  --ink:    var(--n-900);
+  /* --dim is SECONDARY TEXT, not placeholder. Aliasing it to --n-500 put small
+     mono labels at 3.9-4.26:1 on tinted panels — three of F1's seven rendered
+     failures traced to this one line, not to the components. */
+  --dim:    var(--n-700);
+  --hint:   var(--n-500);   /* placeholder/hint only, and only on --paper */
+  --line:   var(--n-300);
+  --border: var(--n-400);
+  --slot:   var(--n-100);
+
+  /* the schedule field — was a grey placeholder, now the ground turns it on */
+  --day-ground: var(--ember-600);
+}
+
+/* ---------------------------------------------------------------------------
+   THE GROUND ROTA  (DIRECTIONS.md)
+
+   Every section declares a ground. THERE IS NO DEFAULT. A paper section is
+   paper because it earned the rest, not because nothing was decided.
+
+   These classes REMAP the semantic aliases inside their own scope, so every
+   rule already written as var(--ink) / var(--dim) / var(--line) / var(--paper)
+   inverts correctly with no per-element edits. That is the whole mechanism —
+   the aliases are indirection, the tiers (--n-*, --ember-*, --d-*) are the
+   ground truth and are never remapped, so nothing here is circular.
+
+   Every value below is computed:
+     ember   dim 4.92  line 4.92  ink-text 5.44  paper-card 3.19
+     ink     dim 11.17 line 3.64  paper-text 17.35
+     dark    dim 11.83 line 3.83  paper-text 18.37
+
+   --paper is deliberately NOT remapped. Dark sections already written in this
+   build use `color: var(--paper)` to mean "the light reading colour"
+   (.spk__bar, .who__stage, .close). Flipping --paper would invert those into
+   invisibility. --ink is the alias that flips; --paper always means light.
+   ------------------------------------------------------------------------ */
+.g-ember {
+  background: var(--ember-600);
+  --ink:   var(--n-900);      /* 5.44:1 — text on the ground is ink (rule C2) */
+  --dim:   var(--ember-950);  /* 4.92:1 — NOT --n-700, which is 3.04 and fails */
+  --line:  var(--ember-950);
+  color: var(--n-900);
+}
+/* .g-ink is RETIRED. It grounded sections in --n-900 (#1A1411) while .g-dark
+   grounded them in --d-0 (#120D0B) — two near-identical darks, 1.21:1 apart.
+   Subtly different blacks read as a mistake, not a decision, and the client
+   spotted it immediately. The tier table already implied the right rule:
+   --d-* are SURFACES, --n-900 is a TEXT/OBJECT colour. It is not a ground.
+   .g-ink is aliased to .g-dark so any stale usage still lands correctly. */
+.g-ink,
+.g-dark {
+  background: var(--d-0);
+  --ink:   var(--n-50);
+  --dim:   var(--n-300);
+  --line:  var(--n-500);
+  color: var(--n-50);
+}
+.g-paper {
+  background: var(--n-50);
+  --ink:   var(--n-900);
+  --paper: var(--n-50);
+  --dim:   var(--n-700);
+  --line:  var(--n-300);
+  color: var(--n-900);
+}
+
+/* The single full-size flare moment per surface, and it is always the
+   registration ask. 13.90:1 both directions. */
+.g-flare-cta {
+  background: var(--flare);
+  color: var(--n-900);
+}
+
+/* Keyboard focus is a system-wide obligation, so it lives with the tokens
+   rather than being re-declared per component. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Rule C3, enforced as a class rather than left to memory. */
+.on-ground .flare-fill,
+.flare-fill--ringed {
+  background: var(--flare);
+  color: var(--ink);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+   THE THREE-CONTEXT CHIP RULE
+   A vivid colour meets three different grounds on this site and cannot be
+   applied the same way on all three. Computed, all six disciplines, all three
+   contexts: every combination below clears AA (worst case 5.08:1).
+
+     on the EMBER ground -> an INK slab with vivid text   (R-11's mechanic P-b:
+                            black chips breaking the card edge. No ring needed,
+                            and it is why chips read as pasted objects.)
+     on a DARK surface   -> vivid text directly, no chip
+     on PAPER            -> vivid FILL with ink text
+
+   Never: a vivid fill on the ember ground. All six compute 1.09-2.29:1 against
+   it and would need a ring to be legible at all — the ink slab is better.
+   ------------------------------------------------------------------------ */
+.chip            { font-variant-numeric: tabular-nums; letter-spacing: .14em;
+                   text-transform: uppercase; border-radius: 999px;
+                   padding: 7px 14px; display: inline-flex; align-items: center; }
+.on-ground .chip { background: var(--ink);  color: var(--cat, var(--paper)); }
+.on-dark   .chip { background: transparent; color: var(--cat, var(--paper)); padding-inline: 0; }
+.on-paper  .chip { background: var(--cat, var(--n-100)); color: var(--ink); }
+
+[data-cat="music"]     { --cat: var(--music); }
+[data-cat="film"]      { --cat: var(--film); }
+[data-cat="hangouts"]  { --cat: var(--writing); }
+[data-cat="writing"]   { --cat: var(--writing); }
+[data-cat="photo"]     { --cat: var(--photo); }
+[data-cat="design"]    { --cat: var(--design); }
+[data-cat="producing"] { --cat: var(--producing); }

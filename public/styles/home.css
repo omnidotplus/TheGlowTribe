@@ -1,0 +1,1219 @@
+  .hero { height: 400vh; position: relative; }   /* 8 beats, HERO_CHOREOGRAPHY v2 */
+
+  .stage {
+    position: sticky; top: 0;
+    height: 100svh; overflow: hidden;
+    display: grid; place-items: center;
+  }
+
+  /* ---------- the room: four planes, four different phrases ---------- */
+  .room { position: absolute; inset: 0; display: grid; place-items: center; }
+
+  .plane {
+    position: absolute;
+    /* Deliberately WIDER than the viewport. At 88vw the two 240px wall rows
+       left only ~270px of clear centre for a ~440px wordmark — guaranteed
+       collision, which is what the visual review caught. At 150vw the centre
+       opening is ~770px and the walls run off the edges, which is both the
+       fix and the reference's actual behaviour. .stage clips the overflow. */
+    width: min(150vw, 2000px);
+    aspect-ratio: 3 / 4;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    will-change: transform, opacity;
+    opacity: 0;
+  }
+  @media (min-width: 800px) { .plane { aspect-ratio: 16 / 10; } }
+
+  .plane__w {
+    display: grid; place-items: center;
+    white-space: nowrap;
+    /* THE WALLS ARE NOT THE MARK. Three things separate them, per the Leonardo
+       reference: colour, width axis, and squash.
+         colour — ember on the ink ground (5.76:1). The mark is paper (17.35:1).
+                  Brand colour on dark is the reference's exact structure; the
+                  centre never shares a colour with the walls.
+         width  — wdth 125, the top of Archivo's axis. The mark sits at 112, so
+                  they read as different faces without a second family entering
+                  the build (guardrail holds).
+         squash — -.055em tracking and .78 leading, so letters press into each
+                  other and the phrase reads as one mass rather than as words. */
+    font-family: var(--f-display);
+    font-variation-settings: 'wdth' 125, 'wght' 900;
+    font-weight: 900;
+    letter-spacing: -.055em;
+    line-height: .78;
+    color: var(--ember-600);
+  }
+  .plane__w--t { grid-area: 1 / 1 / 2 / 4; }
+  .plane__w--b { grid-area: 3 / 1 / 4 / 4; }
+  .plane__w--l { grid-area: 2 / 1 / 3 / 2; writing-mode: vertical-rl; transform: rotate(180deg); }
+  .plane__w--r { grid-area: 2 / 3 / 3 / 4; writing-mode: vertical-rl; }
+
+  /* ---------- the work: emerges FROM the centre of the wordmark ---------- */
+  .work { position: absolute; inset: 0; pointer-events: none; }
+  .work .slot img {
+    display: block; width: 100%; height: 100%;
+    object-fit: cover; border-radius: 2px;
+  }
+  .work .slot {
+    position: absolute; left: 50%; top: 50%;
+    width: var(--w); aspect-ratio: var(--ar);
+    will-change: transform, opacity;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.04);
+  }
+
+  /* ---------- the centre: name, subtitle, timer, venue, CTA ---------- */
+  /* The mark is the ONLY thing that participates in centring. Everything else
+     hangs off it absolutely, so "THE GLOW TRIBE" is dead centre of the viewport
+     from frame one — and only leaves centre at beat 5, when the group below
+     animates in and pushes it up. */
+  .core {
+    position: relative; z-index: 5;
+    text-align: center;
+    width: min(92vw, 760px);
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  /* ============ THE MARK — three registered layers ==================
+     v2 (HERO_CHOREOGRAPHY.md). The name is no longer present at frame one:
+     it is UNCOVERED from the O outward by an expanding, feathered light
+     front — take E, "mask-reveal". The letters never travel.
+
+     Three copies of identical text, stacked and pixel-registered:
+       --base    the real <h1>. Every glyph transparent EXCEPT the O, so only
+                 the O shows while still holding true layout for the rest.
+                 That is what guarantees zero letter movement.
+       --reveal  aria-hidden. Full name, masked to a soft circle at the O.
+       --front   aria-hidden. A hot copy riding the mask's leading edge, so
+                 each glyph is briefly over-exposed as the light passes it.
+     Only ONE layer is in the a11y tree, or a screen reader reads the
+     wordmark three times. ============================================= */
+  @property --o-in { syntax: "<number>"; inherits: true; initial-value: 0; }
+  @keyframes oArrive { from { --o-in: 0; } to { --o-in: 1; } }
+
+  .mark {
+    position: relative; display: inline-block;
+    /* Beat 0 is pure CSS, deliberately. `animate`'s own tool table: a CSS
+       animation is right for predetermined motion that must stay smooth while
+       the page is still loading — it runs off the main thread and does not
+       wait for a script at the end of the document. */
+    animation: oArrive 1500ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    margin: 0;
+    font-size: clamp(40px, 11vw, 132px);
+    /* wdth 95 against the walls' 125. The previous 112 was measurably
+       different and visually identical — a passing measurement is not a
+       working design. 30 axis-points reads as two different faces. */
+    font-variation-settings: 'wdth' 95, 'wght' 900;
+    font-weight: 900; line-height: .84; letter-spacing: -.04em;
+    color: var(--paper);
+    will-change: transform, opacity;
+  }
+  .mark__layer { margin: 0; font: inherit; letter-spacing: inherit;
+                 color: inherit; font-variation-settings: inherit; }
+  .mark__ln    { display: block; }
+
+  /* base holds the layout; the others register against it */
+  .mark__layer--base {
+    position: relative; color: transparent;
+    /* --o-z: 1 = arrived. Origin is the O, so the letter holds its final
+       position while the layer scales up toward it — the O reads as
+       approaching down the tunnel rather than arriving pre-landed. */
+    transform: scale(var(--o-z, .3));
+    transform-origin: var(--ox, 50%) var(--oy, 50%);
+    will-change: transform;
+  }
+  .mark__layer--reveal,
+  .mark__layer--front { position: absolute; top: 0; left: 0; width: 100%;
+                        pointer-events: none; }
+
+  /* the O — the only glyph visible before beat 3 */
+  .mark__o {
+    color: var(--n-50);
+    /* two independent drivers, MULTIPLIED, never both writing `opacity`:
+       --o-in is the on-load arrival (CSS), --o-lit is the scrubbed
+       materialisation (JS). A WAAPI animation with fill:forwards outranks
+       inline style, and animating `opacity` on load silently froze every
+       later scrub write. Found in the browser, not by reading. */
+    opacity: calc((.34 + var(--o-lit, 0) * .66) * var(--o-in, 0));
+  }
+
+  /* bloom BEHIND the O. Light spilling from behind a glyph is the physical
+     reading; a blob in front of it is the neon-poster failure (ban #12).
+     Ember falloff, never --flare: the ground rota spends Home's one
+     full-size flare on the Register ask and the hero must not steal it. */
+  .mark__bloom {
+    position: absolute; z-index: -1;
+    left: var(--ox, 50%); top: var(--oy, 50%);
+    width: var(--bloom-d, 42vmin); aspect-ratio: 1;
+    margin: calc(var(--bloom-d, 42vmin) / -2) 0 0 calc(var(--bloom-d, 42vmin) / -2);
+    border-radius: 50%;
+    /* PRE-COMPOSED. Never animate filter:blur() radius — a per-frame repaint
+       of a large surface, and the fastest way under 60fps on mid-range
+       Android. Only opacity and transform:scale() move. */
+    background: radial-gradient(circle closest-side,
+      rgba(255,248,244,.58) 0%, rgba(255,138,92,.30) 26%,
+      rgba(255,75,18,.15)  46%, rgba(179,46,6,.06)  66%,
+      rgba(61,16,4,0) 100%);
+    opacity: calc(var(--bloom-scrub, .15) * var(--o-in, 0));
+    transform: scale(calc(.72 + var(--o-in, 0) * .28));
+    will-change: transform, opacity;
+    pointer-events: none;
+  }
+
+  /* beat 4. A hard clip-path circle read mechanical — letters snapped on as
+     the edge crossed them. A feathered radial mask gives the light front a
+     soft shoulder, so glyphs resolve as it washes over them. */
+  .mark__layer--reveal {
+    -webkit-mask-image: radial-gradient(circle at var(--ox,50%) var(--oy,50%),
+      #000 calc(var(--rv,0px) - var(--rfeather,90px)), transparent var(--rv,0px));
+            mask-image: radial-gradient(circle at var(--ox,50%) var(--oy,50%),
+      #000 calc(var(--rv,0px) - var(--rfeather,90px)), transparent var(--rv,0px));
+  }
+  /* the over-exposure riding that front */
+  .mark__layer--front {
+    color: var(--n-50); opacity: 0;
+    -webkit-mask-image: radial-gradient(circle at var(--ox,50%) var(--oy,50%),
+      transparent calc(var(--rv,0px) - var(--rfeather,90px) * 1.9),
+      #000 calc(var(--rv,0px) - var(--rfeather,90px) * .75), transparent var(--rv,0px));
+            mask-image: radial-gradient(circle at var(--ox,50%) var(--oy,50%),
+      transparent calc(var(--rv,0px) - var(--rfeather,90px) * 1.9),
+      #000 calc(var(--rv,0px) - var(--rfeather,90px) * .75), transparent var(--rv,0px));
+  }
+
+  /* beat 5 — one sweep. A translating clip band, so it is exposure crossing
+     the letterforms, not a ray drawn on top of them (DESIGN.md §6 bans light
+     drawn as an object). */
+  .mark__shine {
+    position: absolute; top: 0; left: 0; width: 100%;
+    pointer-events: none; color: var(--n-50); opacity: 0;
+    clip-path: polygon(
+      calc(var(--sx,-40%) - var(--sband,22%)) 0%, calc(var(--sx,-40%) + var(--sband,22%)) 0%,
+      calc(var(--sx,-40%) + 10%) 100%, calc(var(--sx,-40%) - 34%) 100%);
+    will-change: clip-path, opacity;
+  }
+
+  .core__below {
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    width: min(92vw, 418px);          /* 680 -> 600 -> 500 -> 418 (client, 15 Sept) */
+    padding-top: clamp(10px, 1.6vw, 18px);
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  /* ============ THE HERO CARD =======================================
+     Client reference: a saturated brand-colour card holding stats + a pill
+     CTA on one row, and a big countdown with labels ABOVE the numbers below.
+     Mapped onto this system rather than copied:
+       reference purple card  -> --ember-600, the brand ground   (5.76:1 on --d-0)
+       reference white text   -> --ink, because ink on ember is 5.44 and paper
+                                 is only 3.19 (large-text only, never these labels)
+       reference black pill   -> --flare + ink ring. Rule C3: flare on ember is
+                                 2.56:1, under the 3.0 UI floor, so the ring is
+                                 mandatory — and it is R-11's mechanic P-b, a chip
+                                 breaking the surface it sits on.
+     The bloom inside the card is "light as PHYSICS" per the standing guardrail:
+     exposure and falloff, never a lamp or a candle. ================== */
+  .hcard {
+    position: relative; overflow: hidden;
+    background: var(--ember-600);
+    border-radius: clamp(16px, 1.8vw, 22px);
+    padding: clamp(13px, 1.6vw, 18px) clamp(15px, 1.8vw, 22px) clamp(11px, 1.3vw, 15px);
+    text-align: left;
+    pointer-events: auto;
+  }
+  /* the bloom — a soft hot core bleeding from the upper right */
+  .hcard::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 88% -10%,
+                rgba(255,224,74,.42) 0%, rgba(255,224,74,.10) 38%, transparent 68%);
+  }
+  .hcard > * { position: relative; z-index: 1; }
+
+  .hcard__top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: clamp(12px, 2vw, 26px);
+    /* wrap, so a long label drops to its own row instead of off the card.
+       The clipped CTA was a layout fault, not just a copy-length one. */
+    flex-wrap: wrap;
+  }
+  .hcard__top .venue { min-width: 0; flex: 1 1 auto; }
+  .hcard__top .cta   { flex: 0 1 auto; max-width: 100%; }
+
+  .sub {
+    margin: 0 0 clamp(7px, .9vw, 11px);
+    font-family: var(--f-mono); font-size: clamp(8px, .92vw, 9.5px);
+    letter-spacing: .3em; text-transform: uppercase; color: var(--ember-950);
+  }
+
+  /* the facts, read as stats: value large, label beneath */
+  .venue { display: flex; gap: clamp(12px, 2vw, 28px); margin: 0; }
+  .venue div { min-width: 0; }
+  .venue b {
+    display: block; font-family: var(--f-display);
+    font-variation-settings: 'wdth' 112, 'wght' 900;
+    font-size: clamp(14px, 1.7vw, 21px); line-height: 1; letter-spacing: -.025em;
+    text-transform: uppercase; color: var(--n-900);
+  }
+  .venue span {
+    display: block; margin-top: 4px;
+    font-family: var(--f-mono); font-size: clamp(8px, .95vw, 10px);
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ember-950);
+  }
+
+  .cta {
+    flex: 0 0 auto; pointer-events: auto;
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: clamp(11px,1.4vw,15px) clamp(15px,1.9vw,22px);
+    border-radius: 999px;
+    background: var(--flare); color: var(--n-900);
+    box-shadow: 0 0 0 2px var(--n-900);          /* rule C3 — mandatory on ember */
+    font-family: var(--f-mono); font-size: clamp(10px,1.1vw,12px);
+    letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s ease;
+  }
+  /* the arrow was the same size as the label and disappeared into it */
+  .cta span { font-size: 1.5em; line-height: 0; margin-top: -.06em; font-weight: 700; }
+  .cta:hover  { box-shadow: 0 0 0 3px var(--n-900); }
+  .cta:active { transform: scale(.96); }
+
+  /* the countdown — labels ABOVE the numbers, as the reference does */
+  .timer {
+    margin-top: clamp(10px, 1.3vw, 15px);
+    display: flex; align-items: flex-end; gap: clamp(4px, .8vw, 10px);
+    font-variant-numeric: tabular-nums;
+  }
+  .timer > div { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; }
+  .timer span {
+    order: -1;                                   /* label above, number below */
+    font-family: var(--f-mono); font-size: clamp(7px, .85vw, 9px);
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ember-950);
+    margin-bottom: 4px;
+  }
+  .timer b {
+    font-family: var(--f-display);
+    font-variation-settings: 'wdth' 118, 'wght' 900;
+    font-size: clamp(30px, 6.6vw, 58px); line-height: .88;
+    letter-spacing: -.05em; color: var(--n-900);
+  }
+  .timer i {
+    font-style: normal; color: var(--ember-950);
+    font-family: var(--f-display); font-weight: 900;
+    font-size: clamp(20px, 4.4vw, 44px); line-height: 1.1;
+    padding-bottom: .06em;
+  }
+
+  /* short viewports: the card was being pushed below the fold and the CTA cut
+     off. Shrink the mark and tighten the card so the whole group always fits. */
+  @media (max-height: 860px) {
+    .mark { font-size: clamp(34px, 8.4vw, 96px); }
+    .timer b { font-size: clamp(24px, 5.2vw, 46px); }
+    .hcard { padding: clamp(12px,1.8vw,18px) clamp(14px,2vw,22px) clamp(10px,1.4vw,16px); }
+  }
+  @media (max-width: 620px) {
+    .hcard__top { flex-direction: column; align-items: stretch; }
+    .cta { justify-content: center; }
+  }
+
+  /* ============ REDUCED MOTION — the whole sequence, not just its easing ====
+     The F2 motion review blocked on this. `REDUCE` in JS already zeroed the
+     scrub, the spin and the lift, but the 320vh scroll-scrubbed sequence itself
+     still ran, so a motion-sensitive visitor still had to travel three
+     viewports of animated type to reach the date and the CTA.
+
+     Under reduced motion the hero collapses to ONE static composed frame:
+     wordmark, facts, countdown, CTA — all present, nothing moving, no scrub.
+     Gentler, never zero: the card still fades, it just does not travel. ===== */
+  @media (prefers-reduced-motion: reduce) {
+    .hero  { height: 100svh; }
+    .stage { position: relative; }
+    .room, .work, .cue { display: none; }
+    /* v2 elements. Beats 0/3/4/5 did not exist when this block was written,
+       so each is named rather than assumed covered. Gentler, never zero: the
+       name is simply already built and already lit. */
+    .mark { animation: none; --o-in: 1; }
+    .mark__layer--base   { transform: none !important; }
+    .mark__layer--reveal { -webkit-mask-image: none !important; mask-image: none !important; }
+    .mark__o             { opacity: 1 !important; }
+    .mark__bloom         { opacity: .2 !important; transform: none !important; }
+    .mark__shine,
+    .mark__layer--front  { display: none !important; }
+    /* .sub/.venue/.timer/.cta below are forced visible, but their CONTAINER
+       was not — children at opacity 1 inside a parent at opacity 0 are still
+       invisible. Caught in a reducedMotion browser context, not by reading. */
+    .core__below         { opacity: 1 !important; }
+    .core__below { position: static; transform: none; width: min(92vw, 680px);
+                   margin: clamp(18px,3vw,32px) auto 0; }
+    .core  { transform: none !important; }
+    .sub, .venue, .timer, .cta {
+      opacity: 1 !important; transform: none !important;
+      transition: opacity .25s linear;
+    }
+  }
+
+  /* ============ BUTTON HOVER — colour change on every one (client) ======
+     Gated behind (hover:hover) and (pointer:fine): on touch, :hover latches
+     after a tap and the swapped colour stays. Each pair is a real contrast
+     pair, not a tint. */
+  /* ============ BUTTONS — the fill WIPES, it does not cross-fade ========
+     A background-color transition shows both colours overlapping mid-way,
+     which is the thing that reads cheap. Emil's fix is to clip a second layer
+     in instead: one colour is always solid, so there is no muddy middle.
+
+     Press feedback is the other half. scale(.97) on :active at 160ms is what
+     makes a button feel like it heard you. Release is snappy on purpose —
+     slow where the user decides, fast where the system responds. */
+  .btnfx { position: relative; overflow: hidden; isolation: isolate; }
+  .btnfx > span { position: relative; z-index: 1; }
+  .btnfx::before {
+    content: ''; position: absolute; inset: 0; z-index: 0;
+    clip-path: inset(0 100% 0 0);            /* wipes in from the left */
+    transition: clip-path .42s cubic-bezier(.23,1,.32,1);
+  }
+  /* press: instant, and it survives without hover (touch included) */
+  .cta, .close__cta, .who__cta {
+    transition: transform .16s cubic-bezier(.23,1,.32,1);
+  }
+  .cta:active, .close__cta:active, .who__cta:active { transform: scale(.97); }
+
+  @media (hover: hover) and (pointer: fine) {
+    /* only the LABEL colour transitions; the fill is a wipe, not a fade */
+    .cta, .close__cta, .who__cta { transition: transform .16s cubic-bezier(.23,1,.32,1),
+                                               color .28s ease; }
+    .cta::before        { background: var(--n-900); }     /* flare -> ink   14.72:1 */
+    .close__cta::before { background: var(--ember-600); } /* paper -> ember  5.44:1 */
+    .who__cta::before   { background: var(--n-50); }      /* ember -> paper 17.35:1 */
+    .cta:hover::before, .close__cta:hover::before, .who__cta:hover::before,
+    .cta:focus-visible::before, .close__cta:focus-visible::before,
+    .who__cta:focus-visible::before { clip-path: inset(0 0 0 0); }
+    .cta:hover, .cta:focus-visible               { color: var(--flare); }
+    .close__cta:hover, .close__cta:focus-visible { color: var(--n-900); }
+    .who__cta:hover, .who__cta:focus-visible     { color: var(--n-900); }
+
+    /* a text link wants an underline that draws, not a fill */
+    .teaser__all {
+      position: relative; transition: color .28s ease;
+    }
+    .teaser__all::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 1px;
+      background: currentColor; transform: scaleX(0); transform-origin: left;
+      transition: transform .34s cubic-bezier(.23,1,.32,1);
+    }
+    .teaser__all:hover { color: var(--ember-950); }
+    .teaser__all:hover::after { transform: scaleX(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* keep the colour, drop the wipe and the press travel */
+    .btnfx::before { transition: opacity .2s linear; clip-path: inset(0 0 0 0); opacity: 0; }
+    .cta:hover::before, .close__cta:hover::before, .who__cta:hover::before { opacity: 1; }
+    .cta:active, .close__cta:active, .who__cta:active { transform: none; }
+    .teaser__all::after { transition: none; }
+  }
+
+  /* ---------- scroll affordance, beat 0 only ---------- */
+  .cue {
+    position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 10px; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--dim);
+    will-change: opacity;
+  }
+
+  /* ============ WHO IS TGT — newformcap composition, restudied ============
+     A dark editorial spread: tall portrait plate, headline crossing OVER its
+     right edge, quiet labelled block with one accent CTA pinned bottom-left,
+     plates trading sides as you travel. The typewriter runs INSIDE this
+     composition — it is not the composition. Structure is animation-ready:
+     every moving part is its own element with a transform hook. */
+  .who { height: 460vh; position: relative; }
+
+  .who__stage {
+    position: sticky; top: 0;
+    height: 100svh; overflow: hidden;
+    background: var(--d-0);              /* F1: ember-cast near-black. Was newformcap's
+                                            green-cast near-black — same job, our cast */
+    color: var(--paper);                 /* F1: warm off-white. Was their green-cast off-white.  18.37:1 */
+    isolation: isolate;
+  }
+  /* fine horizontal scanlines over the whole surface */
+  .who__stage::after {
+    content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom, rgba(255,255,255,.062) 0 1px, transparent 1px 3px);
+  }
+
+  /* rotated rail, far-left margin */
+  .who__rail {
+    position: absolute; left: clamp(14px,3vw,46px); top: 50%;
+    transform: translateY(-50%);
+    display: grid; justify-items: center; gap: 14px; z-index: 3;
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--n-400);
+  }
+  .who__rail span { writing-mode: vertical-rl; }
+  @media (max-width: 700px) { .who__rail { display: none; } }
+
+  .who__plate img,
+  .who__next img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  /* the up-next peek. Offset DOWN and RIGHT of the well, deliberately not a
+     vertical stack: the diagonal is what makes it read as a queue. Only the
+     top band is visible; the rest is masked off so the frame reads as still
+     rising into place. */
+  .who__next {
+    position: absolute; z-index: 1; pointer-events: none;
+    /* the well sits at left:27%, width clamp(160px,26vw,360px) */
+    left: calc(27% + clamp(64px, 10vw, 148px));
+    top: calc(9% + clamp(160px, 26vw, 360px) * 1.5 + clamp(10px, 1.4vw, 22px));
+    width: clamp(112px, 18vw, 250px);
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    border-radius: 2px;
+    opacity: .34;
+    /* fade the frame out downward, so only its top edge is present */
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,.55) 38%, transparent 76%);
+            mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,.55) 38%, transparent 76%);
+    transition: opacity .5s linear;
+  }
+  /* Was display:none below 760px. Sketch (sketches/mobile_home.png), WHO WE
+     ARE state: "next photo peeking in — keep the diagonal offset even at
+     this width." It had been hidden rather than given real mobile geometry:
+     the desktop offset (calc(27% + ...)) is computed off the DESKTOP well's
+     own position (left:27%, width up to 360px) — at the mobile well's actual
+     box (left:46%, width up to 190px) that same formula would push the peek
+     off the right edge of a 390px viewport entirely. Own geometry, not a
+     shrunk copy of the desktop one. */
+  @media (max-width: 760px) {
+    .who__well { left: 34%; top: 7%; width: clamp(110px, 40vw, 180px); }
+    .who__next {
+      left: calc(34% + clamp(80px, 28vw, 128px));
+      top: calc(7% + clamp(110px, 40vw, 180px) * 1.5 + 8px);
+      width: clamp(58px, 22vw, 96px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) { .who__next { transition: none; } }
+
+  /* the plates — portrait 2:3, cover, no radius, no filter (mono is in the source) */
+  .who__plates { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .who__plate {
+    position: absolute; aspect-ratio: 2/3;
+    background: var(--d-2); border-color: var(--n-700); color: var(--n-400); /* 4.69:1 */
+    will-change: transform, opacity; opacity: 0;
+  }
+  /* ============ ONE WELL, THREE IMAGES, SWAPPING ======================
+     Was three plates scattered at different sizes and depths — which read as
+     three unrelated boxes rather than as a subject. The client asked for a
+     single image that SWITCHES: three frames cycling top-to-bottom, one visible
+     at a time, in a fixed well beside the statements.
+
+     The well is clipped, so each frame enters from above and the outgoing one
+     leaves through the bottom — a physical swap, not a cross-fade. Each of the
+     three statements owns one frame, so the image changes when the words do
+     and the two halves of the section stay locked together. ============== */
+  .who__well {
+    position: absolute; z-index: 1; pointer-events: none;
+    /* moved right and up so the STATEMENTS cross it (the reference's whole
+       composition) and the bottom-left label block no longer sits on top of it.
+       The image is the subject here; the text was in its way. */
+    left: 27%; top: 9%;
+    width: clamp(160px, 26vw, 360px);
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    border-radius: 2px;
+  }
+  .who__plate {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    aspect-ratio: auto;
+    opacity: 1;
+    transform: translateY(100%);
+    transition: transform .62s cubic-bezier(.66,0,.2,1);
+    will-change: transform;
+  }
+  .who__plate[data-state="in"]   { transform: translateY(0); }
+  .who__plate[data-state="out"]  { transform: translateY(-100%); }
+  @media (prefers-reduced-motion: reduce) {
+    /* gentler, never zero: cross-fade in place instead of travelling */
+    .who__plate { transition: opacity .3s linear; transform: none !important; opacity: 0; }
+    .who__plate[data-state="in"] { opacity: 1; }
+  }
+  @media (max-width: 760px) {
+    .who__well { left: 46%; top: 8%; width: clamp(120px, 42vw, 190px); }
+  }
+
+  /* Was left:38.2%, deliberately crossing the plate's right edge — the
+     newformcap composition's central idea. The client overruled it on 15 Sept:
+     the headline sat across the middle of the swapping photo. It now starts
+     clear of the plate's right edge (the well ends at 27% + 26vw). */
+  .who__inner {
+    position: absolute; z-index: 2;
+    left: 54%; right: clamp(16px,5vw,80px);
+    top: 18%;                       /* was 34% — the block sat too low in frame */
+  }
+  @media (max-width: 760px) { .who__inner { left: clamp(16px,6vw,40px); top: 14%; } }
+
+  .who__lines { display: grid; gap: 0; }
+  .who__line {
+    display: block;
+    font-size: clamp(27px, 5vw, 72px);
+    line-height: 1.10;                    /* 79.2/72, as measured */
+    font-weight: 550;                     /* medium-heavy — confident, not shouty */
+    letter-spacing: -.02em;
+    min-height: 1.10em;
+    white-space: pre-wrap;
+  }
+  .who__line::after { content: '\200b'; }
+
+  .who__caret {
+    display: inline-block; width: .055em; height: .8em;
+    background: var(--paper); margin-left: .05em; transform: translateY(.06em);
+  }
+
+  /* the stable block — anchored bottom-left, never moves */
+  .who__stable {
+    position: absolute; z-index: 3;
+    left: clamp(16px,5.5vw,80px); bottom: clamp(14px,3vh,34px);
+    max-width: 26ch;
+  }
+  .who__count {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em;
+    color: var(--n-400); margin: 0 0 14px;
+  }
+  .who__label { font-size: clamp(15px,1.4vw,18px); font-weight: 550; margin: 0 0 8px; }
+  .who__desc {
+    font-size: clamp(12px,1.1vw,14px); font-weight: 200; line-height: 1.55;
+    color: var(--n-300); margin: 0 0 18px; max-width: 34ch;
+  }
+  /* the single saturated element in the frame */
+  .who__cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 26px;
+    /* F1: was newformcap's acid green. The one saturated element in this
+       frame now carries TGT's own brand colour, which it never did before.
+       Ink on ember 5.44:1 · ember fill vs --d-0 5.76:1. Not --flare: flare is
+       reserved for the registration ask (COLOUR_SYSTEM.md tier 2). */
+    /* TIER tokens, not aliases. This element carries its OWN fill, so its label
+       must not follow the section's ground remap — inside .g-dark, var(--ink)
+       becomes the light colour and this measured 3.19:1. Anything with a
+       self-supplied background reads the tier directly. 5.44:1. */
+    background: var(--ember-600); color: var(--n-900); text-decoration: none;
+    font-size: 13px; font-weight: 550; letter-spacing: .01em;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1);
+  }
+  .who__cta:active { transform: scale(.97); }
+  @media (max-width: 700px) { .who__stable { max-width: 20ch; } }
+
+  /* ============ TEASER STRIP ============ */
+  .teaser { padding: clamp(40px,7vw,110px) 0; border-top: 1px solid var(--line); }
+  .teaser__head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 0 clamp(16px,6vw,96px); margin-bottom: clamp(18px,3vw,34px);
+  }
+  .teaser__all {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink); text-decoration: none;
+  }
+  /* N2 · THE JOIN — the client asked for this on Selected work, and it was
+     wrongly applied to Speakers first. The images keep their gaps, but each
+     caption cancels that gap with a negative margin so adjacent captions TOUCH
+     and form one unbroken strip beneath the row. Divided frames above, a
+     continuous base below: the items read as one body of work that happens to
+     be divided, not as four separate cards. */
+  .teaser__row {
+    display: flex; gap: 0;
+    overflow-x: auto; scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    padding: 0 clamp(16px,6vw,96px) 8px;
+    min-width: 0;
+  }
+  .teaser__row {
+    padding-inline: clamp(16px,6vw,96px);      /* match .teaser__head exactly */
+    scroll-padding-inline: clamp(16px,6vw,96px);
+    scrollbar-width: none;                     /* raw OS scrollbar in an
+                                                  art-directed strip — critic #9 */
+  }
+  .teaser__row::-webkit-scrollbar { display: none; }
+  .teaser__item {
+    align-self: start;                         /* card 4 sat ~10px low: flex
+                                                  items were stretching */
+    flex: 0 0 auto; width: clamp(190px,26vw,340px);
+    margin: 0; scroll-snap-align: start;
+    position: relative;
+    margin-right: clamp(5px,0.7vw,9px);      /* tiny, and uniform across the seam */
+  }
+  /* no :last-child exception: a uniform gap is what keeps the loop seamless */
+  .teaser__item .slot { width: 100%; aspect-ratio: 4/5; }
+  .teaser__item .slot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  /* the continuous slide. transform only; -50% of the doubled row is exactly
+     one track, so the loop is seamless. Pauses on hover so a card can be read. */
+  .teaser__track { display: flex; }
+  @keyframes teaserSlide {
+    from { transform: translate3d(0,0,0); }
+    to   { transform: translate3d(-50%,0,0); }
+  }
+  /* The SECTION clips; the row is free to be wider than the viewport. Padding
+     has to be 0 on the row or the -50% seam stops lining up. */
+  .teaser { overflow: hidden; }
+  #teaserRow {
+    display: flex; width: max-content;
+    overflow: visible;                 /* was auto, and it fought the marquee */
+    padding-inline: 0; scroll-snap-type: none;
+    will-change: transform;
+    animation: teaserSlide 30s linear infinite;   /* 54s read too slow */
+  }
+  #teaserRow:hover { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) {
+    /* no marquee: give the strip back as an ordinary scrollable row */
+    #teaserRow { animation: none; width: auto; overflow-x: auto;
+                 padding-inline: clamp(16px,6vw,96px); }
+  }
+
+  /* …so the caption can cancel it and run unbroken across the whole row */
+  /* ============ THE CAPTION BAR, REBUILT ==============================
+     The old version tried to be ONE continuous dark strip running under all
+     the cards, faked by giving each caption a negative right margin and
+     punching a little circular "seam" between them. It failed in three ways at
+     once: the seams did not line up with the card gaps, the bar ran past the
+     last card and off the right edge, and captions of different lengths
+     overlapped their neighbours.
+
+     The honest fix is to stop faking continuity. Each card now carries its own
+     caption block, aligned to its own width, separated by the real gap. The
+     concave shape language is kept where it belongs — on the caption's own top
+     corners, tying the caption to ITS image rather than to the card beside it. */
+  .teaser__item figcaption {
+    margin: 0; margin-top: 10px;
+    background: var(--ink); color: var(--paper);
+    padding: 12px clamp(11px,1.3vw,15px) 13px;
+    border-radius: 12px;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em;
+    text-transform: uppercase;
+    display: flex; flex-direction: column; gap: 4px;
+    min-width: 0;
+  }
+  /* the taxonomy, at chip scale. The -dk variants are the ones computed for a
+     dark surface; --ink here is #1A1411, darker still, so each clears its
+     measured ratio rather than merely matching it. */
+  .teaser__cat { font-weight: 600; letter-spacing: .12em; }
+  .teaser__item[data-cat="music"]    .teaser__cat { color: var(--music-dk); }
+  .teaser__item[data-cat="film"]     .teaser__cat { color: var(--film-dk); }
+  .teaser__item[data-cat="hangouts"] .teaser__cat { color: var(--hang-dk); }
+
+  .teaser__item figcaption span {
+    color: var(--n-300);
+    font-size: 9px; letter-spacing: .08em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  /* the two ends of the whole strip round off, so it reads as one object */
+  /* uniform radius: with a looping track there is no true first or last */
+
+  /* ============ THEME — Five Plus V2, andre-candido proportions ============ */
+  .theme { padding: clamp(56px,10vw,150px) clamp(16px,6vw,96px); border-top: 1px solid var(--line); }
+  .theme__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(128px, 12.5vw, 170px);
+    gap: clamp(30px, 13vw, 196px);          /* the 196px gutter, measured */
+    max-width: 1184px; margin: 0 auto;
+    align-items: start;
+  }
+  @media (max-width: 780px) {
+    .theme__grid { grid-template-columns: minmax(0,1fr); gap: clamp(30px,7vw,52px); }
+  }
+
+  .theme__statement {
+    margin: 0 0 .5em;
+    font-size: clamp(28px, 5.4vw, 72px);
+    line-height: 1.05;
+    font-weight: 800;                        /* heavy grotesk, per Q4(a) */
+    letter-spacing: -.03em;
+    text-wrap: balance;
+  }
+  .theme__ref {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin: 0;
+  }
+
+  .theme__asideHead {
+    font-family: var(--mono); font-size: 14px; letter-spacing: 1.5px;
+    text-transform: uppercase; margin: 0 0 14px;
+    display: flex; justify-content: space-between; gap: 8px;
+  }
+  .theme__list { list-style: none; margin: 0; padding: 0; }
+  .theme__list li {
+    font-family: var(--mono); font-size: 13px; line-height: 1.35;
+    padding: 11px 0;
+    border-bottom: 1px dashed var(--n-300);       /* dashed, as measured — not dotted */
+  }
+
+  /* ============ SPEAKERS — Five Plus 1, Leonardo Artist Stories ============ */
+  .spk { padding: clamp(48px,8vw,120px) 0 clamp(40px,7vw,96px); border-top: 1px solid var(--line); }
+  .spk__head {
+    margin: 0 0 .1em; padding: 0 clamp(16px,6vw,96px);
+    font-size: clamp(46px, 13vw, 190px);
+    font-weight: 800; letter-spacing: -.045em; line-height: .88;
+    display: flex; align-items: center; gap: .04em; flex-wrap: nowrap;
+  }
+  /* the G-T mark substituted mid-word — gives the placeholder logo a real job */
+  .spk__mark { display: inline-block; width: .82em; height: .82em; flex: 0 0 auto; }
+  .spk__mark svg { width: 100%; height: 100%; display: block; }
+
+  .spk__sub {
+    margin: 0 0 clamp(24px,4vw,46px); padding: 0 clamp(16px,6vw,96px);
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--dim);
+  }
+
+  .spk__row {
+    display: flex; gap: 0;                 /* no gap — the strip must be continuous */
+    overflow-x: auto; scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    padding: 0 clamp(16px,6vw,96px) 10px;
+    min-width: 0;
+  }
+  .spk__card {
+    flex: 0 0 auto; width: clamp(210px, 27vw, 330px);
+    scroll-snap-align: start; position: relative;
+    padding-right: 14px;                   /* the visual gap lives INSIDE the card… */
+  }
+  .spk__card:last-child { padding-right: 0; }
+  .spk__img { width: 100%; aspect-ratio: 1/1; }      /* square, as measured */
+  .spk__img--tba {
+    display: grid; place-items: center; text-align: center;
+    border: 1px dashed var(--line);
+    font-family: var(--mono); font-size: 12px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  /* N2 — the join. The image respects the card's right padding, so frames are
+     separated; the BAR cancels that padding with a negative margin, so adjacent
+     bars touch and form ONE unbroken dark strip running the length of the row.
+     Divided frames above, continuous base below — a film strip, not four cards. */
+  .spk__bar {
+    position: relative;
+    background: var(--d-2); color: var(--paper);
+    padding: 14px 16px 16px;
+    margin-right: -14px;
+  }
+  .spk__card:last-child .spk__bar { margin-right: 0; }
+  /* the perforation, punched OUT of the continuous strip at each seam */
+  .spk__bar::after {
+    content: ''; position: absolute;
+    right: -7px; top: 50%;
+    width: 14px; height: 14px; margin-top: -7px;
+    border-radius: 50%;
+    background: var(--paper);
+    z-index: 2;
+  }
+  .spk__card:last-child .spk__bar::after { display: none; }
+  .spk__name { margin: 0 0 4px; font-size: clamp(14px,1.6vw,19px); font-weight: 700; letter-spacing: -.01em; }
+  /* per-card accent lands here at F1 — Music / Film / Hangouts palettes (B5a).
+     Greyscale for now; the hook exists so colour is a one-line change. */
+  .spk__card[data-cat="music"]    .spk__name { color: var(--music-dk); }  /* 7.02:1 on --d-2 */
+  .spk__card[data-cat="film"]     .spk__name { color: var(--film-dk); }   /* 6.03:1 on --d-2 */
+  .spk__card[data-cat="hangouts"] .spk__name { color: var(--hang-dk); }   /* 10.87:1 on --d-2 */
+  .spk__role {
+    margin: 0; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--n-300);
+  }
+  /* film-strip notch at the seam — the one decorative device here, and it earns
+     its place because TGT makes films */
+  .spk__card::after {
+    content: ''; position: absolute;
+    right: -21px; bottom: 34px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--paper);
+  }
+  .spk__card:last-child::after { display: none; }
+
+  .note--inline {
+    position: static; display: block;
+    margin: 0 clamp(16px,6vw,96px); width: fit-content;
+  }
+
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+  }
+
+  /* ============ WHY WE EXIST — two rooms → a third ============ */
+  .why { padding: clamp(56px,10vw,150px) clamp(16px,6vw,96px); border-top: 1px solid var(--line); }
+  .why__inner { max-width: 1184px; margin: 0 auto; }
+  .why__lead {
+    font-size: clamp(24px,4.2vw,54px); line-height: 1.08; font-weight: 800;
+    letter-spacing: -.03em; margin: 0 0 clamp(34px,6vw,80px); max-width: 20ch;
+  }
+  /* ============ WHY WE EXIST — the aperture ==========================
+     ARCHETYPE: Two Columns V6 (node 31:402, Arch Agency), chosen by
+     seed L1-why-1 YHUgcTRsU6e0d0Q4QgUuxW3 from a set filtered to
+     asymmetric sparse/medium splits. Not an even 50/50 — the naive even
+     split is the thing the catalogue warns about.
+
+     MECHANIC (client, 15 Sept): two illustrations joined, which then OPEN —
+     the width expands first, then the height, and the text is what the height
+     reveals. A video plays at the right, exposed as the aperture opens.
+
+     Why it fits the copy rather than decorating it: this section is already
+     about two rooms nobody could reconcile, resolving into a third. The two
+     joined panels ARE those rooms, and what the opening reveals is the third.
+     The numbers (01/02/03) and the dividing rules are gone — client asked,
+     and the aperture now carries the structure the rules used to. ======== */
+  .why__stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1.34fr) minmax(0, 1fr);   /* asymmetric */
+    gap: clamp(18px, 3.4vw, 54px);
+    align-items: start;
+  }
+  @media (max-width: 860px) { .why__stage { grid-template-columns: minmax(0,1fr); } }
+
+  /* the joined pair. --apX closes it horizontally, --apY vertically; both are
+     driven by scroll. clip-path is the sanctioned fourth animatable property
+     alongside transform/opacity. */
+  .why__aperture {
+    position: relative;
+    clip-path: inset(var(--apY, 46%) var(--apX, 46%) round 3px);
+    will-change: clip-path;
+    background: var(--d-2);
+  }
+  .why__panels { display: grid; grid-template-columns: 1fr 1fr; }  /* joined: no gap */
+  .why__panel { position: relative; aspect-ratio: 4 / 5; overflow: hidden; }
+  .why__panel img {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    /* exposure, not decoration: the panels come up out of the dark as the
+       aperture opens, which is the same light-as-physics rule the hero uses */
+    opacity: calc(.30 + var(--expose, 0) * .70);
+  }
+
+  /* what the height reveals */
+  .why__rooms {
+    display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: clamp(20px,4vw,56px);
+    padding: clamp(20px,3vw,38px) clamp(18px,2.6vw,34px) 0;
+  }
+  @media (max-width: 700px) { .why__rooms { grid-template-columns: minmax(0,1fr); gap: 22px; } }
+  .why__text { font-size: clamp(15px,1.8vw,21px); line-height: 1.5; color: var(--ink); margin: 0; }
+  .why__mid {
+    margin: clamp(18px,2.6vw,30px) clamp(18px,2.6vw,34px) 0;
+    max-width: 48ch; font-size: clamp(14px,1.5vw,16px); line-height: 1.6; color: var(--dim);
+  }
+  .why__third { padding: clamp(18px,2.6vw,32px) clamp(18px,2.6vw,34px) clamp(22px,3.4vw,40px); }
+  .why__resolve {
+    margin: 0 0 .5em;
+    font-size: clamp(26px,4.4vw,58px); line-height: 1.0;
+    font-weight: 800; letter-spacing: -.035em;
+  }
+  .why__tail { margin: 0; max-width: 44ch; font-size: clamp(14px,1.5vw,17px); line-height: 1.6; color: var(--dim); }
+
+  /* per-line text reveal, driven by the same open. Masked rather than faded:
+     the line is uncovered, which reads as part of the aperture opening. */
+  .why__rooms, .why__mid, .why__third { --tr: 0; }
+  .why__reveal {
+    display: block;
+    clip-path: inset(0 0 calc((1 - var(--tr, 0)) * 100%) 0);
+    transform: translateY(calc((1 - var(--tr, 0)) * .34em));
+    will-change: clip-path, transform;
+  }
+
+  /* the film, right column. Exposed as the aperture opens. */
+  .why__film {
+    margin: 0; position: relative; overflow: hidden; border-radius: 3px;
+    background: var(--d-0); aspect-ratio: 4 / 5;
+  }
+  .why__film video {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    opacity: var(--expose, 0);
+    transition: opacity .12s linear;
+  }
+  .why__cap {
+    position: absolute; left: 12px; bottom: 10px; z-index: 2;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--n-300);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* the designed static state: already open, already exposed, text present.
+       No opening, no travel — but it must look finished. */
+    .why__aperture { clip-path: none !important; }
+    .why__panel img, .why__film video { opacity: 1 !important; }
+    .why__reveal { clip-path: none !important; transform: none !important; }
+  }
+
+  /* ============ FAQ — a switchboard, not a list ============
+     Archetype: Five Plus V2 — one dominant panel plus a narrow index.
+     Questions sit as a readable horizontal index on the left; choosing one
+     swaps the answer into a single ink panel on the right. NOTHING expands:
+     the block is a fixed height and only its contents change, so the page
+     never grows or jumps. Answers stay hidden until asked for.
+     The panel wipes on each change — the uncovering idea kept, but applied
+     to the panel instead of to inline bars, and with no rotated type. */
+  .faq { padding: clamp(48px,8vw,120px) clamp(16px,6vw,96px); border-top: 1px solid var(--line); }
+  .faq__head {
+    max-width: 1184px; margin: 0 auto clamp(22px,3.4vw,44px);
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  }
+  .faq__note {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dim); margin: 0;
+  }
+
+  .faq__board {
+    max-width: 1184px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    border: 1px solid var(--ink);
+    min-height: clamp(320px, 46vh, 440px);
+  }
+  @media (max-width: 820px) { .faq__board { grid-template-columns: minmax(0,1fr); } }
+
+  /* ---- the index ---- */
+  .faq__index { display: flex; flex-direction: column; min-width: 0; }
+  .faq__item {
+    flex: 1 1 auto; min-width: 0;
+    display: flex; align-items: center; gap: clamp(10px,1.4vw,18px);
+    padding: clamp(12px,1.7vw,20px) clamp(14px,2vw,26px);
+    background: none; border: 0; border-top: 1px solid var(--line);
+    font: inherit; color: inherit; text-align: left; cursor: pointer;
+    transition: background .22s ease, color .22s ease;
+  }
+  .faq__item:first-child { border-top: 0; }
+  .faq__item:hover { background: var(--hover-paper); }
+  .faq__item:focus-visible { outline: 2px solid var(--ink); outline-offset: -3px; }
+  .faq__item[data-on="1"] { background: var(--ink); color: var(--paper); }
+
+  .faq__n {
+    flex: 0 0 auto;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+    color: var(--dim);
+  }
+  .faq__item[data-on="1"] .faq__n { color: var(--n-400); }  /* open item is INK-backed,
+     not paper — --hint measured 3.64:1 there. 5.38:1 and still reads de-emphasised. */
+  .faq__qt {
+    font-size: clamp(14px,1.55vw,19px); font-weight: 700;
+    letter-spacing: -.015em; line-height: 1.2;
+  }
+
+  /* ---- the display panel ---- */
+  .faq__display {
+    position: relative; min-width: 0; overflow: hidden;
+    background: var(--ink); color: var(--paper);
+    border-left: 1px solid var(--ink);
+    display: flex;
+  }
+  @media (max-width: 820px) {
+    .faq__display { border-left: 0; border-top: 1px solid var(--ink); min-height: 190px; }
+  }
+
+  .faq__answer {
+    position: absolute; inset: 0; margin: 0;
+    display: flex; align-items: flex-end;
+    padding: clamp(20px,3vw,44px);
+    font-size: clamp(17px, 2.3vw, 30px); line-height: 1.32;
+    font-weight: 500; letter-spacing: -.018em;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .34s ease, transform .34s cubic-bezier(.2,.7,.3,1);
+    pointer-events: none;
+  }
+  .faq__answer[data-on="1"] { opacity: 1; transform: none; }
+
+  /* the wipe — fires on every change, so the answer is uncovered rather
+     than simply swapped */
+  .faq__wipe {
+    position: absolute; inset: 0; background: var(--paper);
+    transform-origin: left center; transform: scaleX(0);
+    pointer-events: none;
+  }
+  .faq__wipe[data-run="1"] { animation: faqWipe .58s cubic-bezier(.16,.84,.3,1); }
+  @keyframes faqWipe {
+    0%   { transform: scaleX(0); transform-origin: left center; }
+    45%  { transform: scaleX(1); transform-origin: left center; }
+    46%  { transform: scaleX(1); transform-origin: right center; }
+    100% { transform: scaleX(0); transform-origin: right center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq__answer { transition: opacity .2s ease; transform: none; }
+    .faq__wipe[data-run="1"] { animation: none; }
+  }
+
+  /* ============ NOBUSHELS — soft mention, no form (SC4) ============ */
+  /* ============ NO BUSHELS — the band is no longer a rectangle ==========
+     SEED 5 · YBhwUZAQf88Ie4O1BZUhP3Uc  (recorded spare, assigned here)
+     Read off the seed rather than invented: the dominant glyph is U, three
+     times — three concave scoops — with Z twice, a diagonal. So: a band whose
+     TOP edge is cut on a diagonal and whose BOTTOM edge is scalloped by three
+     concave scoops, the dark section below biting up into the ember.
+
+     That also lands on the shape language already in use (SECTIONS.md: where
+     two blocks meet and need to feel joined, cut them concavely) rather than
+     introducing a fourth unrelated device.
+
+     Rule C1 is fixed here at the same time: the copy used to sit directly on
+     the ember ground at 21px, which the colour system forbids. It is in a paper
+     card now, so the ground shows BETWEEN boxes as R-11 does it. */
+  /* The 1px light line the client spotted at this boundary was the PAPER body
+     background showing through a sub-pixel seam between this ember band and
+     the dark section below it. Overlapping them by 1px removes the gap
+     entirely; hiding it with a border would only have repainted the symptom. */
+  .nb { margin-bottom: -1px; }
+  .close { position: relative; margin-top: -1px; }
+  .nb {
+    position: relative; overflow: hidden;
+    padding: clamp(64px,9vw,128px) clamp(16px,6vw,96px) clamp(74px,9vw,132px);
+    border-top: 0;
+    clip-path: polygon(0 clamp(24px,4vw,64px), 100% 0, 100% 100%, 0 100%);
+  }
+  /* the three scoops — U U U, in the colour of the section below */
+  .nb::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+    height: clamp(30px,4.4vw,62px); pointer-events: none;
+    background:
+      radial-gradient(circle at 16.66% 100%, var(--d-0) 0 clamp(30px,4.4vw,62px), transparent 0),
+      radial-gradient(circle at 50%    100%, var(--d-0) 0 clamp(30px,4.4vw,62px), transparent 0),
+      radial-gradient(circle at 83.33% 100%, var(--d-0) 0 clamp(30px,4.4vw,62px), transparent 0);
+  }
+  /* Client, 15 Sept: the wordmark needed an effect on focus. It is an OUTLINE,
+     and this section is about a lamp NOT kept under a bushel, so focus fills
+     it from the bottom up: the light getting through. Keyboard-reachable, not
+     hover-only. */
+  .nb__ghost { position: relative; --fill: 0; }
+  .nb__ghost::after {
+    content: attr(data-word);
+    position: absolute; inset: 0;
+    white-space: pre-line;
+    color: var(--n-900);                 /* tier token, never the alias */
+    -webkit-text-stroke: 0;
+    clip-path: inset(calc((1 - var(--fill)) * 100%) 0 0 0);
+    transition: clip-path .66s cubic-bezier(.23, 1, .32, 1);
+    pointer-events: none;
+  }
+  /* :focus as well as :focus-visible — programmatic focus does not match
+     :focus-visible, and the effect must be reachable either way. */
+  .nb:hover .nb__ghost,
+  .nb__ghost:focus,
+  .nb__ghost:focus-visible,
+  .nb__ghost.is-lit { --fill: 1; }   /* .is-lit: the explicit tap handler below */
+  .nb__ghost:focus-visible { outline: 2px solid var(--n-900); outline-offset: 6px; }
+  @media (prefers-reduced-motion: reduce) {
+    .nb__ghost::after { clip-path: none; opacity: var(--fill);
+                        transition: opacity .25s linear; }
+  }
+
+  .nb__inner {
+    position: relative; z-index: 1;
+    max-width: 1184px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(0,1fr) minmax(0,.82fr);
+    gap: clamp(20px,4vw,64px); align-items: center;
+  }
+  @media (max-width: 820px) { .nb__inner { grid-template-columns: minmax(0,1fr); } }
+
+  .nb__card {
+    background: var(--paper); color: var(--n-900);
+    border-radius: clamp(14px,1.6vw,20px);
+    padding: clamp(20px,2.6vw,34px) clamp(20px,2.6vw,32px);
+  }
+  .nb__text {
+    max-width: 46ch; margin: 0;
+    font-size: clamp(15px,1.6vw,19px); line-height: 1.55; color: var(--n-700);
+  }
+  .nb__text strong { color: var(--n-900); }
+
+  /* the empty right half had nothing in it. An outline word, cut off by the
+     band's own edge — type as object, the project's whole idea, and it costs
+     no asset. Decorative only, so it is hidden from assistive tech. */
+  .nb__ghost {
+    justify-self: end; align-self: center;
+    font-family: var(--f-display);
+    font-variation-settings: 'wdth' 125, 'wght' 900;
+    font-size: clamp(44px,7.6vw,116px); line-height: .82; letter-spacing: -.05em;
+    text-transform: uppercase; white-space: nowrap;
+    color: transparent;
+    -webkit-text-stroke: clamp(1px,.18vw,2.5px) var(--ember-950);
+    opacity: .55;
+  }
+  /* Was display:none below 820px. Sketch: "on desktop this fills on hover.
+     there is no hover here — tap must do the same job." Hiding it dropped the
+     mechanic instead of answering that. It needed real mobile geometry
+     (allowed to wrap, no nowrap/justify-self:end fighting a 1-column grid)
+     plus an explicit tap trigger — see the JS listener below; :focus alone is
+     not reliably reachable by tap on a non-form element across mobile
+     browsers, so the fill cannot depend on it there. */
+  @media (max-width: 820px) {
+    .nb__ghost {
+      justify-self: stretch; text-align: center;
+      white-space: normal;
+      font-size: clamp(40px, 15vw, 74px);
+      margin-top: clamp(18px, 4vw, 28px);
+    }
+  }
+
+  /* ============ CLOSING CTA — the page's single dark moment ============ */
+  .close {
+    padding: clamp(70px,13vw,190px) clamp(16px,6vw,96px);
+    /* ONE axis. The critic measured three (eyebrow 82, button 485, count 210).
+       A grid with justify-items:center forces every child onto the same spine. */
+    display: grid; justify-items: center;
+    /* --d-0, not --n-900: one dark ground site-wide. See tokens.css. */
+    background: var(--d-0); color: var(--paper);
+    text-align: center;
+  }
+  .close__kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--n-300); margin: 0 0 clamp(18px,3vw,32px);
+  }
+  /* word-by-word reveal, driven by the section's own fade state — no extra
+     JS, and it cannot fall out of step with the fade because it IS the fade. */
+  .close__head .cw {
+    display: inline-block;
+    clip-path: inset(0 0 108% 0);
+    transform: translateY(.24em);
+    transition: clip-path .8s cubic-bezier(.23,1,.32,1),
+                transform .8s cubic-bezier(.23,1,.32,1);
+  }
+  #close[data-in="1"] .close__head .cw { clip-path: inset(0 0 -12% 0); transform: none; }
+  .close__head .cw:nth-of-type(2) { transition-delay: .08s; }
+  .close__head .cw:nth-of-type(3) { transition-delay: .16s; }
+  .close__head .cw:nth-of-type(4) { transition-delay: .24s; }
+  @media (prefers-reduced-motion: reduce) {
+    .close__head .cw { clip-path: none; transform: none; opacity: 0;
+                       transition: opacity .3s linear; }
+    #close[data-in="1"] .close__head .cw { opacity: 1; }
+  }
+
+  .close__head {
+    margin: 0 0 clamp(18px,3vw,30px);
+    font-size: clamp(34px,8vw,104px); line-height: .92;
+    font-weight: 800; letter-spacing: -.04em;
+  }
+  .close__meta {
+    font-family: var(--mono); font-size: clamp(10px,1.3vw,13px);
+    letter-spacing: .16em; text-transform: uppercase; color: var(--n-300);
+    margin: 0 0 clamp(24px,4vw,40px);
+  }
+  .close__cta {
+    display: inline-block; padding: 17px 42px;
+    /* TIER tokens. Inside .close.g-dark, var(--ink) IS the light colour, so the
+       alias pair rendered paper-on-paper — 1:1, the site's closing Register
+       button completely invisible. Caught by the F2 critic, not by my own
+       contrast audit, because I changed .close to g-dark and never re-ran the
+       audit afterwards. Third time this trap fired; see .who__cta and .cta.
+       Not --flare: the hero CTA is this surface's one flare moment (rota). */
+    background: var(--n-50); color: var(--n-900);
+    border-radius: 999px; text-decoration: none;
+    font-family: var(--mono); font-size: 12px;
+    letter-spacing: .14em; text-transform: uppercase;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1);
+  }
+  .close__cta:active { transform: scale(.96); }
+  .close__count {
+    margin: clamp(20px,3vw,30px) 0 0;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--n-300);
+  }
+
+  .beat {
+    position: fixed; top: 0; right: 0; z-index: 102;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
+    background: var(--ink); color: var(--paper); padding: 5px 10px;
+  }

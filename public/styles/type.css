@@ -1,0 +1,172 @@
+/* ============================================================================
+   TGT — F1 typography.  Locked 14 Sept 2026.
+   Answers Q4(a): heavy grotesk + tiny mono. The extra-light editorial serif
+   option (andre-candido) was rejected by the client; its PROPORTION lesson
+   (85/15 split, 196px gutter) still governs the theme section's layout.
+
+   ⚠ THIS DECISION LEAVES THE PROJECT. Per Q5 the dependency runs backwards:
+   the logo does not exist yet, so the client's designer builds the G-T mark
+   FROM this face. Archivo Expanded 900 is therefore a constraint on their
+   work, not just ours. They need to be told before they start.
+
+   Loaded AFTER skeleton.css and tokens.css.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wdth,wght@75..112.5,100..800&display=swap');
+
+/* ---------------------------------------------------------------------------
+   THE FACES
+
+   Archivo (variable, wdth 62-125 / wght 100-900) carries everything.
+   ONE superfamily, two extremes — so the "never a second display face"
+   guardrail holds while display and body still look unrelated at a glance.
+
+   Why Archivo Expanded 900 and not a condensed poster face: R-11, the
+   reference the client called "the level I want", measures as WIDE,
+   black-weight, all-caps, tight leading (mechanic P-d). Expanded 900 is that
+   exactly. A condensed face would have been the more obvious "bold" choice
+   and would have matched the reference less.
+
+   Martian Mono is the tiny second register. Deliberately not a default mono —
+   it is squarish and slightly wide, so at 10-12px tracked out it reads as a
+   deliberate label rather than as code.
+   ------------------------------------------------------------------------ */
+:root {
+  --f-display: 'Archivo', 'Arial Black', system-ui, sans-serif;
+  --f-body:    'Archivo', system-ui, -apple-system, sans-serif;
+  --f-mono:    'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* override skeleton.css's neutral stand-ins */
+  --stack: var(--f-body);
+  --mono:  var(--f-mono);
+
+  /* -------------------------------------------------------------------------
+     THE SCALE — two registers, nothing in between.
+
+     This is the flim / Leonardo / andre-candido rule, arrived at independently
+     by all three references: enormous against tiny, with no mid-range to
+     soften the jump. The gap between --t-lead (max 22px) and --t-h3 (min 30px)
+     is deliberate and load-bearing. Do not fill it.
+
+     Fluid clamp() throughout, per 02-define.md — this is marketing/editorial,
+     not app UI.
+
+     Leading tightens as size grows: 1.55 body -> 0.80 display. Display leading
+     is where amateur typography shows, and Leonardo's 0.80-0.93 is the bar.
+     --------------------------------------------------------------------- */
+
+  /* tiny register — mono only. Labels, chips, times, countdown, rails. */
+  --t-mono-xs: 10px;
+  --t-mono-sm: 12px;
+  --t-mono-md: clamp(12px, 1.1vw, 14px);
+
+  /* body register. 16px FLOOR — not Leonardo's 14px.
+     02-define.md: "14px body is a bug, not a density choice." The client
+     overrode the colour skill, not the accessibility floor. */
+  --t-body:  clamp(16px, 1.05vw, 18px);
+  --t-lead:  clamp(18px, 1.5vw, 22px);
+
+  /* display register — 30px and up, nothing below */
+  --t-h3:      clamp(30px, 3.2vw, 44px);
+  --t-h2:      clamp(38px, 5.4vw, 76px);
+  --t-h1:      clamp(52px, 8.2vw, 116px);
+  --t-display: clamp(64px, 13vw, 190px);
+
+  --lh-body:    1.55;
+  --lh-lead:    1.45;
+  --lh-h3:      0.98;
+  --lh-h2:      0.92;
+  --lh-h1:      0.88;
+  --lh-display: 0.80;
+
+  --tr-h3:      -0.02em;
+  --tr-h2:      -0.03em;
+  --tr-h1:      -0.04em;
+  --tr-display: -0.045em;
+
+  --measure: 68ch;   /* clamped, inside the 45-75 band */
+}
+
+/* ---------------------------------------------------------------------------
+   THE WIDTH AXIS — what actually makes this face "Expanded"
+   Archivo ships wdth 62-125. Display sits at 112 (wide, poster-like); body
+   sits at 100 (normal). One variable font, two personalities.
+   ------------------------------------------------------------------------ */
+.u-display,
+.mark, .timer,
+.ev__statement, .ev__date, .ev__backHead,
+.close__head, .day__title, .day__title--big,
+.theme__statement, .spk__head,
+.why__lead, .why__resolve, .why__third {
+  font-family: var(--f-display);
+  font-variation-settings: 'wdth' 112, 'wght' 900;
+  font-weight: 900;
+  text-wrap: balance;
+}
+
+/* The wordmark is the ONE display element that is not wdth 112. It sits at 95,
+   condensed, so it reads as a different face from the hero walls at wdth 125.
+   At 112 the difference measured as real and looked identical — a passing
+   measurement is not a working design. Declared here, after the .u-display
+   group, because type.css loads last and would otherwise overwrite it. */
+.mark {
+  font-variation-settings: 'wdth' 95, 'wght' 900;
+}
+
+body {
+  font-family: var(--f-body);
+  font-variation-settings: 'wdth' 100, 'wght' 400;
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* every paragraph is clamped to a readable measure — 45-75ch, per 02-define */
+p, li, dd, blockquote { max-width: var(--measure); }
+
+/* the tiny register. Mono, uppercase, tracked — never larger than 14px, which
+   is what keeps it reading as a label instead of as small body copy. */
+.u-mono,
+.ev__k, .ev__small, .ev__backMeta, .ev__undo, .ev__bar,
+.who__count, .who__rail,
+.spk__role, .day__note, .close__kicker, .close__meta, .close__count,
+.ft__soon {
+  font-family: var(--f-mono);
+  font-variation-settings: 'wght' 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: var(--t-mono-sm);
+  line-height: 1.35;
+}
+
+/* ---------------------------------------------------------------------------
+   PER-ELEMENT SIZING — every value comes from the scale above.
+   02-define.md: "Zero one-off font-size overrides."
+   ------------------------------------------------------------------------ */
+.mark, .day__title--big   { font-size: var(--t-display); line-height: var(--lh-display); letter-spacing: var(--tr-display); }
+.close__head, .ev__statement { font-size: var(--t-h1); line-height: var(--lh-h1); letter-spacing: var(--tr-h1); }
+.theme__statement, .spk__head { font-size: var(--t-h2); line-height: var(--lh-h2); letter-spacing: var(--tr-h2); }
+.ev__date, .ev__backHead, .why__lead { font-size: var(--t-h3); line-height: var(--lh-h3); letter-spacing: var(--tr-h3); }
+
+/* The Who-is-TGT statement was measured off newformcap at weight 550 — their
+   TWK Lausanne, not ours. In Archivo that weight reads thin and undecided at
+   display size. It becomes 800 at --t-h2, which is OUR voice for the same job:
+   confident without shouting. The 550 was a measurement, never a decision. */
+.who__line {
+  font-family: var(--f-display);
+  font-variation-settings: 'wdth' 106, 'wght' 800;
+  font-weight: 800;
+  font-size: var(--t-h2);
+  line-height: var(--lh-h2);
+  letter-spacing: var(--tr-h2);
+}
+.who__label { font-size: var(--t-lead); font-weight: 700; line-height: var(--lh-lead); }
+.who__desc  { font-size: var(--t-body); font-weight: 400; line-height: var(--lh-body); }
+
+/* Numerals that change must not reflow their container. The countdown is the
+   obvious case — proportional digits make it jitter every second. */
+.timer, .close__count, .day__time, [data-countdown] {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}

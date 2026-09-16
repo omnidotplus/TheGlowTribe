@@ -1,0 +1,53 @@
+---
+/* The shared shell. Load order below is LOAD-BEARING, not stylistic — carried
+   over verbatim from the static build: skeleton.css (shared tokens/components)
+   loads first, then the page's own CSS, then footer.css + reveal.css (shared
+   components that must be able to override page CSS but never the type
+   system), then tokens.css + type.css LAST, so the F1 type system wins over
+   any stand-in sizing at equal specificity.
+   Source order is the whole mechanism; do not reorder these six links. */
+interface Props {
+  title: string;
+  description: string;
+  pageStylesHref: string;
+  bodyClass?: string;
+  /* Optional extra font request for a page that needs faces the type system
+     does not carry. Passed per page so other pages do not pay for it. */
+  extraFonts?: string;
+}
+const { title, description, pageStylesHref, bodyClass, extraFonts } = Astro.props as Props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://theglowtribe.com');
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <link rel="canonical" href={canonical}>
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:type" content="website">
+  <meta property="og:url" content={canonical}>
+  <!-- og:image intentionally omitted -- no real production image exists yet.
+       A tagless og:image is honest; a placeholder would ship a broken or
+       misleading social-share card. Pre-launch checklist item, not a bug. -->
+  <meta name="theme-color" content="#FF4B12">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
+  <link rel="stylesheet" href="/styles/skeleton.css">
+  <link rel="stylesheet" href={`${pageStylesHref}?v=7`}>
+  <link rel="stylesheet" href="/styles/footer.css?v=1">
+  <link rel="stylesheet" href="/styles/reveal.css?v=1">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/type.css">
+  {extraFonts && <link rel="stylesheet" href={extraFonts} />}
+</head>
+<body class={bodyClass}>
+  <slot />
+  <script data-role="dev-flag" is:inline>if(location.search.includes('dev'))document.body.classList.add('dev');</script>
+  <script src="/scripts/reveal.js" is:inline></script>
+  <script src="/scripts/nav.js" is:inline></script>
+</body>
+</html>

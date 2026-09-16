@@ -1,0 +1,656 @@
+  /* ============ EVENT — Five Plus V4 (Ariel Childs), from the catalogue's
+     Figma file. Statement indented from the left · form as the text column ·
+     facts as centre rows · two images pinned right at UNEQUAL heights. ============ */
+  /* top padding grew from clamp(6px,1vw,12px): that space used to be filled by
+     the static .ev__nav row before it was replaced by the fixed .tnav pill;
+     now the section has to reserve that clearance itself so the statement
+     doesn't sit under the floating nav. */
+  .ev { padding: clamp(70px,9vw,100px) clamp(16px,5vw,64px) clamp(48px,8vw,110px); }
+
+  /* ---- N4 · the shared floating nav, mirrored from home.html's .tnav so both
+     pages run one nav system instead of two. This page IS the registration
+     destination, so the .tnav__cta ("Register") is dropped entirely — a
+     redundant CTA next to the form it points at.
+       Colour: home's --tnav-bg/--tnav-fg are PAGE-LEVEL variables, chosen per
+     ground. Measured against this page's ember ground (#FF4B12, --ember-600):
+       --n-900 pill  → 5.44:1   (matches tokens.css's own --ink-on-ember note)
+       --n-50  pill  → 3.19:1
+     n-900 clears the 3:1 UI-boundary floor with far more margin, so this page
+     uses the near-black pill (option A), same as home's ink hero.
+     IntersectionObserver on .hero. This page has no hero to observe, so the
+     nav is simply visible from load — no JS, no gating class. ---- */
+  @media (max-width: 700px) {
+  }
+
+  /* indented from the left edge, as the reference does */
+  .ev__statement {
+    margin: clamp(20px,4vw,56px) 0 clamp(30px,5vw,64px);
+    padding-left: clamp(0px,7vw,120px);
+    font-size: clamp(34px,7.2vw,92px); line-height: .95;
+    font-weight: 800; letter-spacing: -.04em;
+    /* Real overflow found in verification, not the transformed .theme__cast
+       that looked like the culprit first: scrollWidth (348) exceeded
+       clientWidth (324) on this element ALONE at 360px -- "something." has
+       no break opportunity at this font size + left padding, and content
+       overflowing an overflow:visible box still contributes to the document
+       root'''s scrollWidth even though the element's own outer box never
+       leaves the viewport. Let the one long word break rather than bleed. */
+    overflow-wrap: break-word;
+  }
+
+  /* ============ THE ASK — types in, then "something" changes face ======
+     Client, second pass, and both corrections were fair:
+
+     1. The first attempt animated Archivo's wdth/wght axes and called that
+        "different font styles". It read as one font stretching, because it
+        was. Five DISTINCT TYPEFACES now, stepped by JS -- font-family is not
+        an animatable property, so CSS genuinely cannot do this; that was a
+        reason to reach for JS, not a reason to substitute something weaker.
+     2. The whole line types in first, then the word changes face, then it
+        settles into a sixth face that is deliberately none of the five.
+
+     Payload: all six families are requested subset to ONLY the glyphs in
+     "something." via Google Fonts' text= parameter, so six display faces
+     cost a few KB total rather than a few hundred. SC7 is mobile-first on
+     Nigerian networks; six unsubset display fonts would have been indefensible.
+     =================================================================== */
+  .ev__statement { min-height: 2.9em; }        /* reserve the typed line, no reflow jump */
+  .ev__caret {
+    display: inline-block; width: .06em; height: .78em;
+    background: var(--n-900); margin-left: .04em;
+    transform: translateY(.04em);
+    animation: askCaret 1s steps(1,end) infinite;
+  }
+  .ev__statement[data-typed="1"] .ev__caret { display: none; }
+  @keyframes askCaret { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+  .flashword {
+    position: relative; isolation: isolate;
+    display: inline-block; max-width: 100%;
+    overflow-wrap: anywhere;   /* break-word does NOT feed inline-block intrinsic width */
+    color: var(--n-900);
+    transition: color .16s linear;
+  }
+  /* the six faces. Driven by data-face, set from JS. */
+  .flashword[data-face="1"] { font-family:'Bebas Neue',sans-serif;      font-weight:400; letter-spacing:.01em; }
+  .flashword[data-face="2"] { font-family:'Playfair Display',serif;      font-weight:900; font-style:italic; letter-spacing:-.02em; }
+  .flashword[data-face="3"] { font-family:'Rubik Mono One',monospace;    font-weight:400; letter-spacing:-.04em; font-size:.82em; }
+  .flashword[data-face="4"] { font-family:'Caprasimo',cursive;           font-weight:400; letter-spacing:-.01em; }
+  .flashword[data-face="5"] { font-family:'Syne',sans-serif;             font-weight:800; letter-spacing:-.03em; }
+  /* the settled face: a heavy slab, deliberately not one of the five and
+     deliberately not the brand grotesk. White on the ember ground at this
+     size is the "presence" the client asked for. */
+  .flashword[data-face="final"] {
+    font-family:'Alfa Slab One',serif; font-weight:400;
+    letter-spacing:-.015em; color: var(--n-50);
+  }
+  /* the bloom, only once settled. Exposure and falloff, never a drawn light
+     source -- DESIGN.md bans light as an object. */
+  .flashword::after {
+    content: ''; position: absolute; inset: -.2em -.12em; z-index: -1;
+    pointer-events: none; opacity: 0;
+    background: radial-gradient(62% 72% at 50% 55%,
+      rgba(255,248,244,.36) 0%, rgba(255,224,74,.17) 44%, transparent 76%);
+    transition: opacity .5s cubic-bezier(.23,1,.32,1);
+  }
+  .flashword[data-face="final"]::after { opacity: 1; }
+
+  /* Per-face size correction on a phone. Six faces at one size do not occupy
+     one line: measured at 390px against ~324px of available width, Rubik Mono
+     One and Syne both wrapped to two lines (h 75 and 92 against 46 for a
+     single line), which made the word jump height mid-flash. Scaled so every
+     face sits on one line, so the only thing that changes is the letterforms. */
+  @media (max-width: 700px) {
+    .flashword[data-face="3"] { font-size: .58em; }
+    .flashword[data-face="5"] { font-size: .58em; }
+    .flashword[data-face="4"] { font-size: .92em; }
+    .flashword[data-face="final"] { font-size: .88em; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* no typing, no face-flashing: the finished line, immediately. Flashing
+       is the actual photosensitivity risk here, so the honest reduced variant
+       is the resolved composition rather than a dimmer one. */
+    .ev__caret { display: none !important; }
+    .flashword { transition: none; }
+    .flashword::after { transition: none; }
+  }
+
+  .ev__grid {
+    display: grid;
+    grid-template-columns: minmax(0,0.95fr) minmax(0,1fr) minmax(0,0.85fr);
+    gap: clamp(24px,4vw,64px);
+    align-items: start;
+  }
+  @media (max-width: 1000px) { .ev__grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } }
+  @media (max-width: 700px)  { .ev__grid { grid-template-columns: minmax(0,1fr); } }
+
+  /* ---- THE DETAILS is gated behind registering, on mobile only ----------
+     Client: the card must not be reachable by scrolling until the form is
+     submitted; then "you're in" reads first and the card follows further
+     down. JS owns the state (see conference-behaviour.js), CSS owns the
+     presentation.
+
+     display:none rather than opacity/height: the requirement is that the card
+     is genuinely NOT THERE, so it must not occupy scroll distance, must not
+     be findable by in-page search, and must not be announced. A visually
+     hidden but present card would still be all three.
+
+     Mobile only. On desktop the card sits beside the form as one composition
+     and removing half of it would leave a hole in the grid. */
+  @media (max-width: 700px) {
+    .ev[data-registered="0"] .ev__panel { display: none; }
+    /* once released, it arrives rather than appearing: the reveal system's
+       own transition carries it, so this only sets the starting offset. */
+    .ev[data-registered="1"] .ev__panel { animation: evPanelIn .62s cubic-bezier(.23,1,.32,1) both; }
+    @keyframes evPanelIn {
+      from { opacity: 0; transform: translate3d(0, 18px, 0); }
+      to   { opacity: 1; transform: none; }
+    }
+  }
+  @media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+    .ev[data-registered="1"] .ev__panel { animation: none; }
+  }
+
+  .ev__k {
+    /* F1: was --dim (--ember-950 on the ember ground here, and --n-700 inside
+       the paper .ev__panel). Dark-brown-on-orange computed 4.92:1 -- numerically
+       passing but chromatically muddy at 10px with heavy tracking, which read
+       as "blurry" to the client. --n-900 is the tier token directly (never the
+       --ink alias -- see the field label below): 5.44:1 on ember, 17.35:1 on
+       paper, crisp on both, so one rule serves the Register/You're-in kicker
+       on the ground and The-details kicker inside the panel alike. */
+    font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--n-900); margin: 0 0 16px;
+  }
+
+  /* ---- left: the form ---- */
+  /* the form loses its hard 1px boxes and becomes soft filled fields, so it
+     reads as a sibling of the rounded panel rather than a wireframe beside it */
+  /* ============ N3 · the form, beautified ============================
+     SECTIONS.md parked this deliberately: "it needs type and colour before it
+     can be finished". Both now exist, so this is treatment only — the Five
+     Plus V4 structure is right and does not change.
+
+     The rhythm problem: four identical 12px-gapped rows read as a queue of
+     inputs. Fixed by PAIRING each label to its field (4px) and spacing the
+     PAIRS apart (22px), so the eye reads four objects instead of eight lines.
+     ================================================================== */
+  .ev__form { display: grid; gap: clamp(16px,2vw,22px); min-width: 0; }
+
+  .ev__form .field { gap: 4px; }              /* label hugs its own field */
+
+  .ev__form .field label {
+    font-family: var(--f-mono);
+    /* F1, client: "the form texts... a bit blur". --dim resolved to --ember-950
+       (dark brown) on the ember ground -- 4.92:1, numerically passing WCAG but
+       chromatically muddy at 10px with .18em tracking. --n-900 is the TIER
+       token, not the --ink alias (this project has shipped invisible buttons
+       three times from alias tokens getting remapped by ground classes) --
+       5.44:1 on ember, crisp near-black instead of muddy brown. Tracking eased
+       from .18em and size bumped 10->11px: heavy tracking at 10px is most of
+       why small caps read as blurry in the first place. */
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--n-900);
+  }
+
+  .ev__form .field input,
+  .ev__form .field select {
+    font-family: var(--f-body);
+    font-size: 16px;                          /* 16px floor — never 14 on inputs,
+                                                 iOS zooms the viewport below it */
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: var(--paper);
+    color: var(--n-900);                      /* TIER: the field carries its own
+                                                 fill, so it must not follow the
+                                                 ground remap. 17.35:1 */
+    padding: 15px 16px;
+    width: 100%;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+  .ev__form .field input::placeholder { color: var(--hint); }   /* 4.76:1 */
+
+  /* native select arrow is unstyleable and reads as a wireframe next to these
+     soft fields — replaced with an inline ink chevron (data URI, no request) */
+  .ev__form .field select {
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%231A1411' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 42px;
+  }
+
+  .ev__form .field input:focus,
+  .ev__form .field select:focus {
+    outline: none;
+    border-color: var(--n-900);
+    box-shadow: 0 0 0 4px rgba(26,20,17,.14);
+  }
+
+  /* ---- the submit is THIS SURFACE'S ONE FLARE MOMENT ----
+     Per the ground rota: --flare at full size exactly once per surface, and it
+     is always the registration ask. On the conference page that is this button
+     — the single thing the whole page exists to get clicked (SC3).
+
+     RULE C3 FIRES HERE. Flare on the ember ground computes 2.56:1, under the
+     3.0 UI-boundary floor, so the fill carries a 2px ink ring. That is not a
+     patch — it is R-11's own mechanic P-b, a chip sitting ON a surface and
+     breaking its edge. Label on flare is 13.90:1. */
+  .ev__form .submit {
+    border-radius: 999px;
+    padding: 17px 26px;
+    background: var(--flare);
+    color: var(--n-900);
+    box-shadow: 0 0 0 2px var(--n-900);
+    font-family: var(--f-mono);
+    font-size: 12px; letter-spacing: .14em;
+    margin-top: 6px;
+    transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s ease;
+  }
+  .ev__form .submit:hover  { box-shadow: 0 0 0 3px var(--n-900); }
+  .ev__form .submit:active { transform: scale(.97); }
+  .ev__small {
+    margin: 2px 0 0; font-family: var(--mono); font-size: 10px;
+    line-height: 1.6; letter-spacing: .06em; color: var(--dim);
+  }
+  /* ---- R4 · the mirror. Seed 3swGvyHb9D9fTK19eyDONj2J — 9D9, mirrored
+     around a centre. The panel does not append a message below itself; it
+     TURNS OVER on its vertical axis, and the confirmation is the reverse
+     side. Both faces occupy the same grid cell so the card's height is the
+     taller of the two and nothing jumps. ---- */
+  .ev__flip {
+    display: grid; min-width: 0;
+    perspective: 1400px;
+    /* dropped below the facts panel. Top-aligning the two made the row read as
+       a table; the offset is what makes it a composition — and Five Plus V4 is
+       deliberately off-grid to begin with. */
+    margin-top: clamp(34px, 5.5vw, 88px);
+  }
+  @media (max-width: 700px) { .ev__flip { margin-top: 0; } }
+  .ev__face {
+    grid-area: 1 / 1;
+    backface-visibility: hidden;
+    transition: transform .74s cubic-bezier(.4,.02,.2,1), opacity .2s linear;
+    transform-style: preserve-3d;
+  }
+  .ev__face--front { transform: rotateY(0deg); }
+  .ev__face--back  {
+    transform: rotateY(180deg); opacity: 0; align-content: start;
+    /* N5, second pass. The first attempt put this on a white card with
+       concentric rings and confetti dots in the corner — the client called both
+       lazy, correctly: a paper rectangle and a generic burst are what you reach
+       for when you have not decided what the moment IS.
+
+       The moment is a DATE. So the date is the graphic: "21" set enormous in
+       flare, the single loudest object on the page, on the ember ground with no
+       card under it. Type as object is this project's whole idea, and the one
+       number a person actually needs to remember is the thing they will see. */
+    position: relative;
+  }
+  @keyframes evGlowPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.06); }
+  }
+
+  .ev__flip[data-flipped="1"] .ev__face--front { transform: rotateY(-180deg); opacity: 0; }
+  .ev__flip[data-flipped="1"] .ev__face--back  { transform: rotateY(0deg);    opacity: 1; }
+
+  .ev__backHead {
+    margin: 0 0 .4em;
+    font-family: var(--f-display);
+    font-variation-settings: 'wdth' 106, 'wght' 900;
+    font-size: clamp(22px,2.6vw,34px); line-height: .96;
+    letter-spacing: -.035em; color: var(--n-900);
+  }
+  /* the date, as the object */
+  .ev__backHead em {
+    display: block; font-style: normal;
+    font-variation-settings: 'wdth' 125, 'wght' 900;
+    font-size: clamp(84px,13vw,190px); line-height: .78;
+    letter-spacing: -.06em; color: var(--flare);
+    /* RULE C3, applied to type. Flare on the ember ground computes 2.56:1,
+       under the 3.0 floor — the same problem the flare CTA has, so it takes the
+       same answer: an ink edge. As a stroke rather than a ring, because the
+       object here is a letterform, not a chip. The stroke carries the boundary
+       contrast (ink on ember 5.44:1) and the flare carries the celebration. */
+    -webkit-text-stroke: clamp(2px,.34vw,5px) var(--n-900);
+    paint-order: stroke fill;
+    margin-top: .06em;
+  }
+  .ev__backHead sup {
+    font-size: .32em; vertical-align: super; line-height: 0;
+    letter-spacing: -.02em; margin-left: .04em;
+  }
+  .ev__backText { margin: 0 0 1.2em; font-size: clamp(13px,1.4vw,15px); line-height: 1.6; color: var(--dim); max-width: 34ch; }
+  .ev__backMeta {
+    margin: 0 0 1.6em; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--dim);
+  }
+  .ev__undo {
+    background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dim);
+    border-bottom: 1px solid var(--line);
+  }
+  .ev__undo:hover { color: var(--ink); border-bottom-color: var(--ink); }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* gentler, never zero — cross-fade the faces instead of rotating */
+    .ev__face { transition: opacity .3s ease; transform: none !important; }
+    .ev__face--back { opacity: 0; pointer-events: none; }
+    .ev__flip[data-flipped="1"] .ev__face--front { opacity: 0; pointer-events: none; }
+    .ev__flip[data-flipped="1"] .ev__face--back  { opacity: 1; pointer-events: auto; }
+  }
+
+  /* ---- centre: the notched facts panel ----
+     Shape language from the client's reference: a generous radius with a
+     CONCAVE bite at the corner nearest its neighbour, so the form and the
+     panel interlock rather than sit side by side as two rectangles. */
+  /* The shape is an S-CURVE STEP at the top-left and bottom-right — the edge
+     steps inward through a convex curve into a concave one. border-radius
+     cannot express that (it only rounds corners), and a quarter-circle bite is
+     a different shape entirely. The outline is generated as a clip-path in JS
+     so the curves stay circular at any size. */
+  .ev__panel {
+    position: relative; min-width: 0;
+    /* was #ededed on a #f2f2f2 page — five levels apart, so the cut silhouette
+       was invisible. The shape IS the idea here; it needs a tone that reads. */
+    /* F1: the grey became --ember-100. Still reads as a distinct shape against
+       paper (1.22 luminance ratio, better than the grey's 1.12) and now belongs
+       to the system instead of sitting outside it. */
+    background: var(--paper);
+    padding: clamp(46px,4.4vw,58px) clamp(22px,2.6vw,34px) clamp(22px,2.6vw,34px);
+    border-radius: 26px;          /* fallback before the path is applied */
+  }
+  .ev__panel[data-clipped="1"] { border-radius: 0; }
+  /* the bite. A square of page colour with a quarter-circle knocked out of it,
+     placed on the corner — the concave cut the reference uses. */
+  .ev__k--on { margin: 0 0 14px; }
+
+  .ev__date {
+    margin: 0 0 .12em;
+    font-size: clamp(24px,3.2vw,40px); line-height: 1.02;
+    font-weight: 800; letter-spacing: -.03em;
+  }
+  .ev__where {
+    margin: 0 0 clamp(16px,2vw,24px);
+    font-size: clamp(14px,1.5vw,17px); color: var(--n-700);
+  }
+
+  .ev__chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 clamp(18px,2.2vw,26px); padding: 0; }
+  .ev__chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 15px;
+    border: 1px solid var(--n-400); border-radius: 999px;
+    background: var(--paper);
+    font-family: var(--mono); font-size: clamp(9px,1vw,11px);
+    letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+  }
+  .ev__ic { font-size: 12px; line-height: 1; opacity: .55; }
+
+  .ev__notes { margin: 0; border-top: 1px solid var(--n-400); padding-top: clamp(12px,1.6vw,18px); }
+  .ev__notes > div { display: grid; grid-template-columns: clamp(38px,4vw,52px) minmax(0,1fr); gap: 12px; padding: 7px 0; }
+  .ev__notes dt {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dim); padding-top: .3em;
+  }
+  .ev__notes dd { margin: 0; font-size: clamp(13px,1.35vw,15px); line-height: 1.45; }
+
+  /* ---- right: two plates, unequal heights, off-grid ---- */
+  .ev__plates { min-width: 0; position: relative; }
+  .ev__plate { width: 100%; }
+  .ev__plate--hi { aspect-ratio: 2/3; width: 78%; margin-left: auto; }
+  .ev__plate--lo { aspect-ratio: 4/5; width: 62%; margin-top: clamp(18px,3vw,40px); }
+  @media (max-width: 700px) {
+    .ev__plates { display: flex; gap: 12px; }
+    .ev__plate--hi { width: 55%; margin-left: 0; }
+    .ev__plate--lo { width: 45%; margin-top: clamp(24px,6vw,44px); }
+  }
+
+  /* ============ THEME — Five Plus V2, andre-candido proportions ============ */
+  .theme { padding: clamp(56px,10vw,150px) clamp(16px,6vw,96px); }
+  .theme__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(128px, 12.5vw, 170px);
+    gap: clamp(30px, 13vw, 196px);          /* the 196px gutter, measured */
+    max-width: 1184px; margin: 0 auto;
+    align-items: start;
+  }
+  @media (max-width: 780px) {
+    .theme__grid { grid-template-columns: minmax(0,1fr); gap: clamp(30px,7vw,52px); }
+  }
+
+  .theme__statement {
+    margin: 0 0 .5em;
+    font-size: clamp(28px, 5.4vw, 72px);
+    line-height: 1.05;
+    font-weight: 800;                        /* heavy grotesk, per Q4(a) */
+    letter-spacing: -.03em;
+    text-wrap: balance;
+  }
+  .theme__ref {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin: 0;
+  }
+
+  /* N6 · the cast shape (below) is position:absolute with z-index:0 inside
+     .theme__grid; per CSS stacking rules a positioned descendant paints ABOVE
+     non-positioned in-flow siblings regardless of the z-index NUMBER, so the
+     shape was covering "Anyone making something" even though 0 < 1 reads as
+     "behind" at a glance. Giving the aside its own stacking context with a
+     higher z-index fixes it without moving or shrinking the shape. */
+  .theme__aside { position: relative; z-index: 2; }
+  .theme__asideHead {
+    font-family: var(--mono); font-size: 14px; letter-spacing: 1.5px;
+    text-transform: uppercase; margin: 0 0 14px;
+    display: flex; justify-content: space-between; gap: 8px;
+  }
+  .theme__list { list-style: none; margin: 0; padding: 0; }
+  .theme__list li {
+    font-family: var(--mono); font-size: 13px; line-height: 1.35;
+    padding: 11px 0;
+    border-bottom: 1px dashed var(--n-300);       /* dashed, as measured — not dotted */
+  }
+
+  /* N1 — the cast-light grid-break */
+  /* overflow must stay VISIBLE — the cast shape's job is to cross the section's
+     lower edge and break the grid. Clipping it defeats the device entirely. */
+  /* The cast must escape VERTICALLY (to break the section edge) but never
+     HORIZONTALLY (that pushes the page wide — it added 6px at 1440).
+     overflow-x clips the sideways bleed, overflow-y stays visible. */
+  .theme { position: relative; overflow-x: clip; overflow-y: visible; }
+  .theme__cast {
+    position: absolute;
+    right: clamp(-40px,-4vw,-20px); bottom: clamp(-130px,-13vw,-80px);
+    width: clamp(220px, 34vw, 520px); aspect-ratio: 5 / 3;
+    /* Was an empty gradient box. Client asked for real UI here, and N1 in
+       SECTIONS.md already said this slot wants its illustration. Now a real
+       plate with a caption: a choir in a dark corridor, which IS the theme
+       (Matthew 5:15, a light not hidden) rather than decorative fill. */
+    margin: 0; overflow: hidden; background: var(--d-0);
+    transform: skewX(-22deg) rotate(-6deg);
+    z-index: 0; pointer-events: none;
+  }
+  .theme__cast img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .theme__castCap {
+    position: absolute; left: 12px; bottom: 10px; z-index: 2;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--n-100);
+    text-shadow: 0 1px 6px rgba(0,0,0,.65);
+  }
+  .theme__grid { position: relative; z-index: 1; }
+  /* the section that follows sits above the cast, so the overlap reads as the
+     shape passing UNDER the next block rather than sitting on top of it */
+  .spk { position: relative; z-index: 1; background: var(--paper); }
+  @media (max-width: 780px) {
+    .theme__cast { width: clamp(180px,52vw,300px); bottom: clamp(-70px,-12vw,-40px);
+                   right: clamp(-20px,-2vw,-8px); }   /* narrower bleed at this width */
+  }
+  @media (max-width: 400px) {
+    /* Found in verification: at very narrow phones the width floor (180px)
+       plus the negative right offset pushed the box past the viewport edge --
+       genuine 6px document-level overflow, not a false positive from the
+       clip-path/overflow:clip combination, which clips PAINT, not the
+       scrollable-overflow region a transformed descendant contributes to. */
+    .theme__cast { width: clamp(150px,46vw,180px); right: 0; }
+  }
+
+  /* ============ SPEAKERS — Five Plus 1, Leonardo Artist Stories ============ */
+  /* border-top removed: the client did not want the rule here, and the
+     ground change already separates this section from the theme above. */
+  .spk { padding: clamp(48px,8vw,120px) 0 clamp(40px,7vw,96px); }
+  .spk__head {
+    margin: 0 0 .1em; padding: 0 clamp(16px,6vw,96px);
+    font-size: clamp(46px, 13vw, 190px);
+    font-weight: 800; letter-spacing: -.045em; line-height: .88;
+    display: flex; align-items: center; gap: .04em; flex-wrap: nowrap;
+  }
+  /* the G-T mark substituted mid-word — gives the placeholder logo a real job */
+  .spk__mark { display: inline-block; width: .52em; height: .52em; flex: 0 0 auto;
+               margin-left: .16em; vertical-align: .18em; opacity: .9; }
+  .spk__mark svg { width: 100%; height: 100%; display: block; }
+
+  .spk__sub {
+    margin: 0 0 clamp(24px,4vw,46px); padding: 0 clamp(16px,6vw,96px);
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--dim);
+  }
+
+  .spk__row {
+    display: flex; gap: 14px;              /* separate cards — the JOIN belongs to
+                                              Selected work on home, not here */
+    overflow-x: auto; scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    /* Sketch, step 5: "horizontal drag must never trap the page's vertical
+       scroll." This was touch-action:auto, which leaves a vertical swipe that
+       STARTS on a speaker card ambiguous -- the browser may resolve it to this
+       horizontal scroller and eat the gesture. pan-x declares that this
+       element only ever consumes horizontal pans, so vertical ones pass
+       through to the page. Same class of fix as direction C's touch-action:
+       pan-y, recorded in STATUS.md. */
+    touch-action: pan-x;
+    padding: 0 clamp(16px,6vw,96px) 10px;
+    min-width: 0;
+  }
+  .spk__card {
+    flex: 0 0 auto; width: clamp(210px, 27vw, 330px);
+    scroll-snap-align: start; position: relative;
+  }
+  .spk__img { width: 100%; aspect-ratio: 1/1; overflow: hidden; }  /* square, as measured */
+  .spk__img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .spk__img--tba {
+    display: grid; place-items: center; text-align: center;
+    border: 1px dashed var(--line);
+    font-family: var(--mono); font-size: 12px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .spk__bar { background: var(--d-2); color: var(--paper); padding: 14px 16px 16px; }
+  .spk__name { margin: 0 0 4px; font-size: clamp(14px,1.6vw,19px); font-weight: 700; letter-spacing: -.01em; }
+  /* per-card accent lands here at F1 — Music / Film / Hangouts palettes (B5a).
+     Greyscale for now; the hook exists so colour is a one-line change. */
+  .spk__card[data-cat="music"]    .spk__name { color: var(--music-dk); }  /* 7.02:1 on --d-2 */
+  .spk__card[data-cat="film"]     .spk__name { color: var(--film-dk); }   /* 6.03:1 on --d-2 */
+  .spk__card[data-cat="hangouts"] .spk__name { color: var(--hang-dk); }   /* 10.87:1 on --d-2 */
+  .spk__role {
+    margin: 0; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--n-300);
+  }
+
+
+  /* ============ THE DAY — reference R-11, measured ============
+     #ff3b19 37.9% · #ffffff 24.4% · #000000 10.7%
+     The accent is the GROUND; neutrals sit on top of it. Three colours only. */
+  .day {
+    /* F1 · TURNED ON. The D3 grey placeholder held the STRUCTURE — the ground
+       is a FILLED FIELD with content in lighter boxes on top of it, the inverse
+       of a neutral page with an accent. That relationship is now carrying its
+       real hue. --day-ground is inherited from tokens.css (= --ember-600).
+       Contract for everything inside this section (COLOUR_SYSTEM.md C1/C2):
+         · session copy lives in --paper cards, never on the field    (3.19:1)
+         · text that does touch the field is --ink                    (5.44:1)
+         · time chips are --ink slabs breaking the card edge      (R-11 P-b) */
+    background: var(--day-ground);
+    padding: clamp(40px,7vw,96px) clamp(16px,5vw,64px) clamp(48px,8vw,110px);
+    border-top: 1px solid var(--ink);
+  }
+  .day__inner { max-width: 1184px; margin: 0 auto; }
+
+  /* ---- the inverted title slab, rotated ---- */
+  .day__titleblock {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; margin-bottom: clamp(20px,3vw,34px);
+  }
+  .day__title--big {
+    margin: 0; display: inline-block;
+    background: var(--ink); color: var(--paper);
+    padding: clamp(8px,1.4vw,16px) clamp(14px,2.2vw,28px);
+    font-size: clamp(44px,9vw,116px); line-height: .86;
+    font-weight: 800; letter-spacing: -.035em; text-transform: uppercase;
+    transform: rotate(-1.2deg);
+  }
+  .day__tag {
+    background: var(--paper); color: var(--ink);
+    padding: 6px 12px; transform: rotate(1.6deg);
+    font-family: var(--mono); font-size: clamp(9px,1.05vw,11px);
+    letter-spacing: .14em; text-transform: uppercase; white-space: nowrap;
+  }
+
+  /* ---- fact chips ---- */
+  .day__facts { display: flex; flex-wrap: wrap; gap: 10px clamp(10px,1.6vw,18px); margin-bottom: clamp(26px,4vw,52px); }
+  .day__fact {
+    background: var(--paper); color: var(--ink); padding: 8px 14px;
+    font-family: var(--mono); font-size: clamp(9px,1.05vw,11.5px);
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .day__fact:nth-child(1) { transform: rotate(-1deg); }
+  .day__fact:nth-child(2) { transform: rotate(1.3deg); }
+
+  /* ---- the card grid ---- */
+  .day__grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: clamp(30px,4vw,54px) clamp(16px,2.6vw,36px);
+  }
+  @media (max-width: 720px) { .day__grid { grid-template-columns: minmax(0,1fr); } }
+
+  .day__card {
+    position: relative; min-width: 0;
+    background: var(--paper); color: var(--ink);
+    padding: clamp(30px,3.4vw,44px) clamp(16px,2vw,26px) clamp(18px,2.2vw,28px);
+    transform: rotate(var(--rot));
+  }
+  /* the chip breaks the card's top edge — two layers, not one flat grid */
+  .day__chip {
+    position: absolute; top: clamp(-16px,-1.6vw,-13px); left: clamp(12px,1.6vw,22px);
+    background: var(--ink); color: var(--paper);
+    padding: clamp(5px,.7vw,9px) clamp(10px,1.4vw,18px);
+    font-size: clamp(15px,2.1vw,26px); font-weight: 800;
+    letter-spacing: -.01em; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    transform: rotate(var(--rot));
+  }
+  .day__title {
+    margin: 0 0 .35em;
+    font-size: clamp(16px,2.1vw,26px); line-height: 1.02;
+    font-weight: 800; letter-spacing: -.02em; text-transform: uppercase;
+  }
+  .day__desc { margin: 0; font-size: clamp(12px,1.3vw,14.5px); line-height: 1.45; }
+
+  .day__note {
+    margin: clamp(26px,4vw,44px) 0 0;
+    font-family: var(--mono); font-size: 10px;
+    /* F1 · rule C2: this note sits directly ON the ember field. Paper would be
+       3.35:1 and fail; ink is 5.44:1 and passes. Text on the ground is ink. */
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink);
+  }
+
+  /* rotations shrink on small screens or the cards start clipping each other */
+  @media (max-width: 560px) {
+    .day__card, .day__chip, .day__fact, .day__title--big, .day__tag {
+      transform: rotate(calc(var(--rot, 0deg) * 0.4));
+    }
+  }
+  @media (prefers-reduced-motion: reduce) { .day * { transition: none; } }
+
+</style>

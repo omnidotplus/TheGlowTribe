@@ -1,0 +1,63 @@
+---
+/* FAQ — a switchboard, not an accordion list. One answer panel, wiped on change. */
+---
+<section class="faq g-paper" id="faq" data-fade>
+  <div class="faq__head">
+    <p class="eyebrow" style="margin:0">Questions</p>
+    <p class="faq__note">Everything people actually ask</p>
+  </div>
+  <!-- THE MECHANIC — seed 7JAE2yr4Q7C5p6LUoNEaFjpw, read structurally:
+       digits interrupt letters at irregular intervals, no repeating rhythm.
+       So: every answer IS printed, but COVERED by a solid bar of irregular
+       width. Uncovering wipes the bar off to the left; the text was always
+       there. Nothing expands, nothing collapses — the row height never
+       changes, so the list cannot jump under your thumb.
+
+       Why this and not an accordion: "No Bushels" is a lamp that is not
+       hidden under a bowl. Occlusion is a LIGHT behaviour, so this is
+       physics, not iconography (B6a) — and the section performs the theme
+       instead of illustrating it. One open at a time. -->
+  <div class="faq__board" data-placeholder="P9">
+    <div class="faq__index" role="tablist" aria-label="Questions">
+        <button class="faq__item" type="button" data-i="0" data-on="1"
+                aria-selected="true" role="tab" aria-controls="fp0">
+          <span class="faq__n">01</span>
+          <span class="faq__qt">Is it really free?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="1" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp1">
+          <span class="faq__n">02</span>
+          <span class="faq__qt">Do I have to be a Christian?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="2" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp2">
+          <span class="faq__n">03</span>
+          <span class="faq__qt">Can I come alone?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="3" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp3">
+          <span class="faq__n">04</span>
+          <span class="faq__qt">Am I good enough?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="4" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp4">
+          <span class="faq__n">05</span>
+          <span class="faq__qt">What should I bring?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="5" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp5">
+          <span class="faq__n">06</span>
+          <span class="faq__qt">Where exactly is it?</span>
+        </button>
+    </div>
+    <div class="faq__display">
+        <p class="faq__answer" id="fp0" data-i="0" data-on="1" role="tabpanel">Yes. No ticket, no fee, no catch. Register so we know how many chairs to put out.</p>
+        <p class="faq__answer" id="fp1" data-i="1" data-on="0" role="tabpanel">No. No Bushels is cross-denominational and creatives-first. If you make things, you belong in the room.</p>
+        <p class="faq__answer" id="fp2" data-i="2" data-on="0" role="tabpanel">Most people do. That's rather the point of it.</p>
+        <p class="faq__answer" id="fp3" data-i="3" data-on="0" role="tabpanel">There's no bar. Bring whatever you're working on, however finished it is.</p>
+        <p class="faq__answer" id="fp4" data-i="4" data-on="0" role="tabpanel">Yourself, and the thing you're making. Instruments, laptops and hard drives all welcome.</p>
+        <p class="faq__answer" id="fp5" data-i="5" data-on="0" role="tabpanel">EU Centre, Warri · 21 November 2026. Full directions go out with your confirmation.</p>
+      <span class="faq__wipe" aria-hidden="true"></span>
+    </div>
+  </div>
+</section>

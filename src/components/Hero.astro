@@ -1,0 +1,63 @@
+---
+/* HERO — v2, the O is the engine. See HERO_CHOREOGRAPHY.md.
+  Behaviour is in /public/scripts/home-hero-and-sections.js -- the sequence
+  drives #room/#work/#mark* etc, all inside this component's own markup. */
+---
+<section class="hero g-ink" id="hero">
+  <div class="stage">
+
+    <div class="room" id="room"><!-- planes injected --></div>
+    <div class="work" id="work"><!-- work injected --></div>
+
+    <div class="core">
+      <div class="mark" id="mark">
+        <div class="mark__bloom" id="markBloom" aria-hidden="true"></div>
+
+        <!-- the ONLY layer in the a11y tree -->
+        <h1 class="mark__layer mark__layer--base" id="markBase"><span class="mark__ln">THE</span><span class="mark__ln">GL<span class="mark__o" id="markO">O</span>W</span><span class="mark__ln">TRIBE</span></h1>
+
+        <!-- beat 4: uncovered from the O outward -->
+        <div class="mark__layer mark__layer--reveal" id="markReveal" aria-hidden="true"><span class="mark__ln">THE</span><span class="mark__ln">GLOW</span><span class="mark__ln">TRIBE</span></div>
+
+        <!-- beat 4b: the hot front riding the light's leading edge -->
+        <div class="mark__layer mark__layer--front" id="markFront" aria-hidden="true"><span class="mark__ln">THE</span><span class="mark__ln">GLOW</span><span class="mark__ln">TRIBE</span></div>
+
+        <!-- beat 5: one sweep -->
+        <div class="mark__shine" id="markShine" aria-hidden="true"><span class="mark__ln">THE</span><span class="mark__ln">GLOW</span><span class="mark__ln">TRIBE</span></div>
+      </div>
+
+      <!-- Everything below is absolutely positioned beneath the mark so it takes
+           NO part in centring. The mark alone is dead centre of the viewport
+           until beat 5, when the group below animates in and the mark rises. -->
+      <div class="core__below" id="below">
+        <div class="hcard">
+          <p class="sub" id="sub">Creative Conference</p>
+          <div class="hcard__top">
+            <!-- the facts, arranged as stats: value large, label beneath -->
+            <div class="venue" id="venue">
+              <div><b>21 NOV</b><span>2026</span></div>
+              <div><b>EU Centre</b><span>Warri</span></div>
+              <div><b>Free</b><span>Entry</span></div>
+            </div>
+            <a class="cta btnfx" id="cta" href="/conference#event">
+              <span>Save a chair</span> <span aria-hidden="true">&#8599;</span>
+            </a>
+          </div>
+          <!-- labels sit ABOVE the numbers via `order: -1`, so the markup keeps
+               number-then-label order for screen readers -->
+          <div class="timer" id="timer">
+            <div><b data-c="d">00</b><span>Days</span></div>
+            <i aria-hidden="true">:</i>
+            <div><b data-c="h">00</b><span>Hrs</span></div>
+            <i aria-hidden="true">:</i>
+            <div><b data-c="m">00</b><span>Mins</span></div>
+            <i aria-hidden="true">:</i>
+            <div><b data-c="s">00</b><span>Secs</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cue" id="cue">Scroll</div>
+  </div>
+</section>

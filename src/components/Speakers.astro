@@ -1,0 +1,53 @@
+---
+/* SPEAKERS — Leonardo Artist Stories card row. P2: three invented names
+  behind real stock photography. Highest-risk placeholder on the site --
+  see PLACEHOLDERS.md. Must never reach production unresolved. */
+---
+<section class="spk g-dark" id="speakers" data-fade>
+  <h2 class="spk__head">
+    <!-- The mark used to REPLACE the A ("SPE<mark>KERS"), which made the word
+         unreadable. That was a misreading of the reference in SECTIONS.md:
+         Leonardo puts its mark BETWEEN words (ARTIST * STORIES) as a separator,
+         never inside one. The word is whole again and the mark trails it as a
+         seal, so P7 still has a real job without costing legibility. -->
+    SPEAKERS<span class="spk__mark" aria-hidden="true">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="8"/>
+        <path d="M50 50 H82" stroke="currentColor" stroke-width="8" fill="none"/>
+        <path d="M28 30 H72 M50 30 V72" stroke="currentColor" stroke-width="8" fill="none"/>
+      </svg>
+    </span>
+  </h2>
+  <p class="spk__sub">Announced weekly until 21 Nov</p>
+
+  <div class="spk__row" id="spkRow">
+    <article class="spk__card" data-cat="music">
+      <div class="slot spk__img" data-placeholder="P2"><img src="/img/spk-music.webp" alt="" loading="lazy" decoding="async"></div>
+      <div class="spk__bar">
+        <p class="spk__name" data-placeholder="P2">Tobi Adeyemi</p>
+        <p class="spk__role">Producer · Music</p>
+      </div>
+    </article>
+    <article class="spk__card" data-cat="film">
+      <div class="slot spk__img" data-placeholder="P2"><img src="/img/spk-film.webp" alt="" loading="lazy" decoding="async"></div>
+      <div class="spk__bar">
+        <p class="spk__name" data-placeholder="P2">Ese Oghenekaro</p>
+        <p class="spk__role">Director · Film</p>
+      </div>
+    </article>
+    <article class="spk__card" data-cat="hangouts">
+      <div class="slot spk__img" data-placeholder="P2"><img src="/img/spk-writing.webp" alt="" loading="lazy" decoding="async"></div>
+      <div class="spk__bar">
+        <p class="spk__name" data-placeholder="P2">Nkechi Obi</p>
+        <p class="spk__role">Writer · Hangouts</p>
+      </div>
+    </article>
+    <article class="spk__card spk__card--tba">
+      <div class="spk__img spk__img--tba">More<br>to come</div>
+      <div class="spk__bar">
+        <p class="spk__name">To be announced</p>
+        <p class="spk__role">Keynote</p>
+      </div>
+    </article>
+  </div>
+</section>

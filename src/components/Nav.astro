@@ -1,0 +1,36 @@
+---
+/* Shared nav — one component, both pages, so they can never drift again.
+   The pre-Astro version relied on "one file, both pages" as a comment
+   promise; a component makes it structural. Behaviour (reveal, adaptive
+   ground sampling, the mobile toggle + scrim + scroll lock) lives in
+   /public/scripts/nav.js, loaded once per page.
+
+   `current` sets aria-current and points the CTA at the right place:
+   on the conference page the Register CTA is a same-page anchor; on
+   every other page it links across to the conference page's form. */
+interface Props {
+  current?: 'home' | 'conference';
+}
+const { current } = Astro.props as Props;
+const ctaHref = current === 'conference' ? '#event' : '/conference#event';
+---
+<nav class="tnav" id="tnav" aria-label="Primary">
+  <a class="tnav__mark" href="/">The Glow Tribe</a>
+  <button class="tnav__toggle" id="tnavToggle" aria-expanded="false" aria-controls="tnavLinks" aria-label="Menu">
+    <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <line class="bar bar--a" x1="2" y1="5" x2="16" y2="5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line class="bar bar--b" x1="2" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line class="bar bar--c" x1="2" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <div class="tnav__links" id="tnavLinks">
+    <a href="/" aria-current={current === 'home' ? 'page' : undefined}>Home</a>
+    <a href="/conference" aria-current={current === 'conference' ? 'page' : undefined}>Conference</a>
+    <!-- Projects / Our Work is Phase 1 (SC2) but NOT BUILT yet. Pointing at the
+         teaser strip is a stand-in so the nav is honest about the IA; it must
+         repoint at the real page before launch. -->
+    <a href="/#teaser">Work</a>
+  </div>
+  <a class="tnav__cta" href={ctaHref}>Register</a>
+</nav>
+<div class="tnav__scrim" id="tnavScrim" aria-hidden="true"></div>

@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Who from '../components/Who.astro';
+import Teaser from '../components/Teaser.astro';
+import Why from '../components/Why.astro';
+import Faq from '../components/Faq.astro';
+import NoBushels from '../components/NoBushels.astro';
+import Close from '../components/Close.astro';
+import Footer from '../components/Footer.astro';
+---
+<Layout
+  title="The Glow Tribe — No Bushels Creative Conference, 21 Nov 2026"
+  description="The Glow Tribe is a community of Christian creatives making music, films, and space for each other to grow. Join us for No Bushels, a free creative conference in Warri on 21 November 2026."
+  pageStylesHref="/styles/home.css"
+>
+  <Nav current="home" />
+  <Hero />
+  <Who />
+  <Teaser />
+  <Why />
+  <Faq />
+  <NoBushels />
+  <Close />
+  <Footer />
+
+  <script src="/vendor/gsap/gsap.min.js" is:inline></script>
+  <script src="/vendor/gsap/ScrollTrigger.min.js" is:inline></script>
+  <script src="/scripts/home-hero-and-sections.js" is:inline></script>
+  <script src="/scripts/dialkit-rig.js" is:inline></script>
+</Layout>

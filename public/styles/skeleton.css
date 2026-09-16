@@ -1,0 +1,410 @@
+/* Shared skeleton styling — D3.
+   GREYSCALE ONLY. No brand colour, no typeface choice, no assets.
+   Neutral system stand-in so nothing distracts from the structure. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Grid and flex items default to min-width:auto, which makes them refuse to
+   shrink below their content's intrinsic width — the cause of the 29px overflow
+   found at 390px in skeleton C. Opt every item out by default; anything that
+   genuinely needs intrinsic sizing can set it back explicitly. */
+:where(.cats, .row, .form, .cat) > * { min-width: 0; }
+
+:root {
+  --ink:   #111;
+  --paper: #f2f2f2;
+  --dim:   #777;
+  --line:  #c9c9c9;
+  --slot:  #d8d8d8;
+
+  --stack: ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html { scroll-behavior: auto; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--stack);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- placeholder slot: every asset is a labelled box at a real aspect ratio ---- */
+.slot {
+  background: var(--slot);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--dim);
+  overflow: hidden;
+}
+.slot::after { content: attr(data-slot); padding: 4px; text-align: center; }
+
+/* ---- persistent register chrome — B4(c). Present on every skeleton ---- */
+.chrome {
+  position: fixed;
+  z-index: 100;
+  right: clamp(12px, 3vw, 32px);
+  bottom: clamp(12px, 3vw, 32px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform .18s cubic-bezier(.2,.7,.3,1);
+}
+.chrome:active { transform: scale(.96); }
+.chrome__dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ink);
+}
+
+/* ---- section scaffolding ---- */
+.section { padding: clamp(48px, 9vw, 140px) clamp(16px, 5vw, 80px); }
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 0 0 1.5em;
+}
+.h2 {
+  font-size: clamp(30px, 6vw, 72px);
+  line-height: .95;
+  letter-spacing: -.02em;
+  margin: 0 0 .5em;
+  font-weight: 700;
+}
+.body { max-width: 46ch; line-height: 1.5; color: #333; margin: 0 0 1em; }
+
+/* ---- the four-field form (SC5) ---- */
+.form { display: grid; gap: 14px; max-width: 440px; }
+.field { display: grid; gap: 6px; }
+.field label {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--dim);
+}
+.field input, .field select {
+  font: inherit; font-size: 15px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  border-radius: 0;
+}
+.submit {
+  margin-top: 8px; padding: 14px;
+  border: none; background: var(--ink); color: var(--paper);
+  font-family: var(--mono); font-size: 12px;
+  letter-spacing: .12em; text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .18s cubic-bezier(.2,.7,.3,1);
+}
+.submit:active { transform: scale(.97); }
+
+/* ---- countdown ---- */
+.count { display: flex; gap: clamp(10px, 2.5vw, 28px); font-variant-numeric: tabular-nums; }
+.count div { text-align: center; }
+.count b {
+  display: block;
+  font-size: clamp(28px, 6vw, 68px);
+  line-height: 1; font-weight: 700; letter-spacing: -.02em;
+}
+.count span {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: .14em; color: var(--dim); text-transform: uppercase;
+}
+
+/* ---- skeleton annotation ribbon — visible only in skeleton builds ---- */
+.note {
+  position: fixed; left: 0; top: 0; z-index: 101;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em;
+  background: var(--ink); color: var(--paper);
+  padding: 5px 10px;
+}
+.back {
+  position: fixed; left: 0; bottom: 0; z-index: 101;
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+  background: var(--ink); color: var(--paper);
+  padding: 6px 12px; text-decoration: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Gentler, never zero — keep opacity, drop movement. */
+  .chrome, .submit { transition-duration: .01ms; }
+}
+
+
+/* ---- .visually-hidden was USED in markup but never DEFINED, so the newsletter
+   label rendered on top of its own placeholder (F2 critic, cognitive load #13).
+   Accessible-hiding: available to screen readers, absent from layout. ---- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip-path: inset(50%);
+  overflow: hidden; white-space: nowrap;
+}
+
+/* ---- ONE BUTTON SYSTEM. The critic counted four competing styles
+   ("yellow pill / orange rect / white pill / dark pill"). Shape is now always a
+   pill; only the ROLE changes, and role maps to the ground rota:
+     .btn--primary   the ask. --flare + ink ring. ONCE per surface (SC3)
+     .btn--secondary paper fill, ink label
+     .btn--ghost     1.5px outline, inherits the ground's reading colour     ---- */
+.btn, .cta, .who__cta, .close__cta, .submit, .chrome {
+  border-radius: 999px;
+  font-family: var(--mono);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s ease;
+}
+.btn:active, .cta:active, .who__cta:active, .close__cta:active { transform: scale(.97); }
+
+/* ---- the register chrome is now ACTUALLY MOUNTED. B4(c) was decided, the CSS
+   was written, and the element was never added to either page — so the critic
+   correctly found no register affordance across 11,291px of home. ---- */
+.chrome { text-decoration: none; }
+.chrome:hover { box-shadow: 0 0 0 3px var(--ink); }
+@media (prefers-reduced-motion: reduce) { .chrome__dot { animation: none !important; } }
+
+
+/* ---- Placeholder warnings are a DEV AID, not page content. They were rendering
+   for every visitor ("P2 / P3 / HERO SKELETON" leaking into the design, per the
+   F2 critic). Hidden by default, restored with ?dev=1 — so PLACEHOLDERS.md keeps
+   its safety net without the warnings becoming part of the composition. ---- */
+.note, .note--inline { display: none; }
+body.dev .note { display: block; }
+body.dev .note--inline { display: block; }
+
+/* ============================================================================
+   THE NAV — one definition, both pages.
+   It used to be duplicated inside each page's <style>, which is how two navs
+   drift apart. Size, spacing, radius and behaviour now live here only.
+
+   SHAPE: a rounded RECTANGLE, not a pill (client reference). The inner button
+   picks up a smaller radius of the same family, so the two read as one object.
+
+   ADAPTIVE SURFACE: the nav flips with whatever ground is behind it —
+     over a DARK section   -> the bar goes light grey, its button goes ink
+     over a LIGHT or EMBER -> the bar goes ink, its button goes flare
+   Every pair is computed:
+     ink on grey 11.71 · grey vs dark ground 11.83 · ink button vs grey 11.71
+     paper on ink 17.35 · ink vs paper ground 17.35 · ink vs ember 5.44
+     flare button vs ink bar 13.90 · ink label on flare 13.90
+   ========================================================================= */
+.tnav {
+  position: fixed; z-index: 120;
+  top: clamp(10px, 1.5vw, 18px); left: 50%;
+  width: auto; max-width: min(94vw, 980px);
+  transform: translateX(-50%) translateY(-14px);
+  display: flex; align-items: center; gap: clamp(10px, 2vw, 26px);
+  height: 56px;                       /* fixed — never changes on scroll */
+  padding: 0 7px 0 clamp(15px, 1.7vw, 20px);
+  white-space: nowrap;
+  border-radius: 14px;                /* the shape */
+  background: var(--tnav-bg, var(--n-900));
+  color: var(--tnav-fg, var(--n-50));
+  opacity: 0; pointer-events: none;
+  transition: opacity .38s cubic-bezier(.2,.7,.3,1),
+              transform .38s cubic-bezier(.2,.7,.3,1),
+              background-color .32s ease, color .32s ease;
+}
+.tnav[data-show="1"] {
+  opacity: 1; pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* the two grounds the bar can sit on */
+/* On a dark ground the bar takes --n-50, the SAME warm off-white the body
+   copy uses on those sections — not a grey. A grey bar read as a third
+   neutral that exists nowhere else in the system; paper already belongs.
+   paper vs dark ground 18.37 · ink on paper 17.35 */
+.tnav[data-on="dark"] {
+  --tnav-bg: var(--n-50);  --tnav-fg: var(--n-900);
+  --tnav-btn-bg: var(--n-900); --tnav-btn-fg: var(--n-50);
+}
+.tnav[data-on="light"] {
+  --tnav-bg: var(--n-900); --tnav-fg: var(--n-50);
+  --tnav-btn-bg: var(--flare); --tnav-btn-fg: var(--n-900);
+}
+
+/* ---- links + the you-are-here marker ----
+   An underline, in ember rather than in the bar's own foreground, so it reads
+   as a deliberate marker instead of a browser text-decoration. It clears the
+   3:1 UI-boundary floor on both bar variants: ember on the paper bar 3.19,
+   ember on the ink bar 5.76. */
+.tnav__links {
+  display: flex; align-items: center;
+  gap: clamp(12px, 1.5vw, 22px);
+  margin-left: clamp(18px, 3vw, 44px);   /* breathing room after the wordmark */
+}
+.tnav__links a {
+  position: relative;
+  font-family: var(--f-mono, var(--mono));
+  font-size: clamp(10px, 1.02vw, 11.5px);
+  letter-spacing: .12em; text-transform: uppercase;
+  color: inherit; text-decoration: none; opacity: .62;
+  transition: opacity .18s ease;
+}
+.tnav__links a:hover { opacity: 1; }
+.tnav__links a[aria-current="page"] { opacity: 1; }
+.tnav__links a[aria-current="page"]::after {
+  content: ''; position: absolute;
+  left: 0; right: 0; bottom: -6px; height: 2px;
+  background: var(--ember-600);
+  border-radius: 1px;
+}
+
+.tnav__mark {
+  font-family: var(--f-display, var(--stack));
+  font-variation-settings: 'wdth' 95, 'wght' 900;
+  font-size: clamp(13px, 1.25vw, 15px); letter-spacing: -.02em;
+  color: inherit; text-decoration: none; white-space: nowrap;
+}
+.tnav__cta {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 42px; padding: 0 clamp(14px, 1.7vw, 22px);
+  border-radius: 9px;                 /* same family, tighter */
+  background: var(--tnav-btn-bg, var(--flare));
+  color: var(--tnav-btn-fg, var(--n-900));
+  font-family: var(--f-mono, var(--mono));
+  font-size: clamp(10px, 1.02vw, 11.5px);
+  letter-spacing: .12em; text-transform: uppercase; text-decoration: none;
+  transition: transform .18s cubic-bezier(.2,.7,.3,1),
+              background-color .32s ease, color .32s ease;
+}
+/* The fill wipes rather than cross-fades, and the press is instant. A
+   background-color transition shows both colours overlapping mid-way, which
+   is exactly what made this read cheap. */
+.tnav__cta { position: relative; overflow: hidden; isolation: isolate;
+             transition: transform .16s cubic-bezier(.23,1,.32,1), color .28s ease; }
+.tnav__cta > span, .tnav__cta { z-index: 0; }
+.tnav__cta::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: var(--flare);
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path .42s cubic-bezier(.23,1,.32,1);
+}
+.tnav__cta:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .tnav__cta:hover::before, .tnav__cta:focus-visible::before { clip-path: inset(0 0 0 0); }
+  .tnav__cta:hover, .tnav__cta:focus-visible { color: var(--n-900); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tnav__cta::before { transition: opacity .2s linear; clip-path: inset(0 0 0 0); opacity: 0; }
+  .tnav__cta:hover::before { opacity: 1; }
+  .tnav__cta:active { transform: none; }
+}
+.tnav__cta:active { transform: scale(.97); }
+
+/* ============ MOBILE — a real toggle, not a dropped destination ==========
+   The first pass hid Home/Conference/Work entirely below 700px, on the
+   reasoning that all three are reachable elsewhere. Client: bring them back
+   properly. This reuses the SAME <a> elements the desktop bar already has —
+   a toggle panel, not a duplicated second link list, so nothing is
+   announced twice to a screen reader and the two markups can never drift.
+   ========================================================================= */
+@media (max-width: 700px) {
+  .tnav { max-width: calc(100vw - 20px); height: 52px; gap: 12px;
+          padding-left: 14px; }
+  .tnav__cta { height: 36px; padding: 0 14px; }
+  .tnav__mark { margin-right: auto; }
+
+  .tnav__toggle {
+    display: grid; place-items: center;
+    width: 38px; height: 38px; flex: 0 0 auto;
+    margin-right: 2px;
+    border: 0; background: none; padding: 0; cursor: pointer;
+    color: inherit;
+  }
+  .tnav__toggle svg { width: 18px; height: 18px; }
+  /* the two bars morph into an X — transform only, no separate icon swap */
+  .tnav__toggle .bar { transform-origin: center; transition: transform .22s cubic-bezier(.23,1,.32,1); }
+  .tnav__toggle .bar--b { transition-property: opacity, transform; }
+  .tnav[data-menu="1"] .tnav__toggle .bar--a { transform: translateY(4.5px) rotate(45deg); }
+  .tnav[data-menu="1"] .tnav__toggle .bar--b { opacity: 0; }
+  .tnav[data-menu="1"] .tnav__toggle .bar--c { transform: translateY(-4.5px) rotate(-45deg); }
+  .tnav__toggle:active { transform: scale(.94); }
+
+  /* the panel. Inherits --tnav-bg/--tnav-fg from .tnav, so it always matches
+     whatever ground the bar itself has already adapted to -- no separate
+     theming logic needed. */
+  .tnav__links {
+    position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+    display: flex; flex-direction: column; gap: 2px;
+    margin: 0; padding: 8px;
+    background: var(--tnav-bg, var(--n-900));
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.28);
+    transform-origin: top center;
+    opacity: 0; transform: scale(.95) translateY(-4px);
+    pointer-events: none;
+    transition: opacity .22s cubic-bezier(.23,1,.32,1),
+                transform .22s cubic-bezier(.23,1,.32,1);
+  }
+  .tnav[data-menu="1"] .tnav__links {
+    opacity: 1; transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+  .tnav__links a {
+    display: flex; align-items: center;
+    min-height: 46px; padding: 0 14px;
+    border-radius: 9px;
+    font-size: 14px; letter-spacing: .02em; text-transform: none;
+    opacity: 1;
+  }
+  .tnav__links a[aria-current="page"] { background: rgba(128,128,128,.14); }
+  .tnav__links a[aria-current="page"]::after { display: none; }   /* the underline is an inline-bar device */
+  @media (hover: hover) and (pointer: fine) {
+    .tnav__links a:hover { background: rgba(128,128,128,.10); }
+  }
+}
+@media (min-width: 701px) { .tnav__toggle { display: none; } }
+
+/* Client, 15 Sept: "the hamburger when pressed should have its ui and fade
+   in." The panel already faded in on its own — what was missing was a
+   backdrop: with nothing behind it the page kept scrolling under an
+   unfinished-looking floating card, and the open state had no visual weight
+   of its own. A real menu dims what's behind it and holds still while open. */
+@media (max-width: 700px) {
+  .tnav__scrim {
+    position: fixed; inset: 0; z-index: 110;    /* under .tnav's 120, above the page */
+    background: rgba(10, 7, 6, .0);
+    opacity: 0; pointer-events: none;
+    transition: opacity .28s cubic-bezier(.23,1,.32,1), background-color .28s;
+  }
+  .tnav[data-menu="1"] ~ .tnav__scrim {
+    background: rgba(10, 7, 6, .42);
+    opacity: 1; pointer-events: auto;
+  }
+  /* scroll lock. Lock <html>, not <body> — a documented trap on this
+     project: overflow:hidden on body fights the overflow-x:clip that keeps
+     the hero's sticky stage alive. */
+  html.tnav-locked { overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tnav__links { transition: opacity .15s linear; transform: none !important; }
+  .tnav__toggle .bar { transition: none; }
+  .tnav__scrim { transition: opacity .15s linear; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tnav { transition: opacity .25s linear, background-color .25s linear, color .25s linear;
+          transform: translateX(-50%); }
+  .tnav[data-show="1"] { transform: translateX(-50%); }
+}

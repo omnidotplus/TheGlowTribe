@@ -1,0 +1,49 @@
+/* Shared scroll fade-in/out system — extracted from home.css so / and
+   /conference use the same mechanic. Sections carry [data-fade]; their
+   staggerable direct children get [data-r] from reveal.js. */
+
+  /* ============ SECTION FADE — one mechanic, every section but the
+     hero and the footer (client, 15 Sept: "fade ins and out, award level
+     simple ones"). Deliberately ONE curve and ONE distance everywhere: a
+     page where each section arrives differently reads as a committee.
+     It fades back OUT on exit too, as asked.
+     Put on the section itself, so the per-section mechanics inside (the Why
+     aperture, the Who typewriter, the FAQ switchboard) are untouched. */
+  /* The section itself only fades — no transform. Moving a whole section as
+     one block is the "lump" awwwards-motion warns about, and a transform here
+     would also create a containing block that breaks the Who section's sticky
+     stage. */
+  [data-fade] {
+    opacity: 0;
+    transition: opacity .75s cubic-bezier(.23,1,.32,1);
+    will-change: opacity;
+  }
+  [data-fade][data-in="1"] { opacity: 1; }
+
+  /* The actual reveal: one mechanic for every section, staggered. A clip-path
+     wipe plus a small rise, per `animate`'s scroll-reveal recipe, with a 70ms
+     increment — inside the 30-80ms band and comfortably under the 6-8 item
+     stagger cap. --i is set per element in JS. */
+  [data-r] {
+    /* 16px and .72s measured as barely perceptible in use. 34px over .86s with
+       a 90ms stagger is still inside the doctrine's <900ms reveal band and the
+       30-80..150ms stagger range, but it actually reads as an arrival. */
+    opacity: 0;
+    clip-path: inset(0 0 102% 0);
+    transform: translate3d(0, 34px, 0);
+    transition: clip-path .86s cubic-bezier(.23,1,.32,1) calc(var(--i,0) * 90ms),
+                transform .86s cubic-bezier(.23,1,.32,1) calc(var(--i,0) * 90ms),
+                opacity   .60s cubic-bezier(.23,1,.32,1) calc(var(--i,0) * 90ms);
+    will-change: clip-path, transform, opacity;
+  }
+  [data-fade][data-in="1"] [data-r] {
+    opacity: 1; clip-path: inset(0 0 -8% 0); transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* gentler, never zero: the fade stays, the wipe and the travel go */
+    [data-fade] { transition: opacity .3s linear; }
+    /* gentler, never zero: the opacity fade stays, the wipe and travel go */
+    [data-r] { clip-path: none !important; transform: none !important;
+               transition: opacity .3s linear; }
+  }

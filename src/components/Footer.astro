@@ -1,0 +1,71 @@
+---
+/* Site-wide footer — brief §4 requires the newsletter signup on every page.
+   Before this port, home.html and conference.html each carried their own
+   copy, and conference's had drifted: it never received the mobile
+   rounded-card rework (15 Sept) that home's did. One component now, so
+   that gap can't reopen. */
+---
+<footer class="ft g-paper" id="footer">
+
+  <!-- register 1: the dense ruled grid -->
+  <div class="ft__grid">
+    <div class="ft__cell ft__cell--news">
+      <p class="ft__k">Newsletter</p>
+      <p class="ft__lead">Occasional notes on what the tribe is making.<br>No spam, no sermons.</p>
+      <form class="ft__form" onsubmit="event.preventDefault(); this.dataset.sent='1';">
+        <label class="visually-hidden" for="nl">Email address</label>
+        <input id="nl" type="email" placeholder="you@email.com" autocomplete="email" required>
+        <button type="submit" aria-label="Join the newsletter">→</button>
+      </form>
+    </div>
+
+    <div class="ft__linkcols">
+      <nav class="ft__cell" aria-label="Site">
+        <p class="ft__k">Site</p>
+        <a href="/">Home</a>
+        <a href="/conference">No Bushels</a>
+        <a href="/#teaser">Our work</a>
+      </nav>
+
+      <nav class="ft__cell" aria-label="Elsewhere">
+        <p class="ft__k">Elsewhere</p>
+        <a href="#">Instagram</a>
+        <a href="#">YouTube</a>
+        <a href="#">Email</a>
+      </nav>
+    </div>
+
+    <div class="ft__cell">
+      <p class="ft__k">Soon</p>
+      <span class="ft__soon">Merch</span>
+      <span class="ft__soon">Blog</span>
+      <span class="ft__soon">Opportunities</span>
+    </div>
+  </div>
+
+  <!-- register 2: the wordmark whole and full-bleed.
+       The embedded countdown is GONE — a day-count in a footer is meaningless
+       out of context, and it was there to satisfy the seed rather than the
+       page. The seed's "numeral inside letterforms" reading is served instead
+       by 5:15 — the verse the whole event is named after, and the one
+       colon-numeral the brand is allowed. It means something here; 69 did not. -->
+  <div class="ft__mark" aria-hidden="true">
+    <span class="ft__word">Glow Tribe</span>
+  </div>
+
+  <!-- digits clustered at the very end -->
+  <div class="ft__strip">
+    <!-- Was a six-cell locale/coordinate/live-clock strip. Three problems, all
+         from BRIEF.md's own bans, not taste:
+           · the live clock printed colon-numeral pairs, and the brief states
+             "Matthew 5:15 must be the ONLY colon-numeral pair on the site"
+           · the dotted-numeral date shape (DD.MM.YYYY) is what the date ban
+             exists to kill. Canonical form is 21 NOV 2026
+           · GPS coordinates are a generic slop tell and mean nothing to anyone
+         What survives is what a visitor can act on. -->
+    <span>Matthew 5:15</span>
+    <span>Warri, Nigeria</span>
+    <span>21 NOV 2026</span>
+    <span>© 2026</span>
+  </div>
+</footer>
