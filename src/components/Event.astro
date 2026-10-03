@@ -1,79 +1,88 @@
 ---
-/* EVENT — Five Plus V4 (Ariel Childs), from the catalogue. The date/venue/
-  entry facts, a live countdown, and the four-field registration form (SC5).
-  Flips to a confirmed state on submit. */
+/* EVENT — register hero, direction A "Pinned" (sketches/register-hero-A.png,
+  spec in sketches/SKETCH_PROMPTS_REGISTER_HERO.md).
+
+  Two columns: the client's actual flyer, matted and pinned, on the left; the
+  site's own voice plus the form on the right.
+
+  Why the flyer is matted rather than placed bare: measured, its background is
+  #1A1A1A against the site's dark ground #120D0B -- 1.09:1, so on a dark
+  section it would have no edge at all and read as a broken image. It sits on
+  the EMBER ground instead, inside a paper mat with a hairline, which is the
+  "real border" the sketch calls for.
+
+  Why the site repeats NO BUSHELS / the date / the venue as live type when the
+  flyer already shows them: the flyer is a raster. It says nothing to a screen
+  reader or to a search engine, and SC3 makes the date, theme and register CTA
+  this page's number-one job. The flyer SHOWS them; the type STATES them. */
 ---
 <section class="ev g-ember" id="event" data-fade>
-  <!-- The line types in, then .flashword steps through five distinct faces and
-       settles on a sixth. JS drives it (see conference-behaviour.js) because
-       font-family is not animatable. Markup carries the FINAL text so it is
-       present for search engines and for anyone without JS. -->
-  <h1 class="ev__statement" id="askStatement"
-      data-line1="Come and" data-line2="make ">Come and<br>make <span
-      class="flashword" data-face="final">something.</span><span
-      class="ev__caret" aria-hidden="true"></span></h1>
 
-  <div class="ev__grid">
+  <div class="ev__hero">
 
-    <!-- LEFT: the form, as the archetype's text column -->
-    <div class="ev__flip" id="regFlip">
-    <form class="ev__form ev__face ev__face--front" id="regForm">
-      <p class="ev__k">Register</p>
-      <div class="field"><label for="rn2">Name</label><input id="rn2" type="text" autocomplete="name" required></div>
-      <div class="field"><label for="re2">Email</label><input id="re2" type="email" autocomplete="email" required></div>
-      <div class="field"><label for="rp2">Phone</label><input id="rp2" type="tel" autocomplete="tel" required></div>
-      <div class="field"><label for="rd2">Creative discipline</label>
-        <select id="rd2" required>
-          <option value="" disabled selected>Choose one</option>
-          <option>Music</option><option>Film</option><option>Writing</option>
-          <option>Photography</option><option>Design</option><option>Other</option>
-        </select>
+    <!-- LEFT: the real flyer, pinned. Tilt is 2deg at rest; it arrives at 6deg
+         and settles (conference-behaviour.js). One tilt on the page, nothing
+         else is off-axis. -->
+    <figure class="ev__flyer" id="evFlyer">
+      <div class="ev__flyerMat">
+        <img src="/img/flyer-no-bushels.webp" width="900" height="1125"
+             alt="No Bushels, a Christian creative conference presented by The Glow Tribe. Saturday 21 November 2026, Warri, Delta State. Free entry, registration required."
+             decoding="async" fetchpriority="high">
       </div>
-      <button class="submit" type="submit">Register · it's free</button>
-      <p class="ev__small note">⚠ Backend not wired · submissions are not stored.</p>
-    </form>
+    </figure>
 
-    <!-- the reverse. Not a message appended below the form — the same panel,
-         turned over. -->
-    <div class="ev__face ev__face--back" id="regBack" aria-hidden="true">
-      <p class="ev__k">You're in</p>
-      <p class="ev__backHead">See you on the<br><em>21<sup>st</sup></em></p>
-      <p class="ev__backText">Directions and a reminder will reach you by email. Bring whatever
-         you're working on, however unfinished.</p>
-      <p class="ev__backMeta">EU Centre, Warri · Doors 09:00</p>
-      <button class="ev__undo" type="button">← Register someone else</button>
-    </div>
-    </div>
+    <!-- RIGHT: the site's own voice, then the ask -->
+    <div class="ev__ask">
+      <h1 class="ev__title">NO<br>BUSHELS</h1>
+      <p class="ev__meta"><span>21 NOV 2026</span><span>EU Centre, Warri</span></p>
 
-    <!-- CENTRE: the facts, as a notched panel.
-         Shape language from the client's reference: generous radius with a
-         CONCAVE bite where it meets its neighbour, so the form and the panel
-         nest instead of butting. Short facts become pill chips; only the two
-         that need a sentence stay as rows. -->
-    <div class="ev__panel">
+      <div class="ev__flip" id="regFlip">
+        <form class="ev__form ev__face ev__face--front" id="regForm">
+          <p class="ev__k">Register</p>
+          <div class="field"><label for="rn2">Name</label><input id="rn2" type="text" autocomplete="name" required></div>
+          <div class="field"><label for="re2">Email</label><input id="re2" type="email" autocomplete="email" required></div>
+          <div class="field"><label for="rp2">Phone</label><input id="rp2" type="tel" autocomplete="tel" required></div>
+          <div class="field"><label for="rd2">Creative discipline</label>
+            <select id="rd2" required>
+              <option value="" disabled selected>Choose one</option>
+              <option>Music</option><option>Film</option><option>Writing</option>
+              <option>Photography</option><option>Design</option><option>Other</option>
+            </select>
+          </div>
+          <button class="submit" id="regSubmit" type="submit">Register · it's free</button>
+          <p class="ev__small note">⚠ Backend not wired · submissions are not stored.</p>
+        </form>
 
-      <p class="ev__k ev__k--on">The details</p>
-
-      <p class="ev__date">21 November 2026</p>
-      <p class="ev__where">EU Centre, Warri</p>
-
-      <ul class="ev__chips">
-        <li class="ev__chip"><span class="ev__ic" aria-hidden="true">◎</span>Free entry</li>
-        <li class="ev__chip"><span class="ev__ic" aria-hidden="true">✎</span>Registration required</li>
-        <li class="ev__chip"><span class="ev__ic" aria-hidden="true">✦</span>No Bushels · Matthew 5:15</li>
-      </ul>
-
-      <dl class="ev__notes">
-        <div><dt>Who</dt><dd>Musicians, filmmakers, writers. Anyone making something.</dd></div>
-        <div><dt>Why</dt><dd>Register so we know how many chairs to put out.</dd></div>
-      </dl>
+        <!-- the reverse. Not a message appended below the form — the same panel,
+             turned over. -->
+        <div class="ev__face ev__face--back" id="regBack" aria-hidden="true">
+          <p class="ev__k">You're in</p>
+          <p class="ev__backHead">See you on the<br><em>21<sup>st</sup></em></p>
+          <p class="ev__backText">Directions and a reminder will reach you by email. Bring whatever
+             you're working on, however unfinished.</p>
+          <p class="ev__backMeta">EU Centre, Warri · Doors 09:00</p>
+          <button class="ev__undo" type="button">← Register someone else</button>
+        </div>
+      </div>
     </div>
 
-    <!-- RIGHT: two images at different heights. Off-grid on purpose. -->
-    <div class="ev__plates">
-      <div class="slot ev__plate ev__plate--hi" data-slot="TGT 2:3" data-placeholder="P4"><img src="/img/ev-hi.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
-      <div class="slot ev__plate ev__plate--lo" data-slot="TGT 4:5" data-placeholder="P4"><img src="/img/ev-lo.webp" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
-    </div>
+    <!-- The connector: a slanted dotted arrow running from the flyer down to
+         the register button, so the poster and the ask read as one sentence.
+         Decorative only -- the relationship is already carried by DOM order
+         and by the form's own label, so this is hidden from assistive tech.
+         Desktop only: once the columns stack, the diagonal has nothing to
+         span and would point at the wrong thing. -->
+    <svg class="ev__link" viewBox="0 0 200 150" fill="none" aria-hidden="true" focusable="false">
+      <path class="ev__linkPath"
+            d="M6 10 C 70 34, 118 60, 160 108"
+            stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-dasharray="1 11"/>
+      <path class="ev__linkHead"
+            d="M146 100 L 165 115 L 142 119"
+            stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
 
   </div>
+
 </section>

@@ -11,11 +11,8 @@ interface Props {
   description: string;
   pageStylesHref: string;
   bodyClass?: string;
-  /* Optional extra font request for a page that needs faces the type system
-     does not carry. Passed per page so other pages do not pay for it. */
-  extraFonts?: string;
 }
-const { title, description, pageStylesHref, bodyClass, extraFonts } = Astro.props as Props;
+const { title, description, pageStylesHref, bodyClass } = Astro.props as Props;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://theglowtribe.com');
 ---
 <!doctype html>
@@ -37,12 +34,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://theglowtrib
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
   <link rel="stylesheet" href="/styles/skeleton.css">
-  <link rel="stylesheet" href={`${pageStylesHref}?v=7`}>
+  <link rel="stylesheet" href={`${pageStylesHref}?v=11`}>
   <link rel="stylesheet" href="/styles/footer.css?v=1">
   <link rel="stylesheet" href="/styles/reveal.css?v=1">
   <link rel="stylesheet" href="/styles/tokens.css">
   <link rel="stylesheet" href="/styles/type.css">
-  {extraFonts && <link rel="stylesheet" href={extraFonts} />}
 </head>
 <body class={bodyClass}>
   <slot />

@@ -94,7 +94,7 @@
    ------------------------------------------------------------------------ */
 .u-display,
 .mark, .timer,
-.ev__statement, .ev__date, .ev__backHead,
+.ev__backHead,
 .close__head, .day__title, .day__title--big,
 .theme__statement, .spk__head,
 .why__lead, .why__resolve, .why__third {
@@ -145,9 +145,9 @@ p, li, dd, blockquote { max-width: var(--measure); }
    02-define.md: "Zero one-off font-size overrides."
    ------------------------------------------------------------------------ */
 .mark, .day__title--big   { font-size: var(--t-display); line-height: var(--lh-display); letter-spacing: var(--tr-display); }
-.close__head, .ev__statement { font-size: var(--t-h1); line-height: var(--lh-h1); letter-spacing: var(--tr-h1); }
+.close__head { font-size: var(--t-h1); line-height: var(--lh-h1); letter-spacing: var(--tr-h1); }
 .theme__statement, .spk__head { font-size: var(--t-h2); line-height: var(--lh-h2); letter-spacing: var(--tr-h2); }
-.ev__date, .ev__backHead, .why__lead { font-size: var(--t-h3); line-height: var(--lh-h3); letter-spacing: var(--tr-h3); }
+.ev__backHead, .why__lead { font-size: var(--t-h3); line-height: var(--lh-h3); letter-spacing: var(--tr-h3); }
 
 /* The Who-is-TGT statement was measured off newformcap at weight 550 — their
    TWK Lausanne, not ours. In Archivo that weight reads thin and undecided at

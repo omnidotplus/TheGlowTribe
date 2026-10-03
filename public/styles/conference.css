@@ -19,147 +19,94 @@
      uses the near-black pill (option A), same as home's ink hero.
      IntersectionObserver on .hero. This page has no hero to observe, so the
      nav is simply visible from load — no JS, no gating class. ---- */
-  @media (max-width: 700px) {
-  }
 
-  /* indented from the left edge, as the reference does */
-  .ev__statement {
-    margin: clamp(20px,4vw,56px) 0 clamp(30px,5vw,64px);
-    padding-left: clamp(0px,7vw,120px);
-    font-size: clamp(34px,7.2vw,92px); line-height: .95;
-    font-weight: 800; letter-spacing: -.04em;
-    /* Real overflow found in verification, not the transformed .theme__cast
-       that looked like the culprit first: scrollWidth (348) exceeded
-       clientWidth (324) on this element ALONE at 360px -- "something." has
-       no break opportunity at this font size + left padding, and content
-       overflowing an overflow:visible box still contributes to the document
-       root'''s scrollWidth even though the element's own outer box never
-       leaves the viewport. Let the one long word break rather than bleed. */
-    overflow-wrap: break-word;
-  }
 
-  /* ============ THE ASK — types in, then "something" changes face ======
-     Client, second pass, and both corrections were fair:
-
-     1. The first attempt animated Archivo's wdth/wght axes and called that
-        "different font styles". It read as one font stretching, because it
-        was. Five DISTINCT TYPEFACES now, stepped by JS -- font-family is not
-        an animatable property, so CSS genuinely cannot do this; that was a
-        reason to reach for JS, not a reason to substitute something weaker.
-     2. The whole line types in first, then the word changes face, then it
-        settles into a sixth face that is deliberately none of the five.
-
-     Payload: all six families are requested subset to ONLY the glyphs in
-     "something." via Google Fonts' text= parameter, so six display faces
-     cost a few KB total rather than a few hundred. SC7 is mobile-first on
-     Nigerian networks; six unsubset display fonts would have been indefensible.
-     =================================================================== */
-  .ev__statement { min-height: 2.9em; }        /* reserve the typed line, no reflow jump */
-  .ev__caret {
-    display: inline-block; width: .06em; height: .78em;
-    background: var(--n-900); margin-left: .04em;
-    transform: translateY(.04em);
-    animation: askCaret 1s steps(1,end) infinite;
-  }
-  .ev__statement[data-typed="1"] .ev__caret { display: none; }
-  @keyframes askCaret { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
-
-  .flashword {
-    position: relative; isolation: isolate;
-    display: inline-block; max-width: 100%;
-    overflow-wrap: anywhere;   /* break-word does NOT feed inline-block intrinsic width */
-    color: var(--n-900);
-    transition: color .16s linear;
-  }
-  /* the six faces. Driven by data-face, set from JS. */
-  .flashword[data-face="1"] { font-family:'Bebas Neue',sans-serif;      font-weight:400; letter-spacing:.01em; }
-  .flashword[data-face="2"] { font-family:'Playfair Display',serif;      font-weight:900; font-style:italic; letter-spacing:-.02em; }
-  .flashword[data-face="3"] { font-family:'Rubik Mono One',monospace;    font-weight:400; letter-spacing:-.04em; font-size:.82em; }
-  .flashword[data-face="4"] { font-family:'Caprasimo',cursive;           font-weight:400; letter-spacing:-.01em; }
-  .flashword[data-face="5"] { font-family:'Syne',sans-serif;             font-weight:800; letter-spacing:-.03em; }
-  /* the settled face: a heavy slab, deliberately not one of the five and
-     deliberately not the brand grotesk. White on the ember ground at this
-     size is the "presence" the client asked for. */
-  .flashword[data-face="final"] {
-    font-family:'Alfa Slab One',serif; font-weight:400;
-    letter-spacing:-.015em; color: var(--n-50);
-  }
-  /* the bloom, only once settled. Exposure and falloff, never a drawn light
-     source -- DESIGN.md bans light as an object. */
-  .flashword::after {
-    content: ''; position: absolute; inset: -.2em -.12em; z-index: -1;
-    pointer-events: none; opacity: 0;
-    background: radial-gradient(62% 72% at 50% 55%,
-      rgba(255,248,244,.36) 0%, rgba(255,224,74,.17) 44%, transparent 76%);
-    transition: opacity .5s cubic-bezier(.23,1,.32,1);
-  }
-  .flashword[data-face="final"]::after { opacity: 1; }
-
-  /* Per-face size correction on a phone. Six faces at one size do not occupy
-     one line: measured at 390px against ~324px of available width, Rubik Mono
-     One and Syne both wrapped to two lines (h 75 and 92 against 46 for a
-     single line), which made the word jump height mid-flash. Scaled so every
-     face sits on one line, so the only thing that changes is the letterforms. */
-  @media (max-width: 700px) {
-    .flashword[data-face="3"] { font-size: .58em; }
-    .flashword[data-face="5"] { font-size: .58em; }
-    .flashword[data-face="4"] { font-size: .92em; }
-    .flashword[data-face="final"] { font-size: .88em; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    /* no typing, no face-flashing: the finished line, immediately. Flashing
-       is the actual photosensitivity risk here, so the honest reduced variant
-       is the resolved composition rather than a dimmer one. */
-    .ev__caret { display: none !important; }
-    .flashword { transition: none; }
-    .flashword::after { transition: none; }
-  }
-
-  .ev__grid {
+  /* ======================= THE PINNED HERO ==========================
+     Direction A. Flyer left, the site's own voice and the ask right.
+     ================================================================ */
+  .ev__hero {
+    position: relative;
     display: grid;
-    grid-template-columns: minmax(0,0.95fr) minmax(0,1fr) minmax(0,0.85fr);
-    gap: clamp(24px,4vw,64px);
+    grid-template-columns: minmax(0, .78fr) minmax(0, 1fr);
+    gap: clamp(26px, 4.6vw, 86px);
     align-items: start;
+    /* no bottom margin: this existed to separate the hero from the details
+       grid below it, and that grid is gone. The section's own padding is the
+       boundary now, and doubling them left ~200px of dead ember. */
   }
-  @media (max-width: 1000px) { .ev__grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } }
-  @media (max-width: 700px)  { .ev__grid { grid-template-columns: minmax(0,1fr); } }
+  @media (max-width: 900px) { .ev__hero { grid-template-columns: minmax(0,1fr); gap: clamp(28px,7vw,48px); } }
 
-  /* ---- THE DETAILS is gated behind registering, on mobile only ----------
-     Client: the card must not be reachable by scrolling until the form is
-     submitted; then "you're in" reads first and the card follows further
-     down. JS owns the state (see conference-behaviour.js), CSS owns the
-     presentation.
-
-     display:none rather than opacity/height: the requirement is that the card
-     is genuinely NOT THERE, so it must not occupy scroll distance, must not
-     be findable by in-page search, and must not be announced. A visually
-     hidden but present card would still be all three.
-
-     Mobile only. On desktop the card sits beside the form as one composition
-     and removing half of it would leave a hole in the grid. */
-  @media (max-width: 700px) {
-    .ev[data-registered="0"] .ev__panel { display: none; }
-    /* once released, it arrives rather than appearing: the reveal system's
-       own transition carries it, so this only sets the starting offset. */
-    .ev[data-registered="1"] .ev__panel { animation: evPanelIn .62s cubic-bezier(.23,1,.32,1) both; }
-    @keyframes evPanelIn {
-      from { opacity: 0; transform: translate3d(0, 18px, 0); }
-      to   { opacity: 1; transform: none; }
+  /* ---- the flyer, matted and pinned ----
+     The mat is not decoration. Measured, the flyer's own background is
+     #1A1A1A against the site's dark ground #120D0B: 1.09:1, indistinguishable.
+     On a dark section the poster would have no edge and would read as a broken
+     image. On the ember ground inside a paper mat it has two clean boundaries:
+     ember-to-paper, then paper-to-artwork. That is the sketch's "double line". */
+  .ev__flyer {
+    margin: 0;
+    transform: rotate(2deg);
+    transform-origin: 50% 60%;
+    will-change: transform;
+  }
+  .ev__flyerMat {
+    background: var(--n-50);              /* tier token: this supplies its own fill */
+    padding: clamp(9px, 1.1vw, 15px);
+    border: 1px solid var(--n-900);
+  }
+  .ev__flyerMat img {
+    display: block; width: 100%; height: auto;
+    border: 1px solid var(--n-900);       /* the inner line of the double rule */
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ev__flyer { animation: flyerSettle .7s cubic-bezier(.23,1,.32,1) both; }
+    @keyframes flyerSettle {
+      from { transform: rotate(6deg) translate3d(0, -10px, 0); opacity: 0; }
+      to   { transform: rotate(2deg) translate3d(0, 0, 0);     opacity: 1; }
     }
   }
-  @media (max-width: 700px) and (prefers-reduced-motion: reduce) {
-    .ev[data-registered="1"] .ev__panel { animation: none; }
+
+  /* ---- the site's own voice ---- */
+  .ev__flip { max-width: 540px; }
+  .ev__title {
+    margin: 0 0 .22em;
+    font-size: clamp(46px, 7.2vw, 104px);
+    line-height: .84; letter-spacing: -.045em;
+    font-variation-settings: 'wdth' 118, 'wght' 900;
+    color: var(--n-900);
+  }
+  .ev__meta {
+    display: flex; flex-wrap: wrap; gap: 6px clamp(14px, 2vw, 26px);
+    margin: 0 0 clamp(22px, 3vw, 38px);
+    font-family: var(--mono); font-size: clamp(10px, 1.1vw, 12px);
+    letter-spacing: .16em; text-transform: uppercase; color: var(--n-900);
+  }
+
+  /* ---- the connector: flyer to the register button ----
+     A drawn relationship, not a control: no pointer events, hidden from
+     assistive tech in the markup. Below 900px the columns stack and a diagonal
+     would point at nothing, so it is removed rather than left to land wrong. */
+  .ev__link {
+    position: absolute; z-index: 2; pointer-events: none;
+    inset: 0; width: 100%; height: 100%;
+    color: var(--n-900); opacity: .72;
+    overflow: visible;
+  }
+  @media (max-width: 900px) { .ev__link { display: none; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .ev__link { animation: linkIn .5s cubic-bezier(.23,1,.32,1) .72s both; }
+    @keyframes linkIn {
+      from { opacity: 0; transform: translate3d(-8px, -6px, 0); }
+      to   { opacity: .72; transform: none; }
+    }
   }
 
   .ev__k {
-    /* F1: was --dim (--ember-950 on the ember ground here, and --n-700 inside
-       the paper .ev__panel). Dark-brown-on-orange computed 4.92:1 -- numerically
-       passing but chromatically muddy at 10px with heavy tracking, which read
-       as "blurry" to the client. --n-900 is the tier token directly (never the
-       --ink alias -- see the field label below): 5.44:1 on ember, 17.35:1 on
-       paper, crisp on both, so one rule serves the Register/You're-in kicker
-       on the ground and The-details kicker inside the panel alike. */
+    /* F1: was --dim, which remaps to --ember-950 on the ember ground.
+       Dark-brown-on-orange computed 4.92:1 -- numerically passing but
+       chromatically muddy at 10px with heavy tracking, which read as "blurry"
+       to the client. --n-900 is the tier token directly (never the --ink alias
+       -- see the field label below): 5.44:1 on ember, crisp rather than
+       muddy. */
     font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
     text-transform: uppercase; color: var(--n-900); margin: 0 0 16px;
   }
@@ -352,62 +299,6 @@
      cannot express that (it only rounds corners), and a quarter-circle bite is
      a different shape entirely. The outline is generated as a clip-path in JS
      so the curves stay circular at any size. */
-  .ev__panel {
-    position: relative; min-width: 0;
-    /* was #ededed on a #f2f2f2 page — five levels apart, so the cut silhouette
-       was invisible. The shape IS the idea here; it needs a tone that reads. */
-    /* F1: the grey became --ember-100. Still reads as a distinct shape against
-       paper (1.22 luminance ratio, better than the grey's 1.12) and now belongs
-       to the system instead of sitting outside it. */
-    background: var(--paper);
-    padding: clamp(46px,4.4vw,58px) clamp(22px,2.6vw,34px) clamp(22px,2.6vw,34px);
-    border-radius: 26px;          /* fallback before the path is applied */
-  }
-  .ev__panel[data-clipped="1"] { border-radius: 0; }
-  /* the bite. A square of page colour with a quarter-circle knocked out of it,
-     placed on the corner — the concave cut the reference uses. */
-  .ev__k--on { margin: 0 0 14px; }
-
-  .ev__date {
-    margin: 0 0 .12em;
-    font-size: clamp(24px,3.2vw,40px); line-height: 1.02;
-    font-weight: 800; letter-spacing: -.03em;
-  }
-  .ev__where {
-    margin: 0 0 clamp(16px,2vw,24px);
-    font-size: clamp(14px,1.5vw,17px); color: var(--n-700);
-  }
-
-  .ev__chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 clamp(18px,2.2vw,26px); padding: 0; }
-  .ev__chip {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 15px;
-    border: 1px solid var(--n-400); border-radius: 999px;
-    background: var(--paper);
-    font-family: var(--mono); font-size: clamp(9px,1vw,11px);
-    letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
-  }
-  .ev__ic { font-size: 12px; line-height: 1; opacity: .55; }
-
-  .ev__notes { margin: 0; border-top: 1px solid var(--n-400); padding-top: clamp(12px,1.6vw,18px); }
-  .ev__notes > div { display: grid; grid-template-columns: clamp(38px,4vw,52px) minmax(0,1fr); gap: 12px; padding: 7px 0; }
-  .ev__notes dt {
-    font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--dim); padding-top: .3em;
-  }
-  .ev__notes dd { margin: 0; font-size: clamp(13px,1.35vw,15px); line-height: 1.45; }
-
-  /* ---- right: two plates, unequal heights, off-grid ---- */
-  .ev__plates { min-width: 0; position: relative; }
-  .ev__plate { width: 100%; }
-  .ev__plate--hi { aspect-ratio: 2/3; width: 78%; margin-left: auto; }
-  .ev__plate--lo { aspect-ratio: 4/5; width: 62%; margin-top: clamp(18px,3vw,40px); }
-  @media (max-width: 700px) {
-    .ev__plates { display: flex; gap: 12px; }
-    .ev__plate--hi { width: 55%; margin-left: 0; }
-    .ev__plate--lo { width: 45%; margin-top: clamp(24px,6vw,44px); }
-  }
-
   /* ============ THEME — Five Plus V2, andre-candido proportions ============ */
   .theme { padding: clamp(56px,10vw,150px) clamp(16px,6vw,96px); }
   .theme__grid {

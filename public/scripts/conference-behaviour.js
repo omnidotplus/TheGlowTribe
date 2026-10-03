@@ -80,172 +80,88 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmar
 /* footer live Warri time */
 /* footer clock removed: colon-numeral pairs are reserved for Matthew 5:15 */
 
-/* ---- The notched-card outline.
-   An S-curve step at the top-left and bottom-right: the edge travels in, turns
-   down through a CONCAVE curve, then back out through a CONVEX one. Two
-   opposing arcs per step — which is why border-radius cannot do it and why a
-   quarter-circle bite is the wrong shape.
-
-   Generated as a clip-path so the arcs stay circular at any element size,
-   rather than stretching with the box. Recomputed on resize. ---- */
-(() => {
-  const el = document.querySelector('.ev__panel');
-  if (!el || !CSS.supports('clip-path', 'path("M0,0")')) return;
-
-  function outline() {
-    const { width: W, height: H } = el.getBoundingClientRect();
-    if (!W || !H) return;
-    const R  = 26;                                   // outer corners
-    const r  = Math.min(18, W * 0.05);               // the step's curves
-    const SW = Math.max(90, Math.min(W * 0.34, 190));// step width
-    const SH = Math.max(30, Math.min(H * 0.11, 46)); // step depth
-
-    const p = [
-      `M 0,${SH + R}`,
-      `A ${R},${R} 0 0 1 ${R},${SH}`,                // outer corner, lower level
-      `L ${SW - r},${SH}`,
-      `A ${r},${r} 0 0 0 ${SW},${SH - r}`,           // concave — into the step
-      `L ${SW},${r}`,
-      `A ${r},${r} 0 0 1 ${SW + r},0`,               // convex — back out to the top edge
-      `L ${W - R},0`,
-      `A ${R},${R} 0 0 1 ${W},${R}`,
-      `L ${W},${H - SH - R}`,
-      `A ${R},${R} 0 0 1 ${W - R},${H - SH}`,        // mirrored step, bottom-right
-      `L ${W - SW + r},${H - SH}`,
-      `A ${r},${r} 0 0 0 ${W - SW},${H - SH + r}`,   // concave
-      `L ${W - SW},${H - r}`,
-      `A ${r},${r} 0 0 1 ${W - SW - r},${H}`,        // convex
-      `L ${R},${H}`,
-      `A ${R},${R} 0 0 1 0,${H - R}`,
-      'Z'
-    ].join(' ');
-
-    el.style.clipPath = `path("${p}")`;
-    el.dataset.clipped = '1';
-  }
-
-  outline();
-  addEventListener('resize', outline);
-  if (window.ResizeObserver) new ResizeObserver(outline).observe(el);
-})();
-
 /* ============================================================================
-   THE ASK — the line types in, then "something" changes face five times and
-   settles on a sixth.
+   The flyer-to-register connector.
 
-   Why JS and not CSS: font-family is not an animatable property, so this
-   cannot be a keyframe animation at all. An earlier attempt animated
-   Archivo's width/weight axes instead and the client correctly called it out
-   as "all looked the same" -- it was one typeface stretching. Stepping
-   discrete families is the only way to actually change face, and stepping
-   discrete states over time is exactly what JS is for.
+   Drawn from MEASURED geometry rather than fixed percentages. The first
+   attempt positioned the arrow at left:38%/top:44% and it landed in the middle
+   of the Email field, because the form's height is content-dependent and the
+   button moves with it. Measuring both ends and recomputing on resize is the
+   only version that stays pointed at the thing it is about.
 
-   Pacing: 5 face changes at 360ms = 2.8 changes/sec, deliberately under
-   WCAG 2.3.1's 3-flashes-per-second photosensitivity threshold. Recount
-   before shortening this.
+   Decorative: aria-hidden in the markup, pointer-events none in CSS. Skipped
+   entirely below 900px, where the columns stack and a diagonal would be lying
+   about the relationship.
    ========================================================================= */
 (() => {
-  const h = document.getElementById('askStatement');
-  if (!h) return;
+  const hero = document.querySelector('.ev__hero');
+  const svg  = document.querySelector('.ev__link');
+  const fly  = document.getElementById('evFlyer');
+  const btn  = document.getElementById('regSubmit');
+  if (!hero || !svg || !fly || !btn) return;
 
-  const word  = h.querySelector('.flashword');
-  const caret = h.querySelector('.ev__caret');
-  const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pathEl = svg.querySelector('.ev__linkPath');
+  const headEl = svg.querySelector('.ev__linkHead');
 
-  /* the markup already holds the finished line, so no-JS and crawlers get
-     real text. Only enhance when we can actually animate. */
-  if (REDUCE) { h.dataset.typed = '1'; return; }
+  function draw() {
+    if (window.innerWidth <= 900) { svg.style.display = 'none'; return; }
+    svg.style.display = '';
 
-  const L1 = h.dataset.line1 || '';
-  const L2 = h.dataset.line2 || '';
-  const WORD = word.textContent;
+    const H = hero.getBoundingClientRect();
+    const F = fly.getBoundingClientRect();
+    const B = btn.getBoundingClientRect();
+    if (!H.width) return;
 
-  /* rebuild as: line1 <br> line2 + word. Text nodes are replaced rather than
-     using innerHTML per character, so the .flashword element itself is never
-     destroyed and keeps its data-face/bloom state. */
-  const t1 = document.createTextNode('');
-  const br = document.createElement('br');
-  const t2 = document.createTextNode('');
-  h.textContent = '';
-  h.append(t1, br, t2, word, caret);
-  word.textContent = '';
-  word.removeAttribute('data-face');
+    svg.setAttribute('viewBox', `0 0 ${H.width} ${H.height}`);
 
-  const FACES = ['1', '2', '3', '4', '5'];
-  const CHAR_MS = 42;     /* per character while typing */
-  const FACE_MS = 360;    /* per face while flashing -- see pacing note above */
+    /* Start BELOW the flyer, not at its right edge. The flyer's right edge and
+       the button's left edge sit at nearly the same x, so leaving sideways
+       produced an almost vertical line -- not the slant this is meant to be.
+       Dropping below the poster first gives the arrow real horizontal travel,
+       and it reads as coming from the whole object rather than from one edge. */
+    const x1 = F.left - H.left + F.width * 0.62;
+    const y1 = F.bottom - H.top + 16;
+    const x2 = B.left  - H.left - 16;
+    const y2 = B.top   - H.top  + B.height / 2;
 
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-  async function typeInto(node, text) {
-    for (let i = 1; i <= text.length; i++) {
-      node.textContent = text.slice(0, i);
-      await sleep(CHAR_MS);
+    /* If the form has flipped to "you're in", withdraw the arrow: it would be
+       pointing at a button the visitor can no longer see. Testing the button's
+       own box is NOT enough -- the flipped-away face keeps its layout
+       dimensions (it is rotated and transparent, not removed), so the only
+       reliable signal is the flip's own state. Verified: the first version
+       checked B.width and left the arrow visible after submit. */
+    const flip = document.getElementById('regFlip');
+    if ((flip && flip.dataset.flipped === '1') || !B.width || !B.height) {
+      svg.style.display = 'none'; return;
     }
+
+    /* control point below the straight line, so the curve sags the way a
+       drawn-on arrow would rather than bulging upward */
+    const cx = x1 + (x2 - x1) * 0.55;
+    const cy = y1 + (y2 - y1) * 0.92;
+    pathEl.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
+
+    /* arrowhead rotated to the curve's actual exit angle (tangent at t=1 of a
+       quadratic is simply end minus control) */
+    const ang = Math.atan2(y2 - cy, x2 - cx);
+    const L = 15, spread = 0.42;
+    const hx1 = x2 - L * Math.cos(ang - spread), hy1 = y2 - L * Math.sin(ang - spread);
+    const hx2 = x2 - L * Math.cos(ang + spread), hy2 = y2 - L * Math.sin(ang + spread);
+    headEl.setAttribute('d', `M ${hx1} ${hy1} L ${x2} ${y2} L ${hx2} ${hy2}`);
   }
 
-  (async () => {
-    /* FORCE the six faces to download before flashing.
-       document.fonts.ready is NOT sufficient and this was a real bug: it
-       resolves once the fonts currently IN USE have loaded, and says nothing
-       about families that are merely declared. Measured: only 2 of 6 font
-       files had actually been fetched at that point, so the flash rendered
-       fallbacks for most states -- which is why one face came out as caps
-       from a substitute rather than the face it was meant to be.
-       document.fonts.load() forces the fetch per family. */
-    const FAMS = ['Bebas Neue','Playfair Display','Rubik Mono One',
-                  'Caprasimo','Syne','Alfa Slab One'];
-    try {
-      await Promise.race([
-        Promise.all(FAMS.map(f => document.fonts.load('400 40px "' + f + '"'))
-          .concat([document.fonts.load('900 40px "Playfair Display"'),
-                   document.fonts.load('800 40px "Syne"')])),
-        sleep(2500)   /* a CDN stall must not hold the headline hostage */
-      ]);
-    } catch (_) {}
+  draw();
+  addEventListener('resize', draw);
+  if (window.ResizeObserver) new ResizeObserver(draw).observe(hero);
+  /* the webfonts change the button's position when they swap in */
+  if (document.fonts) document.fonts.ready.then(draw).catch(() => {});
 
-    await typeInto(t1, L1);
-    await typeInto(t2, L2);
-    await typeInto(word, WORD);
-    h.dataset.typed = '1';          /* retires the caret */
-    await sleep(240);
-
-    for (const f of FACES) { word.dataset.face = f; await sleep(FACE_MS); }
-    word.dataset.face = 'final';    /* settles white, bloom fades in via CSS */
-  })();
-})();
-
-/* ============================================================================
-   THE DETAILS card is gated behind registering, on mobile.
-
-   Client, stated twice: the card must not be reachable by scrolling before
-   the form is submitted. On submit the "you're in" face shows first, and the
-   card only then becomes available further down the page.
-
-   Mobile only -- on desktop the card sits BESIDE the form as one composition,
-   and hiding half of a side-by-side layout would leave a hole.
-   ========================================================================= */
-(() => {
-  const sec   = document.getElementById('event');
-  const form  = document.getElementById('regForm');
-  const panel = document.querySelector('.ev__panel');
-  if (!sec || !form || !panel) return;
-
-  /* aria-hidden + inert would be wrong before submit only if the content were
-     reachable; it is not, so hide it from assistive tech too while gated. */
-  const gate = on => {
-    sec.dataset.registered = on ? '1' : '0';
-    panel.setAttribute('aria-hidden', on ? 'false' : 'true');
-  };
-  gate(false);
-
-  form.addEventListener('submit', () => {
-    /* the flip to "you're in" is owned by the existing handler above; this
-       only releases the card, and deliberately lags it so the confirmation
-       is what the visitor reads first. */
-    setTimeout(() => gate(true), 900);
-  });
-
-  const undo = document.querySelector('.ev__undo');
-  if (undo) undo.addEventListener('click', () => gate(false));
+  /* redraw when the card flips either way, so the arrow withdraws on submit
+     and comes back if they register someone else */
+  const flipEl = document.getElementById('regFlip');
+  if (flipEl && window.MutationObserver) {
+    new MutationObserver(draw).observe(flipEl, {
+      attributes: true, attributeFilter: ['data-flipped']
+    });
+  }
 })();

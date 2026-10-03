@@ -1,4 +1,11 @@
-  .hero { height: 400vh; position: relative; }   /* 8 beats, HERO_CHOREOGRAPHY v2 */
+  /* 5 viewports, not 4. The sticky stage releases at heroHeight - viewportHeight,
+     which is the SAME scroll position ScrollTrigger's `end: bottom bottom`
+     resolves to -- so the sequence used to finish on the exact frame the stage
+     started to scroll away. The fifth viewport is beat 8, the handoff: one
+     full viewport of still PINNED distance after the sequence ends, so the
+     card is read, and the wordmark is under-exposed out before the viewport's
+     top edge can ever reach it. See HERO_CHOREOGRAPHY.md "Two clocks". */
+  .hero { height: 500vh; position: relative; }   /* 9 beats, HERO_CHOREOGRAPHY v2.1 */
 
   .stage {
     position: sticky; top: 0;
@@ -444,6 +451,15 @@
     content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none;
     background: repeating-linear-gradient(
       to bottom, rgba(255,255,255,.062) 0 1px, transparent 1px 3px);
+    /* The hero's stage and this one are the SAME ground (--d-0, #120D0B). The
+       only thing that distinguishes them is this texture, so starting it at a
+       hard edge painted a grey band straight across the hero -> Who handoff
+       (measured: #120D0B above the line, a ~#171210 average below it). Ramping
+       the texture in over the first 160px removes the edge without removing
+       the texture; once Who is pinned the ramp sits at the viewport's top edge
+       at .062 alpha, which is below the threshold of noticing. */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 160px);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 160px);
   }
 
   /* rotated rail, far-left margin */
@@ -464,21 +480,34 @@
      vertical stack: the diagonal is what makes it read as a queue. Only the
      top band is visible; the rest is masked off so the frame reads as still
      rising into place. */
+  /* The next plate, peeking from under the current one like the next print in
+     a stack. Every geometry value here is written by JS from the well's own
+     measured box (positionWhoNext) -- there is deliberately no left/top/width
+     in CSS.
+
+     What was wrong: it was placed by a hand-derived
+     `calc(27% + clamp(...))` / `calc(9% + clamp(...) * 1.5 + ...)`. Measured at
+     1440, that put it 144px right of the well's left edge, aligned to nothing,
+     OVERLAPPING the live photo by 21px across 216px of width, and running to
+     y=975 on a 900px viewport so it was clipped at the bottom too. A
+     translucent rectangle crossing the subject reads as a rendering artifact.
+     The same class of error was already fixed once for mobile; the fix simply
+     never covered desktop.
+
+     It is also a shallow band now rather than a full 2:3 frame. A second
+     half-visible portrait competes with the subject; a band reads as the next
+     sheet in a stack, which is what it actually is. */
   .who__next {
-    position: absolute; z-index: 1; pointer-events: none;
-    /* the well sits at left:27%, width clamp(160px,26vw,360px) */
-    left: calc(27% + clamp(64px, 10vw, 148px));
-    top: calc(9% + clamp(160px, 26vw, 360px) * 1.5 + clamp(10px, 1.4vw, 22px));
-    width: clamp(112px, 18vw, 250px);
-    aspect-ratio: 2/3;
+    position: absolute; z-index: 0; pointer-events: none;
     overflow: hidden;
-    border-radius: 2px;
-    opacity: .34;
-    /* fade the frame out downward, so only its top edge is present */
-    -webkit-mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,.55) 38%, transparent 76%);
-            mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,.55) 38%, transparent 76%);
-    transition: opacity .5s linear;
+    border-radius: 0 0 2px 2px;
+    opacity: 0;                /* JS drives this from scroll proximity */
+    transform: translate3d(0, -8px, 0);
+    will-change: transform, opacity;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,.42) 52%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 0, rgba(0,0,0,.42) 52%, transparent 100%);
   }
+  .who__next img { display: block; width: 100%; height: auto; }
   /* Was display:none below 760px. Sketch (sketches/mobile_home.png), WHO WE
      ARE state: "next photo peeking in — keep the diagonal offset even at
      this width." It had been hidden rather than given real mobile geometry:
@@ -489,13 +518,12 @@
      shrunk copy of the desktop one. */
   @media (max-width: 760px) {
     .who__well { left: 34%; top: 7%; width: clamp(110px, 40vw, 180px); }
-    .who__next {
-      left: calc(34% + clamp(80px, 28vw, 128px));
-      top: calc(7% + clamp(110px, 40vw, 180px) * 1.5 + 8px);
-      width: clamp(58px, 22vw, 96px);
-    }
   }
-  @media (prefers-reduced-motion: reduce) { .who__next { transition: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* gentler, never zero: the band still shows which plate is next, it just
+       does not travel to say so. */
+    .who__next { transform: none !important; }
+  }
 
   /* the plates — portrait 2:3, cover, no radius, no filter (mono is in the source) */
   .who__plates { position: absolute; inset: 0; z-index: 1; pointer-events: none; }

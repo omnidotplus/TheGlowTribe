@@ -98,7 +98,11 @@ const T = {
   frontFlare: 0.85,
   emitPeriod: 2600,       /* ms per emitter cycle */
   emitDist: 62, emitScale: 1.15, emitCurve: 1.5,
-  cardRise: 26
+  cardRise: 26,
+  /* beat 8, on the `tail` clock. markOut ends before handIn * (markH/2) can
+     carry the lockup's top edge anywhere near 0, which is the whole point:
+     the name is gone BEFORE the edge could cut it. */
+  markOut: 0.26, handIn: 0.22, handOut: 0.56
 };
 
 /* --- the O's centre, MEASURED. The reveal and the bloom both originate
@@ -140,22 +144,33 @@ if (matchMedia('(max-width: 620px)').matches) {
   T.bloomRest = Math.min(1, T.bloomRest * 1.3);
 }
 
-/* mobile only: position #whoNext from the WELL'S OWN measured box, not a
-   formula. A hand-derived clamp*aspect-ratio calc measured 49px short of the
-   well's real rendered bottom at 390px, because aspect-ratio does not
-   resolve to width*1.5 exactly once border-box and rounding are in play.
-   Measured, not guessed — same pattern measureO() already uses above. */
-function positionWhoNextMobile() {
-  if (!matchMedia('(max-width: 760px)').matches) return;
+/* Position #whoNext from the WELL'S OWN measured box, at EVERY width.
+   A hand-derived clamp*aspect-ratio calc measured 49px short of the well's
+   real rendered bottom at 390px, because aspect-ratio does not resolve to
+   width*1.5 exactly once border-box and rounding are in play. That was fixed
+   for mobile and the fix stopped there, so desktop kept running the formula:
+   measured at 1440 it sat 144px right of the well's left edge, overlapped the
+   live photo by 21px, and ran past the bottom of the viewport.
+
+   Left, width and top all come from the rect now, so the band shares the
+   well's exact edges by construction and cannot drift again. Measured, not
+   guessed -- the same pattern measureO() already uses above. */
+function positionWhoNext() {
   const well = document.getElementById('whoWell'), next = document.getElementById('whoNext');
   if (!well || !next) return;
   const stage = well.offsetParent;
   if (!stage) return;
   const wr = well.getBoundingClientRect(), sr = stage.getBoundingClientRect();
-  next.style.top = Math.round(wr.bottom - sr.top + 16) + 'px';
+  if (!wr.width) return;
+  /* a shallow band, proportional to the plate so it holds at any width */
+  const band = Math.round(Math.min(72, Math.max(34, wr.width * 0.17)));
+  next.style.left   = Math.round(wr.left - sr.left) + 'px';
+  next.style.width  = Math.round(wr.width) + 'px';
+  next.style.top    = Math.round(wr.bottom - sr.top + 10) + 'px';
+  next.style.height = band + 'px';
 }
-positionWhoNextMobile();
-addEventListener('resize', () => { measureO(); ScrollTrigger.refresh(); positionWhoNextMobile(); });
+positionWhoNext();
+addEventListener('resize', () => { measureO(); ScrollTrigger.refresh(); positionWhoNext(); });
 if (document.fonts && document.fonts.ready)
   document.fonts.ready.then(() => { measureO(); ScrollTrigger.refresh(); });
 
@@ -189,13 +204,27 @@ function emitFrame(now) {
 
 /* Measured, not guessed — the lift has to equal half the below-group's real
    height or the final lockup sits off-centre. Recomputed on resize. */
-let _belowH = 0;
-const measureBelow = () => { _belowH = below.getBoundingClientRect().height; };
+let _belowH = 0, _markH = 0, _cardMid = 0;
+const _hcard = below.querySelector('.hcard');
+const measureBelow = () => {
+  const b = below.getBoundingClientRect();
+  _belowH = b.height;
+  _markH  = mark.getBoundingClientRect().height;
+  /* The thing that gets centred at the handoff is the VISIBLE card, not its
+     wrapper -- .core__below carries a padding-top, so centring the wrapper
+     leaves the card half that padding low. Measured, like everything else
+     here: a derived offset, never a dialled one. */
+  _cardMid = _hcard ? (_hcard.getBoundingClientRect().top - b.top)
+                      + _hcard.getBoundingClientRect().height / 2
+                    : _belowH / 2;
+};
 /* Watch the card's own box. Its height changes when the CTA wraps or the
    webfont lands, and neither fires a resize event — a stale height left the
    card hanging on the boundary with the next section. */
 if (window.ResizeObserver) {
-  new ResizeObserver(() => { measureBelow(); ScrollTrigger.refresh(); }).observe(below);
+  const ro = new ResizeObserver(() => { measureBelow(); ScrollTrigger.refresh(); });
+  ro.observe(below);
+  ro.observe(mark);
 }
 const belowH = () => _belowH;
 measureBelow();
@@ -327,16 +356,49 @@ const BEATS = [
   [T.b.emit, '6 \u00b7 the work erupts (loop)'], [T.b.card, '7 \u00b7 the card']
 ];
 
+/* ---- the two clocks -------------------------------------------------
+   The sticky stage releases at heroHeight - viewportHeight, which is exactly
+   where ScrollTrigger's `end: bottom bottom` also resolves -- so progress 1.0
+   and the pin release used to be the same frame. Everything the hero had just
+   built was therefore at full opacity when the stage began to scroll away:
+   the card hit opacity 1 and was immediately carried off, and the wordmark was
+   sliced through its letterforms by the top edge.
+
+   SEQ_END splits them. Beats 0-7 run across the first SEQ_END of the pin, at
+   the pixel budgets they already had; the remainder -- exactly one viewport of
+   PINNED distance -- is the `tail`, and belongs to beat 8 alone.
+   See HERO_CHOREOGRAPHY.md, "Two clocks". ------------------------------- */
+const heroEl = document.getElementById('hero');
+let SEQ_END = 1;
+function measureSeq() {
+  const span = heroEl.offsetHeight - innerHeight;
+  SEQ_END = span > innerHeight ? (span - innerHeight) / span : 1;
+}
+measureSeq();
+addEventListener('resize', measureSeq);
+
 function heroUpdate(self) {
-  const p = self.progress;
+  const raw  = self.progress;
+  /* REDUCE collapses the hero to one viewport, so there is no tail to run and
+     no handoff to choreograph -- the static frame already shows what 8c
+     resolves to. Gentler, never zero: the card still fades, it just never
+     travels and the name is never withdrawn. */
+  const p    = REDUCE ? raw : clamp(0, 1, raw / SEQ_END);
+  const tail = REDUCE ? 0   : at(raw, SEQ_END, 1);
 
   /* The beat readout is a DEV element (?dev=1) and may not be in the DOM.
      Unguarded, this threw on EVERY update and aborted the rest of onUpdate,
      so the walls, the eruption and the countdown all silently stopped.
      Guard, never assume. */
   if (beat) {
-    for (let i = BEATS.length - 1; i >= 0; i--) {
-      if (p >= BEATS[i][0]) { beat.textContent = BEATS[i][1]; break; }
+    if (tail > 0) {
+      beat.textContent = tail < T.markOut ? '8a \u00b7 the exposure is withdrawn'
+                       : tail < T.handOut ? '8b \u00b7 the ask takes the centre'
+                                          : '8c \u00b7 the hold';
+    } else {
+      for (let i = BEATS.length - 1; i >= 0; i--) {
+        if (p >= BEATS[i][0]) { beat.textContent = BEATS[i][1]; break; }
+      }
     }
   }
 
@@ -407,11 +469,29 @@ function heroUpdate(self) {
     markShine.style.opacity = (Math.sin(Math.PI * clamp(0, 1, shine)) * 0.95).toFixed(3);
   }
 
-  /* the wordmark holds DEAD CENTRE through beats 0-5, then rises by half the
-     card's real height so the finished lockup re-centres */
-  /* belowH/2 centres the lockup exactly, which put the card flush against the
-     section boundary. The extra 0.16 lifts it clear so there is air below. */
-  const lift = easeOut(at(p, T.b.clear, 0.94)) * (belowH() * 0.66);
+  /* the wordmark holds DEAD CENTRE through beats 0-5, then rises so the
+     finished lockup re-centres as ONE group.
+     belowH/2 is exact, not tuned: .core is the mark's own box, centred by the
+     stage's grid, and .core__below is absolute at top:100%, so the group's
+     centre sits exactly belowH/2 below the viewport's. The old 0.66 was a
+     fudge -- it measured 41px high of centre at 1440x900, with 56px of air
+     above the lockup against 138px below, which is what the client read as
+     poor positioning. */
+  const settle = easeOut(at(p, T.b.clear, 0.94)) * (belowH() * 0.5);
+
+  /* — beat 8a: the exposure is withdrawn. The name is never allowed to leave
+       by being cut; it leaves the way it arrived, as light. One write on
+       .mark takes bloom, O, reveal, front and shine down together, and
+       .mark carries no WAAPI opacity animation, so nothing outranks it. — */
+  if (!REDUCE) mark.style.opacity = (1 - ease(at(tail, 0, T.markOut))).toFixed(3);
+
+  /* — beat 8b: the ask takes the centre. The extra lift is the rest of the
+       way from "group centred" to "the visible card centred", derived from
+       the measured boxes. Starts 36px before 8a finishes so the name dims AS
+       the card rises -- a handover, not two events. — */
+  const hand  = easeOut(at(tail, T.handIn, T.handOut));
+  const extra = hand * (_markH / 2 + _cardMid - belowH() * 0.5);
+  const lift  = settle + extra;
   core.style.transform = REDUCE ? 'none' : `translateY(${-lift}px)`;
 
   /* — beat 6: hand the emitter its gain and let its own clock drive it — */
@@ -450,9 +530,9 @@ let heroST = makeHeroST();
 window.__hero = {
   T, measureO,
   setScrub: () => { heroST.kill(); heroST = makeHeroST(); },
-  setPin: vh => { document.getElementById('hero').style.height = vh + 'vh'; ScrollTrigger.refresh(); },
+  setPin: vh => { heroEl.style.height = vh + 'vh'; measureSeq(); ScrollTrigger.refresh(); },
   shine: markShine,
-  refresh: () => { measureO(); ScrollTrigger.refresh(); }
+  refresh: () => { measureO(); measureBelow(); measureSeq(); ScrollTrigger.refresh(); }
 };
 
 /* =====================================================================
@@ -634,19 +714,28 @@ ScrollTrigger.create({
           const img = nextEl.querySelector('img');
           if (img && img.getAttribute('src') !== src.getAttribute('src'))
             img.setAttribute('src', src.getAttribute('src'));
-          nextEl.style.opacity = '';
-          /* Measured once at load, positionWhoNextMobile() was reading the
-             WELL's box before the Who section had ever been scrolled to — its
-             sticky stage reports different geometry cold than once actually
-             in view, so a load-time measurement was consistently ~27px off.
-             The section's own scroll update is when the geometry is real. */
-          positionWhoNextMobile();
-          /* it climbs as the current statement advances, so the next image
-             reads as rising into place rather than simply being there
-             (client's reference, 15 Sept). */
-          const localUp = (p * frames.length) % 1;
-          nextEl.style.transform =
-            `translate3d(0, ${(-localUp * 74).toFixed(1)}px, 0)`;
+          /* ONE authored moment, and a motivated one: the band answers "how
+             close is the next plate", so it rises and gains as this statement
+             runs out rather than sitting at a constant ghost opacity. sub is
+             the progress THROUGH the current frame, 0 to 1. Exponential
+             ease-out, so most of the movement happens as the handover nears.
+             Held under 0.5 opacity at full strength: it is a hint behind the
+             subject, never a second photo competing with it. */
+          const sub = Math.min(1, Math.max(0, p * frames.length - active));
+          const e = 1 - Math.pow(1 - sub, 3);
+          nextEl.style.opacity = String(0.14 + e * 0.34);
+          nextEl.style.transform = 'translate3d(0,' + (-8 + e * 8).toFixed(2) + 'px,0)';
+          /* Measured once at load, positionWhoNext() was reading the WELL's
+             box before the Who section had ever been scrolled to — its sticky
+             stage reports different geometry cold than once actually in view,
+             so a load-time measurement was consistently ~27px off. The
+             section's own scroll update is when the geometry is real. */
+          positionWhoNext();
+          /* The previous build wrote transform a SECOND time here, from a
+             separate `localUp` ramp that travelled -74px. Two writes to one
+             property in one frame means the last one wins and the first is
+             dead code, and -74px was most of why the band climbed up over the
+             photo instead of sitting under it. One write now, above. */
         } else {
           nextEl.style.opacity = '0';
         }

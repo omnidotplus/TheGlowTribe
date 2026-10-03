@@ -12,14 +12,14 @@ if (location.search.includes('dev')) {
        more scroll distance reads slower at the same wheel speed */
     const seq = DialKit.createDialKit('Hero \u00b7 sequence', {
       scrub: [T.scrub, 0, 1.6, 0.01],
-      pinVh: [400, 200, 700, 10],
+      pinVh: [500, 200, 800, 10],
       beats: {
         room:[T.b.room,0,1,0.01], tunnel:[T.b.tunnel,0,1,0.01], oMat:[T.b.oMat,0,1,0.01],
         build:[T.b.build,0,1,0.01], clear:[T.b.clear,0,1,0.01],
         emit:[T.b.emit,0,1,0.01], card:[T.b.card,0,1,0.01]
       }
     }, { id: 'tgt-hero-seq', persist: true });
-    let lastScrub = T.scrub, lastPin = 400;
+    let lastScrub = T.scrub, lastPin = 500;
     seq.subscribe(v => {
       Object.assign(T.b, v.beats);
       if (v.scrub !== lastScrub) { lastScrub = T.scrub = v.scrub; H.setScrub(); }
