@@ -15,7 +15,19 @@ const { current } = Astro.props as Props;
 const ctaHref = current === 'conference' ? '#event' : '/conference#event';
 ---
 <nav class="tnav" id="tnav" aria-label="Primary">
-  <a class="tnav__mark" href="/">The Glow Tribe</a>
+  <!-- Two files rather than one recoloured file: the wordmark is raster, so it
+       cannot follow currentColor. The bar already inverts against whatever is
+       under it (data-on dark = paper bar, light = ink bar), so each variant is
+       simply shown on the state it was made for. The orange reads on both.
+       The accessible name comes from the hidden text, so the images are
+       decorative and both carry an empty alt rather than announcing twice. -->
+  <a class="tnav__mark" href="/">
+    <img class="tnav__wordmark tnav__wordmark--ink"   src="/img/wordmark-ink.webp"
+         width="269" height="72" alt="" decoding="async">
+    <img class="tnav__wordmark tnav__wordmark--paper" src="/img/wordmark-paper.webp"
+         width="269" height="72" alt="" decoding="async">
+    <span class="visually-hidden">The Glow Tribe</span>
+  </a>
   <button class="tnav__toggle" id="tnavToggle" aria-expanded="false" aria-controls="tnavLinks" aria-label="Menu">
     <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
       <line class="bar bar--a" x1="2" y1="5" x2="16" y2="5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>

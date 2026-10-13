@@ -31,7 +31,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://theglowtrib
        A tagless og:image is honest; a placeholder would ship a broken or
        misleading social-share card. Pre-launch checklist item, not a bug. -->
   <meta name="theme-color" content="#FF4B12">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <!-- The real TGT mark, replacing the Astro scaffold's stock icon. .ico first
+       for the browsers that still look for it by convention, then the PNGs. -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="/favicon-512.png" type="image/png" sizes="512x512">
+  <link rel="apple-touch-icon" href="/favicon-180.png">
 
   <link rel="stylesheet" href="/styles/skeleton.css">
   <link rel="stylesheet" href={`${pageStylesHref}?v=14`}>

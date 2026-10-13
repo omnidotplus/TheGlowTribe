@@ -271,11 +271,19 @@ body.dev .note--inline { display: block; }
 }
 
 .tnav__mark {
-  font-family: var(--f-display, var(--stack));
-  font-variation-settings: 'wdth' 95, 'wght' 900;
-  font-size: clamp(13px, 1.25vw, 15px); letter-spacing: -.02em;
+  display: flex; align-items: center;
   color: inherit; text-decoration: none; white-space: nowrap;
 }
+.tnav__wordmark {
+  display: block; width: auto;
+  height: clamp(17px, 1.7vw, 21px);
+  /* the source is 3x the rendered height, so it stays crisp on retina */
+}
+/* Only one variant is ever in the layout. The ink wordmark is the default,
+   because the bar's own default background is paper. */
+.tnav__wordmark--paper { display: none; }
+.tnav[data-on="light"] .tnav__wordmark--ink   { display: none; }
+.tnav[data-on="light"] .tnav__wordmark--paper { display: block; }
 .tnav__cta {
   flex: 0 0 auto;
   display: inline-flex; align-items: center; gap: 8px;

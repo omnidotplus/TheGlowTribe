@@ -18,7 +18,7 @@ Timestamp    Name    Email    Phone    Discipline    Page
 
 ## 2 · **You:** add the script
 
-In that sheet: **Extensions → Apps Script**. Delete whatever is in the editor and
+In that sheet: click on **Extensions → Apps Script**. Delete whatever is in the editor and
 paste this in full.
 
 ```javascript
@@ -44,7 +44,7 @@ function doPost(e) {
     var sheet = SpreadsheetApp.getActive().getSheetByName(SHEET)
              || SpreadsheetApp.getActive().getSheets()[0];
 
-    /* Guard against a double-tap or a retry creating two rows for one person.
+    /*
        Checks the email column for an exact match before appending. */
     var existing = sheet.getLastRow() > 1
       ? sheet.getRange(2, 3, sheet.getLastRow() - 1, 1).getValues().map(function (r) {
@@ -70,7 +70,7 @@ function doPost(e) {
     try {
       MailApp.sendEmail({
         to: email,
-        subject: "You're in — No Bushels, 21 Nov 2026",
+        subject: "You're in, No Bushels, 21 Nov 2026",
         name: 'The Glow Tribe',
         body: [
           'Hi ' + name.split(' ')[0] + ',',
@@ -129,6 +129,11 @@ your behalf, which is the confirmation message above.
 
 Copy the deployment URL. It ends in `/exec`.
 
+
+AKfycbx9JjF138aD0mhXTQhjUNurlFlR4OYE13LtakRHr1CL_KQqISZ9ldgloEMW_s4qwp0A
+
+https://script.google.com/macros/s/AKfycbx9JjF138aD0mhXTQhjUNurlFlR4OYE13LtakRHr1CL_KQqISZ9ldgloEMW_s4qwp0A/exec
+
 ## 4 · Point the site at it
 
 ```bash
@@ -165,3 +170,58 @@ If the card does not turn, the form shows the reason in place of its note and
 - **Phone is optional** and may be blank in the sheet. That is intended.
 - **Changing the header order means changing `appendRow`.** The script writes
   positionally.
+
+---
+
+## Troubleshooting
+
+### The browser console says CORS, and the status is 403
+
+The CORS message is a symptom. Google refused the request before it reached the
+script, and its error page carries no CORS headers, so the browser reports the
+missing header rather than the refusal. Nothing in the site's code can fix it.
+Prove it from outside the browser, where CORS does not exist:
+
+```bash
+./check-endpoint.sh                 # tests the URL in .env
+./check-endpoint.sh '<exec-url>'    # tests a URL before you commit to it
+```
+
+A 403 from `curl` means the endpoint refuses everyone, not just the site.
+
+### 403 with an "Access denied · Drive · You need access" page
+
+This is the one that costs an afternoon, because the obvious setting is not the
+cause. If the response mentions **Drive** and **"You are signed in as"**, Google
+is not refusing your script, it never found a web app at that URL and fell back
+to treating it as a Drive document.
+
+Check **Execute as** before touching anything else. The two fields interact:
+
+| Execute as | Who has access | An anonymous visitor gets |
+|---|---|---|
+| **Me** | **Anyone** | the script runs, as intended |
+| User accessing the web app | Anyone | Drive's "You need access" page |
+
+With *User accessing the web app*, Google must run the script **as the visitor**,
+so it needs them signed in with access to the sheet. A visitor to a public site
+is neither, so it fails at Drive rather than at your code. Setting *Who has
+access* to Anyone cannot rescue this, which is why changing it looks like it
+does nothing.
+
+Also confirm the deployment is in the active list rather than under **archived
+deployments**. An archived deployment produces the same Drive fallback.
+
+### Changes to the script do nothing
+
+Apps Script serves the last *deployed* version, not what is in the editor.
+After editing: **Deploy → Manage deployments → pencil → Version: New version →
+Deploy**. Editing an existing deployment this way keeps the same `/exec` URL.
+Creating a **New deployment** instead mints a new URL, which then has to be
+updated in `.env` **and** in the host's environment variables.
+
+### It works locally but not on the deployed site
+
+`PUBLIC_REG_ENDPOINT` is read at **build time**, not per request. Setting or
+changing it on the host requires a fresh deploy; editing the variable alone
+leaves the already-built page pointing at the old value.
