@@ -276,8 +276,9 @@ body.dev .note--inline { display: block; }
 }
 .tnav__wordmark {
   display: block; width: auto;
-  height: clamp(17px, 1.7vw, 21px);
-  /* the source is 3x the rendered height, so it stays crisp on retina */
+  height: clamp(21px, 2.1vw, 26px);
+  /* the source is 72px tall, so even at the 26px ceiling this is still
+     drawn from ~2.8x, which holds up on a retina screen */
 }
 /* Only one variant is ever in the layout. The ink wordmark is the default,
    because the bar's own default background is paper. */
