@@ -6,6 +6,31 @@
      card is read, and the wordmark is under-exposed out before the viewport's
      top edge can ever reach it. See HERO_CHOREOGRAPHY.md "Two clocks". */
   .hero { height: 500vh; position: relative; }   /* 9 beats, HERO_CHOREOGRAPHY v2.1 */
+  /* On a phone 500vh of hero plus 460vh of Who meant 9.6 of the page's 14.5
+     viewports were SCROLL-PINNED: you swipe, the page does not move, only an
+     animation advances. With a thumb that reads as the page being stuck, which
+     is exactly what the client reported. SC7 is mobile-first, so the
+     choreography gets less distance to run in rather than the phone getting a
+     desktop scroll budget.
+
+     320vh is not arbitrary. updateSpan() computes
+     SEQ_END = (span - innerHeight) / span, where span = heroHeight -
+     innerHeight, so the beat-8 hold always costs one whole viewport. At 320vh
+     the sequence keeps 120vh and the hold takes 100vh. Shrink much below this
+     and the hold eats the sequence: at 240vh the eight beats would be squeezed
+     into 40vh and fly past. */
+  @media (max-width: 760px) {
+    /* svh, not vh, and this is the second half of the mobile scroll fix.
+       The sticky stages inside both sections are already 100svh, but the
+       SECTIONS were vh. On a phone vh resolves to the LARGE viewport height,
+       so it grows the moment the address bar hides: the section gets taller
+       mid-scroll, the sticky release point moves, ScrollTrigger recalculates
+       against new geometry, and the page visibly jumps. svh is the small
+       viewport height and does not move, so the pin length is fixed whatever
+       the browser chrome does. Matching the unit the stages already use also
+       means the section and its stage can no longer disagree. */
+    .hero { height: 320svh; }
+  }
 
   .stage {
     position: sticky; top: 0;
@@ -437,6 +462,8 @@
      composition — it is not the composition. Structure is animation-ready:
      every moving part is its own element with a transform hook. */
   .who { height: 460vh; position: relative; }
+  /* same reasoning: three statements do not need 4.6 viewports of thumb work */
+  @media (max-width: 760px) { .who { height: 240svh; } }   /* svh: see the hero note above */
 
   .who__stage {
     position: sticky; top: 0;

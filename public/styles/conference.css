@@ -456,11 +456,15 @@
     touch-action: pan-x;
     padding: 0 clamp(16px,6vw,96px) 10px;
     min-width: 0;
-    /* Three cards, so they centre instead of hanging off the left edge. The
-       row keeps overflow-x for the widths where three cards genuinely do not
-       fit; justify-content only takes effect when there is slack, so the two
-       do not conflict. */
-    justify-content: center;
+    /* NOT justify-content:center here, and this was a real bug. On an
+       OVERFLOWING flex row, centring distributes the overflow to BOTH sides,
+       and the left overflow is unreachable because scrollLeft cannot go
+       negative. Measured at 390px: the first card sat at x -134, so Asah
+       Gold's face was half off the screen and could not be scrolled to. The
+       client read it as a bad crop; the crop was fine.
+       Centring is applied only above the width where three cards genuinely
+       fit, where there is slack and nothing can overflow. */
+    justify-content: flex-start;
     /* The row genuinely overflows (measured 1524 against 1350 at desktop), so
        it stays scrollable -- but the native bar is chrome, not design, and the
        client asked for it gone. Drag, trackpad, wheel and keyboard all still
@@ -469,6 +473,9 @@
     -ms-overflow-style: none;          /* old Edge */
   }
   .spk__row::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  /* 3 x 210px + 2 x 14px gap + 92px padding = 750px, so there is slack from
+     780px up and centring is safe. Below it the row scrolls from the left. */
+  @media (min-width: 780px) { .spk__row { justify-content: center; } }
   .spk__card {
     flex: 0 0 auto; width: clamp(210px, 27vw, 330px);
     scroll-snap-align: start; position: relative;
