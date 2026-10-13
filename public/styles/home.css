@@ -29,7 +29,7 @@
        viewport height and does not move, so the pin length is fixed whatever
        the browser chrome does. Matching the unit the stages already use also
        means the section and its stage can no longer disagree. */
-    .hero { height: 320svh; }
+    .hero { height: 360svh; }
   }
 
   .stage {

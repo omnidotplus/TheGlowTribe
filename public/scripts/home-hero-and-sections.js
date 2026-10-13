@@ -372,7 +372,19 @@ const heroEl = document.getElementById('hero');
 let SEQ_END = 1;
 function measureSeq() {
   const span = heroEl.offsetHeight - innerHeight;
-  SEQ_END = span > innerHeight ? (span - innerHeight) / span : 1;
+  /* The hold used to be exactly one viewport, which is fine on a long hero and
+     ruinous on a short one. With the mobile hero at 320svh the span is ~1857px,
+     so a fixed 844px hold took 45% of the scroll and squeezed beats 0-7 into
+     1013px. The emitter's own slice of that (p 0.81 to 0.93) came out at 122px,
+     about one flick, so the client never saw the eruption finish.
+
+     A quarter of the span, capped at one viewport, fixes the proportion at
+     every size. Desktop is provably unchanged: its span is 3600px and a quarter
+     is 900px, exactly the viewport it was already using, so SEQ_END stays
+     0.75. Mobile now computes 0.75 too, which means the sequence has the same
+     shape on a phone as on a desktop rather than a compressed one. */
+  const hold = Math.min(innerHeight, span * 0.25);
+  SEQ_END = span > hold ? (span - hold) / span : 1;
 }
 measureSeq();
 addEventListener('resize', measureSeq);

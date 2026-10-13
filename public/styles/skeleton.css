@@ -46,6 +46,23 @@ body {
 }
 .slot::after { content: attr(data-slot); padding: 4px; text-align: center; }
 
+/* A slot that has been FILLED is not a placeholder any more, so it must stop
+   painting placeholder chrome. The cream --slot fill, the --line border and
+   the data-slot caption are all there to describe an EMPTY reservation; with a
+   real image on top they can only leak around its edges.
+
+   This was visible in the hero's emitter: those ten flying items are .slot
+   elements with real images, and each one carried a cream background and a
+   1px light border. As they scale up from ~3px the chrome showed around the
+   artwork, which reads exactly as the "weird white space or cream" the client
+   reported below the eruption. Nothing was missing from the images; the
+   placeholder frame was being drawn on top of them. */
+.slot:has(img) {
+  background: none;
+  border: 0;
+}
+.slot:has(img)::after { content: none; }
+
 /* ---- persistent register chrome — B4(c). Present on every skeleton ---- */
 .chrome {
   position: fixed;
