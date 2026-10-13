@@ -43,8 +43,77 @@ setInterval(() => paint(trueValues()), 1000);
     back.querySelectorAll('button').forEach(el => el.tabIndex = flipped ? 0 : -1);
   };
 
-  form.addEventListener('submit', e => { e.preventDefault(); setFace(true); });
-  if (undo) undo.addEventListener('click', () => { setFace(false); form.reset(); });
+  /* Submit, then store, THEN turn the card. The card used to flip the instant
+     submit fired, which told the visitor they were registered before anything
+     had been recorded. If the request fails they stay on the form with the
+     reason, because a confirmation that is not backed by a stored row is a
+     lie to someone who then does not turn up to a chair that was never set. */
+  const submitBtn = document.getElementById('regSubmit');
+  const note = document.getElementById('regNote');
+  const noteText = note ? note.textContent : '';
+  let sending = false;
+
+  function say(msg, kind) {
+    if (!note) return;
+    note.textContent = msg;
+    note.dataset.kind = kind || '';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (sending) return;
+
+    const endpoint = form.dataset.endpoint;
+    const payload = {
+      name:       (document.getElementById('rn2') || {}).value || '',
+      email:      (document.getElementById('re2') || {}).value || '',
+      phone:      (document.getElementById('rp2') || {}).value || '',
+      discipline: (document.getElementById('rd2') || {}).value || '',
+      page: location.pathname
+    };
+
+    /* No endpoint configured: say so plainly rather than faking a success.
+       See site/REGISTRATION_SETUP.md. */
+    if (!endpoint) {
+      say('Registration is not connected yet. Nothing was stored.', 'err');
+      return;
+    }
+
+    sending = true;
+    form.dataset.sending = '1';
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.dataset.label = submitBtn.textContent; submitBtn.textContent = 'Saving…'; }
+    say('Saving your place…', '');
+
+    try {
+      /* text/plain is deliberate. Google Apps Script web apps do not answer a
+         CORS preflight, so an application/json POST fails before it is sent.
+         text/plain makes this a "simple request", which skips preflight
+         entirely AND still lets us read the response. The script parses the
+         body as JSON on its side. */
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const out = await res.json().catch(() => ({ ok: true }));
+      if (out && out.ok === false) throw new Error(out.error || 'rejected');
+
+      setFace(true);
+      say(noteText, '');
+    } catch (err) {
+      say('That did not save. Check your connection and try again.', 'err');
+    } finally {
+      sending = false;
+      form.dataset.sending = '0';
+      if (submitBtn) { submitBtn.disabled = false; if (submitBtn.dataset.label) submitBtn.textContent = submitBtn.dataset.label; }
+    }
+  });
+
+  if (undo) undo.addEventListener('click', () => { setFace(false); form.reset();
+    form.querySelectorAll('.field').forEach(f => f.dataset.invalid = '0');
+    say(noteText, ''); });
   setFace(false);
 })();
 
@@ -164,4 +233,108 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmar
       attributes: true, attributeFilter: ['data-flipped']
     });
   }
+})();
+
+/* ============================================================================
+   Registration form validation.
+
+   Name, email and discipline are required. PHONE IS OPTIONAL, and when it is
+   filled it must be an actual number: digits, spaces, dashes and a leading +
+   only, resolving to a real Nigerian-length number. "actual numbers and not
+   abstract stuff", per the client.
+
+   The form carries `novalidate` so this runs instead of the browser's own
+   bubbles, which cannot be styled and only ever surface one field at a time.
+   The HTML constraints stay in the markup, so a no-JS visitor still gets
+   native validation rather than none.
+   ========================================================================= */
+(() => {
+  const form = document.getElementById('regForm');
+  if (!form) return;
+
+  const EMAIL = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+
+  /* Nigerian mobile numbers are 11 digits starting 0 (0801...), or the same
+     subscriber number in international form: +234 then 10 digits. Accept both,
+     plus a bare 10-digit subscriber number, and ignore spaces, dashes and
+     brackets entirely so a pasted number is never rejected on formatting. */
+  function phoneProblem(raw) {
+    const v = raw.trim();
+    if (!v) return null;                             /* optional: empty is fine */
+    if (/[^\d\s()+-]/.test(v))
+      return 'Numbers only, no letters.';
+    const d = v.replace(/[^\d]/g, '');
+    if (d.length < 10) return 'Too short. 11 digits, like 0801 234 5678.';
+    if (/^234/.test(d))  return d.length === 13 ? null : 'With 234, that is 13 digits.';
+    if (/^0/.test(d))    return d.length === 11 ? null : 'Starting with 0, that is 11 digits.';
+    if (d.length === 10) return null;                /* subscriber part alone */
+    return 'That does not look like a phone number.';
+  }
+
+  const CHECKS = {
+    rn2: v => !v.trim()            ? 'Your name, so we know who to expect.'
+            : v.trim().length < 2  ? 'That is too short to be a name.'
+            : !/[A-Za-zÀ-ɏ]/.test(v) ? 'A name needs at least one letter.'
+            : null,
+    re2: v => !v.trim()            ? 'An email, so we can send directions.'
+            : !EMAIL.test(v.trim()) ? 'Check this address. It needs an @ and a domain.'
+            : null,
+    rp2: phoneProblem,
+    rd2: v => !v ? 'Pick the one closest to what you make.' : null
+  };
+
+  function mark(el, msg) {
+    const field = el.closest('.field');
+    const err = field && field.querySelector('.field__err');
+    const bad = !!msg;
+    if (field) field.dataset.invalid = bad ? '1' : '0';
+    if (err) err.textContent = msg || '';
+    el.setAttribute('aria-invalid', bad ? 'true' : 'false');
+    return !bad;
+  }
+
+  Object.keys(CHECKS).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    /* Validate on blur, never while someone is still mid-word: telling a
+       visitor their email is wrong at "a@" is noise, not help. Once a field is
+       already showing an error, re-check on input so the message clears the
+       moment it is fixed rather than waiting for another blur. */
+    el.addEventListener('blur', () => mark(el, CHECKS[id](el.value)));
+    el.addEventListener('input', () => {
+      const f = el.closest('.field');
+      if (f && f.dataset.invalid === '1') mark(el, CHECKS[id](el.value));
+    });
+    if (el.tagName === 'SELECT')
+      el.addEventListener('change', () => mark(el, CHECKS[id](el.value)));
+  });
+
+  /* Strip anything that is not part of a number as it is typed, so the field
+     cannot hold letters at all. */
+  const phone = document.getElementById('rp2');
+  if (phone) phone.addEventListener('input', () => {
+    const cleaned = phone.value.replace(/[^\d\s()+-]/g, '');
+    if (cleaned !== phone.value) {
+      const at = phone.selectionStart - (phone.value.length - cleaned.length);
+      phone.value = cleaned;
+      try { phone.setSelectionRange(at, at); } catch (_) {}
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    let firstBad = null;
+    Object.keys(CHECKS).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!mark(el, CHECKS[id](el.value)) && !firstBad) firstBad = el;
+    });
+    if (firstBad) {
+      /* stop the existing handler from flipping the card on invalid input */
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      firstBad.focus();
+      firstBad.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, true);   /* capture: must run BEFORE the flip handler bound further up */
 })();

@@ -586,6 +586,9 @@
   .who__lines { display: grid; gap: 0; }
   .who__line {
     display: block;
+    /* NOTE: this is a stand-in. The shipped size comes from type.css's
+       --t-h2, which loads last by design and wins. The viewport-height cap
+       that keeps this statement inside its clipped stage lives there. */
     font-size: clamp(27px, 5vw, 72px);
     line-height: 1.10;                    /* 79.2/72, as measured */
     font-weight: 550;                     /* medium-heavy — confident, not shouty */

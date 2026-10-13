@@ -127,6 +127,39 @@
 
   .ev__form .field { gap: 4px; }              /* label hugs its own field */
 
+  /* "optional" sits with the label rather than in the placeholder: a
+     placeholder disappears the moment someone types, so it cannot carry a
+     persistent fact about the field, and it is never read as a label. */
+  /* the form's note doubles as its status line */
+  #regNote[data-kind="err"] { font-weight: 600; }
+  #regNote[data-kind="err"]::before { content: '⚠ '; }
+  .ev__form .submit[disabled] { opacity: .62; cursor: progress; }
+  .ev__form[data-sending="1"] { cursor: progress; }
+
+  .field__opt {
+    font-size: 9.5px; letter-spacing: .1em; opacity: .62;
+    text-transform: lowercase; font-style: normal;
+  }
+
+  /* Error text. --error is #C42A17, which is 2.1:1 against the ember ground
+     and fails outright, so the message sits in ink and the FIELD carries the
+     red. Colour is never the only signal: the text itself names the problem,
+     and the input gets a 2px border a screen reader reports via aria-invalid. */
+  .field__err {
+    margin: 0; min-height: 0; max-height: 0; overflow: hidden;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+    color: var(--n-900); opacity: 0;
+    transition: max-height .18s ease, opacity .18s ease, margin .18s ease;
+  }
+  .field[data-invalid="1"] .field__err {
+    max-height: 3em; opacity: 1; margin-top: 5px;
+  }
+  .field[data-invalid="1"] input,
+  .field[data-invalid="1"] select {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 28%, transparent);
+  }
+
   .ev__form .field label {
     font-family: var(--f-mono);
     /* F1, client: "the form texts... a bit blur". --dim resolved to --ember-950
@@ -423,30 +456,33 @@
     touch-action: pan-x;
     padding: 0 clamp(16px,6vw,96px) 10px;
     min-width: 0;
+    /* Three cards, so they centre instead of hanging off the left edge. The
+       row keeps overflow-x for the widths where three cards genuinely do not
+       fit; justify-content only takes effect when there is slack, so the two
+       do not conflict. */
+    justify-content: center;
+    /* The row genuinely overflows (measured 1524 against 1350 at desktop), so
+       it stays scrollable -- but the native bar is chrome, not design, and the
+       client asked for it gone. Drag, trackpad, wheel and keyboard all still
+       work; only the painted bar is hidden. */
+    scrollbar-width: none;             /* Firefox */
+    -ms-overflow-style: none;          /* old Edge */
   }
+  .spk__row::-webkit-scrollbar { width: 0; height: 0; display: none; }
   .spk__card {
     flex: 0 0 auto; width: clamp(210px, 27vw, 330px);
     scroll-snap-align: start; position: relative;
   }
   .spk__img { width: 100%; aspect-ratio: 1/1; overflow: hidden; }  /* square, as measured */
   .spk__img img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .spk__img--tba {
-    display: grid; place-items: center; text-align: center;
-    border: 1px dashed var(--line);
-    font-family: var(--mono); font-size: 12px; letter-spacing: .16em;
-    text-transform: uppercase; color: var(--dim);
-  }
   .spk__bar { background: var(--d-2); color: var(--paper); padding: 14px 16px 16px; }
-  .spk__name { margin: 0 0 4px; font-size: clamp(14px,1.6vw,19px); font-weight: 700; letter-spacing: -.01em; }
-  /* per-card accent lands here at F1 — Music / Film / Hangouts palettes (B5a).
-     Greyscale for now; the hook exists so colour is a one-line change. */
-  .spk__card[data-cat="music"]    .spk__name { color: var(--music-dk); }  /* 7.02:1 on --d-2 */
-  .spk__card[data-cat="film"]     .spk__name { color: var(--film-dk); }   /* 6.03:1 on --d-2 */
-  .spk__card[data-cat="hangouts"] .spk__name { color: var(--hang-dk); }   /* 10.87:1 on --d-2 */
-  .spk__role {
-    margin: 0; font-family: var(--mono); font-size: 10px;
-    letter-spacing: .14em; text-transform: uppercase; color: var(--n-300);
-  }
+  /* no bottom margin: the role line beneath it is gone, so the name is the
+     bar's only content and the padding does the spacing */
+  .spk__name { margin: 0; font-size: clamp(15px,1.7vw,20px); font-weight: 700; letter-spacing: -.01em; }
+  /* The per-discipline name tints (music-teal / film-blue / hangouts-lime) and
+     the role line are both gone. The client stated the speakers have no titles,
+     and without a stated discipline a coloured name asserts something we were
+     never told. Names read --paper from .spk__bar: 18.37:1 on --d-2. */
 
 
   /* ============ THE DAY — reference R-11, measured ============
@@ -497,9 +533,29 @@
   .day__fact:nth-child(1) { transform: rotate(-1deg); }
   .day__fact:nth-child(2) { transform: rotate(1.3deg); }
 
+  /* The time chips sit ABOVE their cards on purpose (negative top), and the
+     reveal system tags .day__grid with [data-r], whose clip-path is
+     `inset(0 0 -2.4%)`. That top inset of 0 clipped every chip that pokes
+     above the grid's own top edge, which is why ONLY the first row was sliced
+     flat: interior rows overflow into the grid's box and survive. Measured,
+     the worst overhang is 15px.
+
+     The padding gives the chips room INSIDE the clip box and the matching
+     negative margin keeps the composition in exactly the same place, so the
+     reveal's wipe is untouched. Fixing it on the clip-path instead would have
+     meant special-casing a shared system for one section. */
   /* ---- the card grid ---- */
   .day__grid {
-    list-style: none; margin: 0; padding: 0;
+    list-style: none;
+    /* padding-top + matching negative margin, NOT `padding: 0`. The chips sit
+       above their cards on purpose, and the reveal system tags this grid with
+       [data-r], whose clip-path is `inset(0 0 -2.4%)`. A top inset of 0 sliced
+       every chip that pokes above the grid's own top edge, which is why ONLY
+       the first row was cut flat: interior rows overflow into the grid's box
+       and survive. Worst overhang measured 15px. The padding gives them room
+       INSIDE the clip box; the negative margin keeps the composition exactly
+       where it was, so the reveal's wipe is untouched. */
+    margin: -22px 0 0; padding: 22px 0 0;
     display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
     gap: clamp(30px,4vw,54px) clamp(16px,2.6vw,36px);
   }

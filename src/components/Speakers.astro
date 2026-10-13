@@ -1,7 +1,15 @@
 ---
-/* SPEAKERS — Leonardo Artist Stories card row. P2: three invented names
-  behind real stock photography. Highest-risk placeholder on the site --
-  see PLACEHOLDERS.md. Must never reach production unresolved. */
+/* SPEAKERS — Leonardo Artist Stories card row.
+
+  RESOLVED 13 Oct 2026: this was the highest-risk placeholder on the site, three
+  invented names behind real stock photography. The client supplied the actual
+  lineup and their own photographs, so both halves are now real.
+
+  No roles. The client was explicit that the speakers do not have titles, only
+  names, so nothing is invented to fill the slot. The per-discipline name
+  colouring went with the roles: without a stated discipline, tinting a name
+  music-teal or film-blue would be decoration asserting something we were never
+  told. */
 ---
 <section class="spk g-dark" id="speakers" data-fade>
   <h2 class="spk__head">
@@ -18,36 +26,23 @@
       </svg>
     </span>
   </h2>
-  <p class="spk__sub">Announced weekly until 21 Nov</p>
+  <p class="spk__sub">Three voices for the day</p>
 
   <div class="spk__row" id="spkRow">
-    <article class="spk__card" data-cat="music">
-      <div class="slot spk__img" data-placeholder="P2"><img src="/img/spk-music.webp" alt="" loading="lazy" decoding="async"></div>
-      <div class="spk__bar">
-        <p class="spk__name" data-placeholder="P2">Tobi Adeyemi</p>
-        <p class="spk__role">Producer · Music</p>
-      </div>
+    <article class="spk__card">
+      <div class="spk__img"><img src="/img/spk-asah.webp" width="720" height="720"
+           alt="Asah Gold" loading="lazy" decoding="async"></div>
+      <div class="spk__bar"><p class="spk__name">Asah Gold</p></div>
     </article>
-    <article class="spk__card" data-cat="film">
-      <div class="slot spk__img" data-placeholder="P2"><img src="/img/spk-film.webp" alt="" loading="lazy" decoding="async"></div>
-      <div class="spk__bar">
-        <p class="spk__name" data-placeholder="P2">Ese Oghenekaro</p>
-        <p class="spk__role">Director · Film</p>
-      </div>
+    <article class="spk__card">
+      <div class="spk__img"><img src="/img/spk-dafe.webp" width="720" height="720"
+           alt="Dafe Richard" loading="lazy" decoding="async"></div>
+      <div class="spk__bar"><p class="spk__name">Dafe Richard</p></div>
     </article>
-    <article class="spk__card" data-cat="hangouts">
-      <div class="slot spk__img" data-placeholder="P2"><img src="/img/spk-writing.webp" alt="" loading="lazy" decoding="async"></div>
-      <div class="spk__bar">
-        <p class="spk__name" data-placeholder="P2">Nkechi Obi</p>
-        <p class="spk__role">Writer · Hangouts</p>
-      </div>
-    </article>
-    <article class="spk__card spk__card--tba">
-      <div class="spk__img spk__img--tba">More<br>to come</div>
-      <div class="spk__bar">
-        <p class="spk__name">To be announced</p>
-        <p class="spk__role">Keynote</p>
-      </div>
+    <article class="spk__card">
+      <div class="spk__img"><img src="/img/spk-brave.webp" width="720" height="720"
+           alt="Brave" loading="lazy" decoding="async"></div>
+      <div class="spk__bar"><p class="spk__name">Brave</p></div>
     </article>
   </div>
 </section>

@@ -157,7 +157,14 @@ p, li, dd, blockquote { max-width: var(--measure); }
   font-family: var(--f-display);
   font-variation-settings: 'wdth' 106, 'wght' 800;
   font-weight: 800;
-  font-size: var(--t-h2);
+  /* Capped against viewport HEIGHT as well as width, and only here. This is
+     the one display line that lives inside a `height: 100svh; overflow:
+     hidden` stage, so width alone is not enough: measured at 1350x700 the
+     longest statement ran 97px past the stage's bottom and was cut through
+     its letterforms. --t-h2 is shared with .theme__statement and .spk__head,
+     which have no such ceiling, so the cap is applied to this selector rather
+     than to the token. */
+  font-size: min(var(--t-h2), 8.4vh);
   line-height: var(--lh-h2);
   letter-spacing: var(--tr-h2);
 }

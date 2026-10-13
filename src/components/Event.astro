@@ -37,20 +37,51 @@
       <p class="ev__meta"><span>21 NOV 2026</span><span>EU Centre, Warri</span></p>
 
       <div class="ev__flip" id="regFlip">
-        <form class="ev__form ev__face ev__face--front" id="regForm">
+        <form class="ev__form ev__face ev__face--front" id="regForm" novalidate
+              data-endpoint={import.meta.env.PUBLIC_REG_ENDPOINT || ""}>
           <p class="ev__k">Register</p>
-          <div class="field"><label for="rn2">Name</label><input id="rn2" type="text" autocomplete="name" required></div>
-          <div class="field"><label for="re2">Email</label><input id="re2" type="email" autocomplete="email" required></div>
-          <div class="field"><label for="rp2">Phone</label><input id="rp2" type="tel" autocomplete="tel" required></div>
-          <div class="field"><label for="rd2">Creative discipline</label>
-            <select id="rd2" required>
+          <!-- novalidate: the browser's own bubbles cannot be styled and only
+               ever show one field at a time. Validation is ours, inline, with
+               every problem visible at once. The constraints stay in the markup
+               so they still hold without JS. -->
+          <div class="field">
+            <label for="rn2">Name</label>
+            <input id="rn2" name="name" type="text" autocomplete="name"
+                   required minlength="2" maxlength="80"
+                   aria-describedby="rn2-err">
+            <p class="field__err" id="rn2-err" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="re2">Email</label>
+            <input id="re2" name="email" type="email" autocomplete="email"
+                   required maxlength="254" spellcheck="false"
+                   aria-describedby="re2-err">
+            <p class="field__err" id="re2-err" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="rp2">Phone <span class="field__opt">optional</span></label>
+            <!-- inputmode numeric brings up the digit keypad on a phone, which
+                 is the actual fix for "actual numbers and not abstract stuff";
+                 type=tel alone still offers a full keyboard on most Androids. -->
+            <input id="rp2" name="phone" type="tel" autocomplete="tel"
+                   inputmode="numeric" maxlength="19"
+                   placeholder="0801 234 5678"
+                   aria-describedby="rp2-err">
+            <p class="field__err" id="rp2-err" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="rd2">Creative discipline</label>
+            <select id="rd2" name="discipline" required aria-describedby="rd2-err">
               <option value="" disabled selected>Choose one</option>
               <option>Music</option><option>Film</option><option>Writing</option>
               <option>Photography</option><option>Design</option><option>Other</option>
             </select>
+            <p class="field__err" id="rd2-err" aria-live="polite"></p>
           </div>
           <button class="submit" id="regSubmit" type="submit">Register · it's free</button>
-          <p class="ev__small note">⚠ Backend not wired · submissions are not stored.</p>
+          <!-- A form collecting a name, an email and a phone number should say
+               what it does with them. One line, no policy page needed. -->
+          <p class="ev__small note" id="regNote">We use these only to contact you about No Bushels.</p>
         </form>
 
         <!-- the reverse. Not a message appended below the form — the same panel,
