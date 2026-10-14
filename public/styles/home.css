@@ -684,6 +684,13 @@
     display: flex; gap: 0;
     overflow-x: auto; scroll-snap-type: x proximity;
     overscroll-behavior-x: contain;
+    /* Without this a vertical swipe that STARTS on the row is ambiguous, and
+       the browser can resolve it to this horizontal scroller and eat the
+       gesture: the page simply does not move. The row is full width and sits
+       straight after Who, so a thumb lands on it constantly. pan-x declares
+       that it only ever consumes horizontal pans and lets vertical ones
+       through. Same fix as the conference speakers row; home never got it. */
+    touch-action: pan-x;
     padding: 0 clamp(16px,6vw,96px) 8px;
     min-width: 0;
   }
@@ -829,6 +836,7 @@
     display: flex; gap: 0;                 /* no gap — the strip must be continuous */
     overflow-x: auto; scroll-snap-type: x proximity;
     overscroll-behavior-x: contain;
+    touch-action: pan-x;                   /* see .teaser__row above */
     padding: 0 clamp(16px,6vw,96px) 10px;
     min-width: 0;
   }

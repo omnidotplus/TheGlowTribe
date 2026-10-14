@@ -171,6 +171,12 @@ function positionWhoNext() {
 }
 positionWhoNext();
 addEventListener('resize', () => { measureO(); ScrollTrigger.refresh(); positionWhoNext(); });
+/* Fires when the well's rendered box actually changes, which covers the cold
+   sticky-stage geometry the per-frame call existed to catch. */
+if (window.ResizeObserver) {
+  const wellEl = document.getElementById('whoWell');
+  if (wellEl) new ResizeObserver(positionWhoNext).observe(wellEl);
+}
 if (document.fonts && document.fonts.ready)
   document.fonts.ready.then(() => { measureO(); ScrollTrigger.refresh(); });
 
@@ -538,6 +544,38 @@ const makeHeroST = () => ScrollTrigger.create({
 });
 let heroST = makeHeroST();
 
+/* ---- the hero's EXIT, which is a different problem from its choreography.
+   The sticky stage un-sticks once the section's bottom meets the stage's
+   bottom, and the scrubbed span ends at exactly that point, so the whole
+   sequence has finished by then. What follows is one full stage-height of the
+   finished card simply travelling up and out while the next section arrives
+   underneath it. On a desktop that reads as a handoff. On a phone, measured at
+   390x844, it put the hero's card and the entire Who composition on screen at
+   once -- statement, plate and sidebar -- on an identical dark ground, so
+   neither read as a whole and the join looked broken.
+
+   Fading the stage across its own exit keeps the two compositions from ever
+   occupying the screen together. Opacity only, and it runs on the exit
+   distance rather than the scrubbed span, so the choreography is untouched.
+   Reduced motion skips it: there is no pin to hand off from. ---- */
+if (!REDUCE) {
+  const stageEl = document.querySelector('.hero .stage');
+  if (stageEl) ScrollTrigger.create({
+    trigger: '#hero',
+    start: 'bottom bottom',      /* the frame the stage un-sticks */
+    end: 'bottom top',           /* the frame it has fully left */
+    scrub: true,
+    onUpdate: s => {
+      /* Measured and tuned: a 0.18 hold left the card at full opacity while
+         Who's first statement was already on screen, which is the overlap this
+         exists to prevent. It now begins fading almost as soon as it moves and
+         is gone by the time the next section's type is readable. */
+      stageEl.style.opacity = (1 - easeOut(at(s.progress, 0.03, 0.52))).toFixed(3);
+    },
+    onLeaveBack: () => { stageEl.style.opacity = ''; }
+  });
+}
+
 /* handed to the dialkit rig (?dev=1 only) so tuning needs no reload */
 window.__hero = {
   T, measureO,
@@ -737,12 +775,20 @@ ScrollTrigger.create({
           const e = 1 - Math.pow(1 - sub, 3);
           nextEl.style.opacity = String(0.14 + e * 0.34);
           nextEl.style.transform = 'translate3d(0,' + (-8 + e * 8).toFixed(2) + 'px,0)';
-          /* Measured once at load, positionWhoNext() was reading the WELL's
-             box before the Who section had ever been scrolled to — its sticky
-             stage reports different geometry cold than once actually in view,
-             so a load-time measurement was consistently ~27px off. The
-             section's own scroll update is when the geometry is real. */
-          positionWhoNext();
+          /* positionWhoNext() used to be called HERE, on every scroll frame.
+             It reads getBoundingClientRect() and then writes left/width/top/
+             height, and this handler has already written opacity and transform
+             above, so each frame forced the browser to flush those writes to
+             answer the read and then invalidated layout again. Layout
+             thrashing, sixty times a second, writing four layout-invalidating
+             properties while this project's own rule is transform and opacity
+             only.
+
+             The geometry it needs changes only when the well's box changes,
+             which a ResizeObserver reports precisely, including when the
+             sticky stage settles into its real size. That late settling was
+             the original reason for measuring here rather than at load, and
+             the observer covers it without costing a frame. */
           /* The previous build wrote transform a SECOND time here, from a
              separate `localUp` ramp that travelled -74px. Two writes to one
              property in one frame means the last one wins and the first is
