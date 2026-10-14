@@ -296,6 +296,17 @@ body.dev .note--inline { display: block; }
   height: clamp(21px, 2.1vw, 26px);
   /* the source is 72px tall, so even at the 26px ceiling this is still
      drawn from ~2.8x, which holds up on a retina screen */
+
+  /* Optical centring, not box centring. The O-mark hangs well below the
+     lettering, so the image's BOX centre is far below its TEXT centre:
+     measured on the 72px source, the type band occupies rows 8 to 31, centre
+     19.5, against a box centre of 36. The type therefore sits 16.5px high,
+     22.9% of the height, whenever the box is centred, which is why the
+     wordmark read as pushed to the top of the bar.
+     Shifting down by that measured 22.9% puts the LETTERING on the same line
+     as the nav links and lets the mark descend below it, which is what a
+     descender is supposed to do. */
+  transform: translateY(22.9%);
 }
 /* Only one variant is ever in the layout. The ink wordmark is the default,
    because the bar's own default background is paper. */
