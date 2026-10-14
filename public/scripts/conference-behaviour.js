@@ -147,7 +147,7 @@ addEventListener('resize', fitWordmark);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmark);
 
 /* footer live Warri time */
-/* footer clock removed: colon-numeral pairs are reserved for Matthew 5:14 */
+/* footer clock removed: colon-numeral pairs are reserved for Matthew 5:15 */
 
 /* ============================================================================
    The flyer-to-register connector.
@@ -337,4 +337,105 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmar
       firstBad.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }, true);   /* capture: must run BEFORE the flip handler bound further up */
+})();
+
+/* ============================================================================
+   The speakers carousel: drifts on its own, and can be dragged.
+
+   Why scrollLeft and not a CSS marquee. A translated track cannot be scrubbed,
+   and the client specifically wants to go back and forth through the speakers
+   to move faster. Driving the element's own scroll position means the drift
+   and the drag are the same mechanism, so they cannot disagree: a finger just
+   moves the thing the animation was already moving.
+
+   The track is rendered twice, so wrapping at the halfway point is invisible.
+   ========================================================================= */
+(() => {
+  const rail = document.getElementById('spkRail');
+  if (!rail) return;
+
+  const MOBILE = () => matchMedia('(max-width: 860px)').matches;
+  const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Reduced motion keeps the carousel, it just never moves by itself: the
+     strip is still fully reachable by dragging. Gentler, never zero. */
+  if (REDUCE) return;
+
+  const SPEED = 24;          /* px per second. Slow enough to read a face. */
+  const RESUME_AFTER = 2600; /* ms of stillness before the drift comes back */
+
+  let paused = false, inView = false, resumeTimer = 0, last = 0, raf = 0;
+  /* The position is accumulated as a FLOAT and assigned, never incremented.
+     scrollLeft is integer-quantised, so `scrollLeft += 0.4` every frame rounds
+     to zero and the carousel never moves: measured 7px of travel where 29 was
+     expected. Keeping the real position here and assigning it lets the
+     fractional part carry over between frames. */
+  let pos = 0;
+
+  /* Wrap at the halfway mark, which is exactly one track.
+     Operates on `pos`, the float, and never reads scrollLeft back: scrollLeft
+     is integer-quantised, so a read-back rounds the fractional part away. An
+     earlier version re-synced from it every frame and that silently destroyed
+     the accumulation -- measured 1px of travel where 36 was expected. */
+  function wrap() {
+    const half = rail.scrollWidth / 2;
+    if (half < 8) return;
+    if (pos >= half) pos -= half;
+    else if (pos < 0) pos += half;
+  }
+
+  function frame(now) {
+    if (!last) last = now;
+    const dt = Math.min(0.05, (now - last) / 1000);   /* clamp: a backgrounded
+                                                         tab must not jump */
+    last = now;
+    if (!paused && inView && MOBILE()) {
+      pos += SPEED * dt;
+      wrap();
+      rail.scrollLeft = pos;      /* write only; pos stays authoritative */
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  const hold = () => {
+    paused = true;
+    clearTimeout(resumeTimer);
+  };
+  const release = () => {
+    clearTimeout(resumeTimer);
+    /* resync from wherever the finger left it, or the drift would snap back to
+       where it was before the drag */
+    resumeTimer = setTimeout(() => { pos = rail.scrollLeft; paused = false; last = 0; }, RESUME_AFTER);
+  };
+
+  /* A finger down stops the drift immediately, so the two never push against
+     each other mid-gesture. pointer events cover touch, mouse and pen. */
+  rail.addEventListener('pointerdown', hold, { passive: true });
+  rail.addEventListener('pointerup', release, { passive: true });
+  rail.addEventListener('pointercancel', release, { passive: true });
+  rail.addEventListener('touchstart', hold, { passive: true });
+  rail.addEventListener('touchend', release, { passive: true });
+  /* a wheel or trackpad scrub counts as intent too */
+  rail.addEventListener('wheel', () => { hold(); release(); }, { passive: true });
+  rail.addEventListener('mouseenter', hold);
+  rail.addEventListener('mouseleave', release);
+  rail.addEventListener('focusin', hold);
+  rail.addEventListener('focusout', release);
+  /* wrapping has to happen on a manual scroll as well, or dragging backwards
+     stops dead at zero instead of continuing into the previous card */
+  rail.addEventListener('scroll', () => { if (paused) wrap(); }, { passive: true });
+
+  /* Only run while the section is actually on screen. A rAF loop ticking
+     through the whole page is wasted battery on the device class that matters
+     most here. */
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => {
+      inView = es.some(e => e.isIntersecting);
+      if (inView) last = 0;
+    }, { threshold: 0 }).observe(rail);
+  } else {
+    inView = true;
+  }
+
+  raf = requestAnimationFrame(frame);
 })();

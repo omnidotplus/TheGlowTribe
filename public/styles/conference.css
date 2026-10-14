@@ -391,7 +391,7 @@
     /* Was an empty gradient box. Client asked for real UI here, and N1 in
        SECTIONS.md already said this slot wants its illustration. Now a real
        plate with a caption: a choir in a dark corridor, which IS the theme
-       (Matthew 5:14, a light not hidden) rather than decorative fill. */
+       (Matthew 5:15, a light not hidden) rather than decorative fill. */
     margin: 0; overflow: hidden; background: var(--d-0);
     transform: skewX(-22deg) rotate(-6deg);
     z-index: 0; pointer-events: none;
@@ -454,39 +454,33 @@
   .spk__grid > .spk__card:nth-child(-n+2) { grid-column: span 3; }   /* top row, 2 */
   .spk__grid > .spk__card:nth-child(n+3)  { grid-column: span 2; }   /* bottom row, 3 */
 
-  /* ---- MOBILE: a moving carousel ----
-     Same mechanic as home's teaser strip: the track is rendered twice and the
-     rail translates exactly -50%, which is one full track, so the seam never
-     shows. transform only. */
+  /* ---- MOBILE: a carousel that moves on its own AND can be dragged ----
+     Deliberately NOT a CSS transform marquee. A translated track cannot be
+     scrubbed: the client asked to be able to go back and forth through the
+     speakers to move faster, and transform and native scrolling fight over
+     the same axis. This is a real horizontal scroller whose scrollLeft is
+     advanced from rAF (see conference-behaviour.js), so the drift and the
+     drag are the same mechanism and never disagree. The track is still
+     rendered twice so the loop has somewhere to wrap to. */
   .spk__rail { display: none; }
-  @keyframes spkSlide {
-    from { transform: translate3d(0,0,0); }
-    to   { transform: translate3d(-50%,0,0); }
-  }
 
   @media (max-width: 860px) {
     .spk__grid { display: none; }
-    .spk { overflow: hidden; }            /* the section clips; the rail runs wide */
     .spk__rail {
-      display: flex; width: max-content;
-      will-change: transform;
-      animation: spkSlide 34s linear infinite;
-    }
-    .spk__rail:hover, .spk__rail:focus-within { animation-play-state: paused; }
-    .spk__track { display: flex; gap: clamp(10px, 3vw, 16px); padding-right: clamp(10px, 3vw, 16px); }
-    .spk__card { flex: 0 0 auto; width: clamp(190px, 56vw, 260px); }
-  }
-  @media (max-width: 860px) and (prefers-reduced-motion: reduce) {
-    /* gentler, never zero: no auto-motion, but the strip is still all there as
-       an ordinary scrollable row rather than being cut off at the edge. */
-    .spk__rail {
-      animation: none; width: auto;
-      overflow-x: auto; touch-action: pan-x;
+      display: flex;
+      overflow-x: auto;
+      touch-action: pan-x;                 /* vertical swipes pass to the page */
       overscroll-behavior-x: contain;
-      scrollbar-width: none;
+      /* NO scroll-snap. Measured: with `scroll-snap-type: x proximity` the
+         sub-pixel step the drift applies each frame was snapped straight back
+         to the nearest card, so scrollLeft never left 0 and the carousel sat
+         still. Snapping also works against "back and forth to go faster",
+         which wants free scrubbing rather than being pulled onto a card. */
+      scrollbar-width: none; -ms-overflow-style: none;
     }
     .spk__rail::-webkit-scrollbar { width: 0; height: 0; display: none; }
-    .spk__track[aria-hidden="true"] { display: none; }   /* no duplicate to loop */
+    .spk__track { display: flex; flex: 0 0 auto; gap: clamp(10px, 3vw, 16px); padding-right: clamp(10px, 3vw, 16px); }
+    .spk__card { flex: 0 0 auto; width: clamp(190px, 56vw, 260px); }
   }
 
   .spk__card { position: relative; min-width: 0; }
