@@ -391,7 +391,7 @@
     /* Was an empty gradient box. Client asked for real UI here, and N1 in
        SECTIONS.md already said this slot wants its illustration. Now a real
        plate with a caption: a choir in a dark corridor, which IS the theme
-       (Matthew 5:15, a light not hidden) rather than decorative fill. */
+       (Matthew 5:14, a light not hidden) rather than decorative fill. */
     margin: 0; overflow: hidden; background: var(--d-0);
     transform: skewX(-22deg) rotate(-6deg);
     z-index: 0; pointer-events: none;
@@ -441,56 +441,80 @@
     letter-spacing: .18em; text-transform: uppercase; color: var(--dim);
   }
 
-  .spk__row {
-    display: flex; gap: 14px;              /* separate cards — the JOIN belongs to
-                                              Selected work on home, not here */
-    overflow-x: auto; scroll-snap-type: x proximity;
-    overscroll-behavior-x: contain;
-    /* Sketch, step 5: "horizontal drag must never trap the page's vertical
-       scroll." This was touch-action:auto, which leaves a vertical swipe that
-       STARTS on a speaker card ambiguous -- the browser may resolve it to this
-       horizontal scroller and eat the gesture. pan-x declares that this
-       element only ever consumes horizontal pans, so vertical ones pass
-       through to the page. Same class of fix as direction C's touch-action:
-       pan-y, recorded in STATUS.md. */
-    touch-action: pan-x;
-    padding: 0 clamp(16px,6vw,96px) 10px;
-    min-width: 0;
-    /* NOT justify-content:center here, and this was a real bug. On an
-       OVERFLOWING flex row, centring distributes the overflow to BOTH sides,
-       and the left overflow is unreachable because scrollLeft cannot go
-       negative. Measured at 390px: the first card sat at x -134, so Asah
-       Gold's face was half off the screen and could not be scrolled to. The
-       client read it as a bad crop; the crop was fine.
-       Centring is applied only above the width where three cards genuinely
-       fit, where there is slack and nothing can overflow. */
-    justify-content: flex-start;
-    /* The row genuinely overflows (measured 1524 against 1350 at desktop), so
-       it stays scrollable -- but the native bar is chrome, not design, and the
-       client asked for it gone. Drag, trackpad, wheel and keyboard all still
-       work; only the painted bar is hidden. */
-    scrollbar-width: none;             /* Firefox */
-    -ms-overflow-style: none;          /* old Edge */
+  /* ---- DESKTOP: two rows, two up and three under ----
+     Six columns, so a pair spanning 3 and a trio spanning 2 share the same
+     outer edges instead of two rows of different widths pretending to align. */
+  .spk__grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(14px, 1.6vw, 22px);
+    padding: 0 clamp(16px, 6vw, 96px);
+    max-width: 1184px; margin: 0 auto;
   }
-  .spk__row::-webkit-scrollbar { width: 0; height: 0; display: none; }
-  /* 3 x 210px + 2 x 14px gap + 92px padding = 750px, so there is slack from
-     780px up and centring is safe. Below it the row scrolls from the left. */
-  @media (min-width: 780px) { .spk__row { justify-content: center; } }
-  .spk__card {
-    flex: 0 0 auto; width: clamp(210px, 27vw, 330px);
-    scroll-snap-align: start; position: relative;
-  }
-  .spk__img { width: 100%; aspect-ratio: 1/1; overflow: hidden; }  /* square, as measured */
-  .spk__img img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .spk__bar { background: var(--d-2); color: var(--paper); padding: 14px 16px 16px; }
-  /* no bottom margin: the role line beneath it is gone, so the name is the
-     bar's only content and the padding does the spacing */
-  .spk__name { margin: 0; font-size: clamp(15px,1.7vw,20px); font-weight: 700; letter-spacing: -.01em; }
-  /* The per-discipline name tints (music-teal / film-blue / hangouts-lime) and
-     the role line are both gone. The client stated the speakers have no titles,
-     and without a stated discipline a coloured name asserts something we were
-     never told. Names read --paper from .spk__bar: 18.37:1 on --d-2. */
+  .spk__grid > .spk__card:nth-child(-n+2) { grid-column: span 3; }   /* top row, 2 */
+  .spk__grid > .spk__card:nth-child(n+3)  { grid-column: span 2; }   /* bottom row, 3 */
 
+  /* ---- MOBILE: a moving carousel ----
+     Same mechanic as home's teaser strip: the track is rendered twice and the
+     rail translates exactly -50%, which is one full track, so the seam never
+     shows. transform only. */
+  .spk__rail { display: none; }
+  @keyframes spkSlide {
+    from { transform: translate3d(0,0,0); }
+    to   { transform: translate3d(-50%,0,0); }
+  }
+
+  @media (max-width: 860px) {
+    .spk__grid { display: none; }
+    .spk { overflow: hidden; }            /* the section clips; the rail runs wide */
+    .spk__rail {
+      display: flex; width: max-content;
+      will-change: transform;
+      animation: spkSlide 34s linear infinite;
+    }
+    .spk__rail:hover, .spk__rail:focus-within { animation-play-state: paused; }
+    .spk__track { display: flex; gap: clamp(10px, 3vw, 16px); padding-right: clamp(10px, 3vw, 16px); }
+    .spk__card { flex: 0 0 auto; width: clamp(190px, 56vw, 260px); }
+  }
+  @media (max-width: 860px) and (prefers-reduced-motion: reduce) {
+    /* gentler, never zero: no auto-motion, but the strip is still all there as
+       an ordinary scrollable row rather than being cut off at the edge. */
+    .spk__rail {
+      animation: none; width: auto;
+      overflow-x: auto; touch-action: pan-x;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+    }
+    .spk__rail::-webkit-scrollbar { width: 0; height: 0; display: none; }
+    .spk__track[aria-hidden="true"] { display: none; }   /* no duplicate to loop */
+  }
+
+  .spk__card { position: relative; min-width: 0; }
+  .spk__img { width: 100%; aspect-ratio: 1/1; overflow: hidden; }   /* square, as measured */
+  .spk__img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  .spk__bar {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    background: var(--d-2); color: var(--paper);
+    padding: 13px 15px 15px;
+  }
+  .spk__name { margin: 0; font-size: clamp(15px,1.6vw,19px); font-weight: 700; letter-spacing: -.01em; }
+
+  /* ---- the host ----
+     Victor hosts, which the client called out as important, so his card is not
+     distinguished by a colour accent but by INVERTING its bar: paper ground,
+     ink type, the same ground flip the nav uses when it crosses a dark
+     section. That reads instantly in a row of five without spending the flare,
+     which the rota reserves for the registration ask. */
+  .spk__card--host .spk__bar { background: var(--n-50); color: var(--n-900); }
+  .spk__card--host .spk__name { color: var(--n-900); }      /* 17.35:1 on paper */
+  .spk__tag {
+    flex: 0 0 auto;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .16em;
+    text-transform: uppercase;
+    background: var(--n-900); color: var(--n-50);
+    padding: 4px 8px; border-radius: 999px;
+  }
 
   /* ============ THE DAY — reference R-11, measured ============
      #ff3b19 37.9% · #ffffff 24.4% · #000000 10.7%

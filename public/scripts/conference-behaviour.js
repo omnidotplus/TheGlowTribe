@@ -147,7 +147,7 @@ addEventListener('resize', fitWordmark);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmark);
 
 /* footer live Warri time */
-/* footer clock removed: colon-numeral pairs are reserved for Matthew 5:15 */
+/* footer clock removed: colon-numeral pairs are reserved for Matthew 5:14 */
 
 /* ============================================================================
    The flyer-to-register connector.

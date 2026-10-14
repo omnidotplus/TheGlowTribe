@@ -352,7 +352,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitWordmar
 
 /* ---- footer: live Warri time ---- */
 /* footer clock removed: it printed colon-numeral pairs, which BRIEF.md
-   reserves exclusively for Matthew 5:15. */
+   reserves exclusively for Matthew 5:14. */
 
 /* ---------------- the sequence ---------------- */
 const BEATS = [

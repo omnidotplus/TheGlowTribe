@@ -1,23 +1,31 @@
 ---
-/* SPEAKERS — Leonardo Artist Stories card row.
+/* SPEAKERS — five, with the host called out.
 
-  RESOLVED 13 Oct 2026: this was the highest-risk placeholder on the site, three
-  invented names behind real stock photography. The client supplied the actual
-  lineup and their own photographs, so both halves are now real.
+  Victor Obute is the HOST, which the client flagged as important, so he is not
+  just another card: he leads the top row and his bar inverts to paper with an
+  ink HOST tag while everyone else's stays dark. The inversion reuses the
+  ground system the nav already uses rather than inventing a highlight.
 
-  No roles. The client was explicit that the speakers do not have titles, only
-  names, so nothing is invented to fill the slot. The per-discipline name
-  colouring went with the roles: without a stated discipline, tinting a name
-  music-teal or film-blue would be decoration asserting something we were never
-  told. */
+  No roles beyond that. The client was explicit that the speakers have no
+  titles, so nothing is invented to fill the slot, and the per-discipline name
+  tints stay gone for the same reason.
+
+  One data array, rendered three times: the desktop grid and the two marquee
+  tracks. Hand-duplicating five cards across three containers is how they
+  drift apart. */
+const speakers = [
+  { name: 'Victor Obute',  img: 'spk-victor',  host: true },
+  { name: 'Asah Gold',     img: 'spk-asah' },
+  { name: 'Dafe Richard',  img: 'spk-dafe' },
+  { name: 'Brave',         img: 'spk-brave' },
+  { name: 'Itohan',        img: 'spk-itohan' },
+];
 ---
 <section class="spk g-dark" id="speakers" data-fade>
   <h2 class="spk__head">
     <!-- The mark used to REPLACE the A ("SPE<mark>KERS"), which made the word
-         unreadable. That was a misreading of the reference in SECTIONS.md:
-         Leonardo puts its mark BETWEEN words (ARTIST * STORIES) as a separator,
-         never inside one. The word is whole again and the mark trails it as a
-         seal, so P7 still has a real job without costing legibility. -->
+         unreadable. Leonardo puts its mark BETWEEN words as a separator, never
+         inside one, so the word is whole and the mark trails it as a seal. -->
     SPEAKERS<span class="spk__mark" aria-hidden="true">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="8"/>
@@ -26,23 +34,56 @@
       </svg>
     </span>
   </h2>
-  <p class="spk__sub">Three voices for the day</p>
+  <p class="spk__sub">Hosted by Victor Obute</p>
 
-  <div class="spk__row" id="spkRow">
-    <article class="spk__card">
-      <div class="spk__img"><img src="/img/spk-asah.webp" width="720" height="720"
-           alt="Asah Gold" loading="lazy" decoding="async"></div>
-      <div class="spk__bar"><p class="spk__name">Asah Gold</p></div>
-    </article>
-    <article class="spk__card">
-      <div class="spk__img"><img src="/img/spk-dafe.webp" width="720" height="720"
-           alt="Dafe Richard" loading="lazy" decoding="async"></div>
-      <div class="spk__bar"><p class="spk__name">Dafe Richard</p></div>
-    </article>
-    <article class="spk__card">
-      <div class="spk__img"><img src="/img/spk-brave.webp" width="720" height="720"
-           alt="Brave" loading="lazy" decoding="async"></div>
-      <div class="spk__bar"><p class="spk__name">Brave</p></div>
-    </article>
+  <!-- DESKTOP: two rows, two up and three under. Six columns so a 3-span pair
+       and a 2-span trio share the same outer edges. -->
+  <div class="spk__grid">
+    {speakers.map(s => (
+      <article class={'spk__card' + (s.host ? ' spk__card--host' : '')}>
+        <div class="spk__img">
+          <img src={`/img/${s.img}.webp`} width="720" height="720"
+               alt={s.name} loading="lazy" decoding="async" />
+        </div>
+        <div class="spk__bar">
+          <p class="spk__name">{s.name}</p>
+          {s.host && <span class="spk__tag">Host</span>}
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <!-- MOBILE: a moving carousel. The track is rendered twice and the row
+       translates -50%, so the loop is seamless; the duplicate is aria-hidden
+       or every name is announced twice. -->
+  <div class="spk__rail" id="spkRail">
+    <div class="spk__track">
+      {speakers.map(s => (
+        <article class={'spk__card' + (s.host ? ' spk__card--host' : '')}>
+          <div class="spk__img">
+            <img src={`/img/${s.img}.webp`} width="720" height="720"
+                 alt={s.name} loading="lazy" decoding="async" />
+          </div>
+          <div class="spk__bar">
+            <p class="spk__name">{s.name}</p>
+            {s.host && <span class="spk__tag">Host</span>}
+          </div>
+        </article>
+      ))}
+    </div>
+    <div class="spk__track" aria-hidden="true">
+      {speakers.map(s => (
+        <article class={'spk__card' + (s.host ? ' spk__card--host' : '')}>
+          <div class="spk__img">
+            <img src={`/img/${s.img}.webp`} width="720" height="720"
+                 alt="" loading="lazy" decoding="async" />
+          </div>
+          <div class="spk__bar">
+            <p class="spk__name">{s.name}</p>
+            {s.host && <span class="spk__tag">Host</span>}
+          </div>
+        </article>
+      ))}
+    </div>
   </div>
 </section>
