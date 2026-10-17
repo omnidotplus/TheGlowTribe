@@ -1,0 +1,127 @@
+---
+/* PRODUCT — single product view. One representative example (placeholder
+   data, same convention as the rest of the shop build), not a dynamic route
+   yet -- there is no catalogue to route against until Wix is connected
+   (MARKETPLACE_ARCHITECTURE.md). No footer (client note, 16 Oct). */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import DropsNotify from '../../components/DropsNotify.astro';
+
+const sizes = [
+  { label: 'XS', available: true },
+  { label: 'S',  available: true },
+  { label: 'M',  available: true },
+  { label: 'L',  available: false },
+];
+---
+<Layout
+  title="Bushel Overshirt | The Glow Tribe Shop"
+  description="Bushel Overshirt — pieces made by the tribe, sold by the tribe."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" ctaMuted />
+
+  <main class="shop-ember shop-sub__top">
+    <div class="shop-container" data-fade>
+      <p class="shop-breadcrumb"><a href="/shop">Shop</a> / Bushel Overshirt</p>
+
+      <div class="shop-product">
+        <div class="shop-product__gallery">
+          <!-- 16 Oct, client note: thumbnails above the main image, not
+               below. -->
+          <div class="shop-product__thumbs">
+            <button type="button" class="shop-product__thumb" aria-current="true" aria-label="Front view" data-view="front"><span>Front</span></button>
+            <button type="button" class="shop-product__thumb" aria-label="Back view" data-view="back"><span>Back</span></button>
+            <button type="button" class="shop-product__thumb" aria-label="Detail view" data-view="detail"><span>Detail</span></button>
+          </div>
+          <div class="shop-product__main"><span>Product 4:5 — front</span></div>
+        </div>
+
+        <div class="shop-product__info">
+          <h1 class="shop__h2 shop-product__name">Bushel Overshirt</h1>
+          <p class="shop-product__price">₦111,500</p>
+
+          <p class="shop-product__label">Size</p>
+          <ul class="shop-product__sizes" id="size-list">
+            {sizes.map(s => (
+              <li>
+                <button type="button" aria-pressed="false" disabled={!s.available}>{s.label}</button>
+              </li>
+            ))}
+          </ul>
+
+          <button type="button" class="shop-cta">Add to cart</button>
+
+          <!-- 17 Oct, client note: "look at the extra information and
+               layout.. incorporate it" [reference image]. Fabric + fit
+               facts, a fit note, a size-guide link, delivery & returns --
+               own copy, not the reference's, same structural beats. -->
+          <div class="shop-product__facts">
+            <span>Brushed cotton canvas</span>
+            <span>Relaxed fit</span>
+          </div>
+
+          <p class="shop-product__note">Garment-washed and cut full through the shoulder. Shown on a 1.80m frame, size M.</p>
+
+          <div class="shop-product__guide">
+            <span>Size guide</span>
+            <a href="#">See the size guide</a>
+          </div>
+
+          <div class="shop-product__delivery">
+            <p class="shop-product__label">Delivery &amp; returns</p>
+            <div class="shop-product__delivery-row">
+              <svg viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/>
+                <ellipse cx="11" cy="11" rx="3.2" ry="8" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M3 11h16" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <div>
+                <p>We ship worldwide.</p>
+                <p>UK orders arrive in 3–5 days, international in 7–10.</p>
+              </div>
+            </div>
+            <div class="shop-product__delivery-row">
+              <svg viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <path d="M4 9a7 7 0 0 1 12.5-4.2M18 9V4.8h-4.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 13a7 7 0 0 1-12.5 4.2M4 13v4.2h4.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <div>
+                <p>Returns and exchanges within 14 days.</p>
+                <p><a href="#">See the full policy</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <DropsNotify />
+
+  <!-- 17 Oct, client note: "i can't select size" -- the size and
+       thumbnail buttons had aria-pressed/aria-current in the markup but
+       nothing ever toggled them. Single-select, skip disabled, same
+       is:inline convention as the filter pills on /shop/all. -->
+  <script is:inline>
+    (() => {
+      const sizes = document.querySelectorAll('#size-list button');
+      sizes.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.disabled) return;
+          sizes.forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+        });
+      });
+
+      const thumbs = document.querySelectorAll('.shop-product__thumb');
+      const main = document.querySelector('.shop-product__main span');
+      thumbs.forEach(btn => {
+        btn.addEventListener('click', () => {
+          thumbs.forEach(b => b.setAttribute('aria-current', b === btn ? 'true' : 'false'));
+          if (main) main.textContent = `Product 4:5 — ${btn.dataset.view}`;
+        });
+      });
+    })();
+  </script>
+</Layout>

@@ -1,0 +1,117 @@
+---
+/* COLLECTIONS — category overview. 16 Oct rework, client note: "do
+   specialized bentos for other collections .. with storytelling feel".
+   17 Oct rework, client note: "studio level bento per collection ..
+   large text" -- Tops and Bottoms no longer share a row; every
+   collection now gets the full container width and its own large
+   display-scale name (DESIGN.md's "type as object" doctrine), not just a
+   small caption under the images. Four bespoke compositions, not one
+   template repeated four times -- each one's STRUCTURE still echoes what
+   the category actually is:
+
+     Outerwear   -- LAYERING. One dominant piece, two smaller ones stacked
+                    beside it, the way a coat sits over what's under it.
+     Tops        -- EASE. Two images at a loose, uneven stagger -- nothing
+                    regimented, which is the point of a soft top.
+     Bottoms     -- GROUNDED. One wide low band with a detail tile
+                    overlapping its corner -- a horizon line, not a stack.
+     Accessories -- SCATTER. A lead tile plus a four-up cluster (Five Plus
+                    V5, design_process/references/04-layouts.md) -- many
+                    small things, which is what accessories are.
+
+   No footer (client note). Tiles link to /shop/category for now -- one
+   representative category page, same placeholder-data convention as the
+   rest of this build. */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import DropsNotify from '../../components/DropsNotify.astro';
+---
+<Layout
+  title="Collections | The Glow Tribe Shop"
+  description="Browse the shop by collection."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" ctaMuted />
+
+  <main class="shop-ember shop-sub__top">
+    <div class="shop-container">
+      <!-- 16 Oct, client note: no breadcrumb here, heading goes big
+           (shop__h1, not h2). -->
+      <h1 class="shop__h1" style="margin-bottom: 40px">Collections.</h1>
+
+      <div class="shop-bento">
+
+        <!-- OUTERWEAR -- LAYERING. 2fr dominant + 1fr of two stacked. -->
+        <section class="shop-studio" data-fade>
+          <div class="shop-studio__head">
+            <span class="shop-studio__num">01</span>
+            <h2 class="shop-studio__name">Outerwear</h2>
+            <span class="shop-studio__count shop-studio__count--flare">9 pieces</span>
+          </div>
+          <a class="shop-tile shop-bento__layering" href="/shop/category">
+            <div class="shop-bento__layering-grid">
+              <div class="shop-tile__slot shop-bento__big"><span>Outerwear 4:5</span></div>
+              <div class="shop-bento__stack">
+                <div class="shop-tile__slot"><span>Outerwear detail</span></div>
+                <div class="shop-tile__slot"><span>Outerwear detail</span></div>
+              </div>
+            </div>
+          </a>
+        </section>
+
+        <!-- TOPS -- EASE. Two images at an uneven stagger. -->
+        <section class="shop-studio" data-fade>
+          <div class="shop-studio__head">
+            <span class="shop-studio__num">02</span>
+            <h2 class="shop-studio__name">Tops</h2>
+            <span class="shop-studio__count">14 pieces</span>
+          </div>
+          <a class="shop-tile shop-bento__ease" href="/shop/category">
+            <div class="shop-bento__ease-grid">
+              <div class="shop-tile__slot shop-bento__ease-a"><span>Tops 4:5</span></div>
+              <div class="shop-tile__slot shop-bento__ease-b"><span>Tops 4:5</span></div>
+            </div>
+          </a>
+        </section>
+
+        <!-- BOTTOMS -- GROUNDED. A wide low band, a detail tile
+             overlapping its corner. -->
+        <section class="shop-studio" data-fade>
+          <div class="shop-studio__head">
+            <span class="shop-studio__num">03</span>
+            <h2 class="shop-studio__name">Bottoms</h2>
+            <span class="shop-studio__count">7 pieces</span>
+          </div>
+          <a class="shop-tile shop-bento__grounded" href="/shop/category">
+            <div class="shop-bento__grounded-wrap">
+              <div class="shop-tile__slot shop-bento__band"><span>Bottoms 16:9</span></div>
+              <div class="shop-tile__slot shop-bento__overlap"><span>Detail</span></div>
+            </div>
+          </a>
+        </section>
+
+        <!-- ACCESSORIES -- SCATTER. A lead tile plus a four-up cluster. -->
+        <section class="shop-studio" data-fade>
+          <div class="shop-studio__head">
+            <span class="shop-studio__num">04</span>
+            <h2 class="shop-studio__name">Accessories</h2>
+            <span class="shop-studio__count">11 pieces</span>
+          </div>
+          <a class="shop-tile shop-bento__scatter" href="/shop/category">
+            <div class="shop-bento__scatter-grid">
+              <div class="shop-tile__slot"><span>1:1</span></div>
+              <div class="shop-tile__slot"><span>1:1</span></div>
+              <div class="shop-tile__slot"><span>1:1</span></div>
+              <div class="shop-tile__slot"><span>1:1</span></div>
+              <div class="shop-tile__slot"><span>1:1</span></div>
+            </div>
+          </a>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <DropsNotify />
+</Layout>

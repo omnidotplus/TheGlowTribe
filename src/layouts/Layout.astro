@@ -39,7 +39,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://theglowtrib
   <link rel="apple-touch-icon" href="/favicon-180.png">
 
   <link rel="stylesheet" href="/styles/skeleton.css">
-  <link rel="stylesheet" href={`${pageStylesHref}?v=23`}>
+  <link rel="stylesheet" href={`${pageStylesHref}?v=40`}>
   <link rel="stylesheet" href="/styles/footer.css?v=1">
   <link rel="stylesheet" href="/styles/reveal.css?v=1">
   <link rel="stylesheet" href="/styles/tokens.css">
@@ -48,7 +48,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://theglowtrib
 <body class={bodyClass}>
   <slot />
   <script data-role="dev-flag" is:inline>if(location.search.includes('dev'))document.body.classList.add('dev');</script>
-  <script src="/scripts/reveal.js" is:inline></script>
-  <script src="/scripts/nav.js" is:inline></script>
+  <!-- 17 Oct, client report: "nav doesn't show on the landing page till a
+       scroll into the new arrivals section" -- the actual logic here
+       checks for .hero (the main site's hero class) and shows the nav
+       immediately when it's absent, which .shop-hero already is, verified
+       live. Every CSS file in this project carries a ?v= cache-bust;
+       these two script tags never have, which is this project's own
+       documented "stale asset reads as a real bug" trap, just hitting JS
+       this time instead of CSS. -->
+  <script src="/scripts/reveal.js?v=1" is:inline></script>
+  <script src="/scripts/nav.js?v=3" is:inline></script>
 </body>
 </html>

@@ -1,0 +1,140 @@
+---
+/* CHECKOUT — the review step before the Wix-hosted payment handoff
+   (MARKETPLACE_ARCHITECTURE.md: this codebase never touches a Paystack key
+   or card details). Paper ground, not ember -- a calmer, form-like task,
+   one of the three grounds DESIGN.md permits. No footer (client note,
+   16 Oct): checkout screens drop nav-level exits on purpose.
+
+   17 Oct, client note: "i need a checkout screen and finalization of
+   order.. the different components and interaction". Expanded from a
+   review-only screen (line items + totals) to the real component set a
+   checkout needs -- contact, shipping address, order recap, then the
+   payment hand-off -- wrapped in one <form> so native validation gates
+   the submit. The hand-off itself stays honest to the architecture: this
+   codebase never collects card details (MARKETPLACE_ARCHITECTURE.md), so
+   "Continue to payment" doesn't fake a payment step in our own UI -- it
+   shows a brief redirect state (what a real Wix handoff looks like from
+   the user's side) and lands on /shop/confirmation, which is what Wix
+   would redirect back to once Paystack clears the charge. */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import DropsNotify from '../../components/DropsNotify.astro';
+
+/* 17 Oct, client note: "make everything in naira.. lowest amount being
+   13,000 Naira" -- same per-product price as shop.astro/all.astro. */
+const lines = [
+  { name: 'Bushel Overshirt', size: 'M', qty: 1, price: '₦111,500' },
+  { name: 'Ply Hoodie',       size: 'S', qty: 1, price: '₦87,500' },
+];
+
+const countries = ['United Kingdom', 'Nigeria', 'United States', 'Ireland', 'Canada', 'Germany', 'France'];
+---
+<Layout
+  title="Checkout | The Glow Tribe Shop"
+  description="Review your order."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" ctaMuted />
+
+  <main class="shop-paper shop-sub__top">
+    <div class="shop-container" data-fade>
+      <p class="shop-breadcrumb"><a href="/shop">Shop</a> / Checkout</p>
+      <h1 class="shop__h2" style="color: var(--n-900)">Your order.</h1>
+
+      <form class="shop-checkout" id="checkout-form">
+        <div class="shop-checkout__main">
+
+          <section class="shop-checkout__section">
+            <p class="shop-checkout__label">Contact</p>
+            <div class="shop-field-grid">
+              <div class="shop-field shop-field--full">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@studio.com">
+              </div>
+            </div>
+          </section>
+
+          <section class="shop-checkout__section">
+            <p class="shop-checkout__label">Shipping address</p>
+            <div class="shop-field-grid">
+              <div class="shop-field shop-field--full">
+                <label for="name">Full name</label>
+                <input id="name" name="name" type="text" required autocomplete="name">
+              </div>
+              <div class="shop-field shop-field--full">
+                <label for="address1">Address</label>
+                <input id="address1" name="address1" type="text" required autocomplete="address-line1">
+              </div>
+              <div class="shop-field shop-field--full">
+                <label for="address2">Apartment, suite, etc. (optional)</label>
+                <input id="address2" name="address2" type="text" autocomplete="address-line2">
+              </div>
+              <div class="shop-field">
+                <label for="city">City</label>
+                <input id="city" name="city" type="text" required autocomplete="address-level2">
+              </div>
+              <div class="shop-field">
+                <label for="postcode">Postcode</label>
+                <input id="postcode" name="postcode" type="text" required autocomplete="postal-code">
+              </div>
+              <div class="shop-field shop-field--full">
+                <label for="country">Country</label>
+                <select id="country" name="country" required autocomplete="country-name">
+                  <option value="" selected disabled>Select country</option>
+                  {countries.map(c => <option>{c}</option>)}
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="shop-checkout__section">
+            <p class="shop-checkout__label">Order · {lines.length} items</p>
+            <div class="shop-cart">
+              {lines.map(l => (
+                <div class="shop-cart__line">
+                  <div class="shop-cart__slot"><span>4:5</span></div>
+                  <div>
+                    <p class="shop-cart__name">{l.name}</p>
+                    <p class="shop-cart__meta">Size {l.size} · Qty {l.qty}</p>
+                  </div>
+                  <span class="shop-cart__price">{l.price}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+        </div>
+
+        <div class="shop-summary">
+          <div class="shop-summary__row"><span>Subtotal</span><span>₦199,000</span></div>
+          <div class="shop-summary__row"><span>Shipping</span><span>Calculated next</span></div>
+          <div class="shop-summary__row shop-summary__row--total"><span>Total</span><span>₦199,000</span></div>
+          <button type="submit" class="shop-cta" id="checkout-submit">Continue to payment</button>
+          <p class="shop-checkout__note">You'll complete payment securely with our payment partner. We never see or store your card details.</p>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <DropsNotify />
+
+  <!-- 17 Oct: native validation gates the hand-off (required fields,
+       type=email) -- invalid fields get the browser's own focus+message,
+       nothing custom to maintain. A valid submit shows the redirect state
+       real Wix handoffs show, then lands on the confirmation page, which
+       is what Wix would redirect back to once payment clears. -->
+  <script is:inline>
+    (() => {
+      const form = document.getElementById('checkout-form');
+      const submit = document.getElementById('checkout-submit');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        submit.disabled = true;
+        submit.dataset.state = 'redirecting';
+        submit.textContent = 'Redirecting to payment…';
+        setTimeout(() => { window.location.href = '/shop/confirmation'; }, 700);
+      });
+    })();
+  </script>
+</Layout>

@@ -1,0 +1,107 @@
+---
+/* SHOP ALL — the actual overview. 16 Oct, client note: "theres meant to be
+   see more which carries the user to the actual overview.. things sorted
+   by category and all". Grouped into the same four categories collections.
+   astro already names (Outerwear/Tops/Bottoms/Accessories), each its own
+   heading + grid -- this is what makes it the overview rather than a
+   longer version of the landing page's flat inventory grid. No footer
+   (client note, 16 Oct). */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import DropsNotify from '../../components/DropsNotify.astro';
+
+/* 17 Oct, client note: "make everything in naira.. lowest amount being
+   13,000 Naira" -- same per-product price as shop.astro/checkout, not a
+   fresh conversion, so this grid never disagrees with the landing page or
+   the checkout recap for the same item. */
+const products = [
+  { name: 'Lamp Crew Sweat',  price: '₦63,000',  sizes: ['XS','S','M','L'], category: 'Tops' },
+  { name: 'Workroom Shirt',   price: '₦39,000',  sizes: ['XS','S','M','L'], category: 'Tops' },
+  { name: 'Set Tee',          price: '₦31,500',  sizes: ['XS','S','M','L'], category: 'Tops' },
+  { name: 'Ply Hoodie',       price: '₦87,500',  sizes: ['XS','S','M','L'], category: 'Outerwear' },
+  { name: 'Bushel Overshirt', price: '₦111,500', sizes: ['XS','S','M','L'], category: 'Outerwear' },
+  { name: 'Takeline Shorts',  price: '₦48,500',  sizes: ['XS','S','M','L'], category: 'Bottoms' },
+  { name: 'Ridge Cap',        price: '₦26,000',  sizes: ['S','M','L'],      category: 'Accessories' },
+  { name: 'Rig Tote',         price: '₦33,500',  sizes: ['One size'],       category: 'Accessories' },
+  { name: 'Grain Scarf',      price: '₦43,000',  sizes: ['One size'],       category: 'Accessories', soldOut: true },
+  { name: 'Monitor Beanie',   price: '₦22,500',  sizes: ['One size'],       category: 'Accessories' },
+];
+
+const categoryOrder = ['Outerwear', 'Tops', 'Bottoms', 'Accessories'];
+const sections = categoryOrder
+  .map(category => ({ category, items: products.filter(p => p.category === category) }))
+  .filter(s => s.items.length > 0);
+---
+<Layout
+  title="Shop all | The Glow Tribe Shop"
+  description="Every piece, sorted by category."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" ctaMuted />
+
+  <main class="shop-ember shop-sub__top">
+    <div class="shop-container">
+      <p class="shop-breadcrumb"><a href="/shop">Shop</a> / Shop all</p>
+      <!-- 16 Oct, client note: no total-count badge at the top. -->
+      <h1 class="shop__h2">Shop all.</h1>
+
+      <!-- FILTER — 16 Oct, client note. Pills toggle a [hidden] attribute
+           on the matching section; "All" clears it. Progressive
+           enhancement over the already-complete static sections below,
+           not a data refetch. -->
+      <div class="shop-filter" role="group" aria-label="Filter by category">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        {categoryOrder.map(c => (
+          <button type="button" data-filter={c.toLowerCase()} aria-pressed="false">{c}</button>
+        ))}
+      </div>
+
+      {sections.map(s => (
+        <section class="shop-all__section" data-category={s.category.toLowerCase()} aria-labelledby={`cat-${s.category.toLowerCase()}`} data-fade>
+          <h2 class="shop__eyebrow shop-all__cat" id={`cat-${s.category.toLowerCase()}`}>{s.category}</h2>
+          <div class="shop-grid">
+            {s.items.map(p => (
+              <a
+                class="shop-card"
+                href="/shop/product"
+                data-state={p.soldOut ? 'sold-out' : undefined}
+              >
+                <div class="shop-card__slot">
+                  <span>Product 4:5</span>
+                  <div class="shop-card__back" aria-hidden="true"><span>Product 4:5 — back</span></div>
+                </div>
+                <div class="shop-card__cap">
+                  <span class="shop-card__name">{p.name}</span>
+                  <span class="shop-card__price">{p.price}</span>
+                  <ul class="shop-card__sizes">{p.sizes.map(s => <li>{s}</li>)}</ul>
+                </div>
+                {p.soldOut && <span class="visually-hidden">Sold out</span>}
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </main>
+
+  <DropsNotify />
+
+  <script is:inline>
+    (() => {
+      const group = document.querySelector('.shop-filter');
+      if (!group) return;
+      const buttons = [...group.querySelectorAll('button')];
+      const sections = [...document.querySelectorAll('.shop-all__section')];
+      group.addEventListener('click', e => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const filter = btn.dataset.filter;
+        buttons.forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+        sections.forEach(s => {
+          s.hidden = filter !== 'all' && s.dataset.category !== filter;
+        });
+      });
+    })();
+  </script>
+</Layout>

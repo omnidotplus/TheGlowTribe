@@ -1,0 +1,197 @@
+---
+/* SHOP — Phase 2 marketplace. Real build, 16 Oct 2026, ported from the
+   validated skeleton at skeletons/mp-ac-showroom-ledger/. See shop.css for
+   what changed in the port: one card style everywhere, a minimal real
+   colour set, real fonts, every debug caption removed.
+
+   Catalogue data is placeholder content -- the client's note is explicit
+   that product images stay blank. Prices/names/sizes are the same
+   placeholder set the skeleton used throughout, not real inventory. */
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+/* 17 Oct, client note: "make everything in naira.. lowest amount being
+   13,000 Naira" -- every price below is the same product's price on every
+   page it appears on (shop.astro / all.astro / category.astro / checkout
+   / confirmation / product), scaled from the old GBP placeholder set
+   rather than re-invented per page, so nothing drifts between the
+   landing grid and the checkout recap of the same item. */
+const newArrivals = [
+  { name: 'Lamp Crew Sweat', price: '₦63,000', sizes: ['XS','S','M','L'] },
+  { name: 'Workroom Shirt',  price: '₦39,000', sizes: ['XS','S','M','L'] },
+  { name: 'Ply Hoodie',      price: '₦87,500', sizes: ['XS','S','M','L'] },
+  { name: 'Ridge Cap',       price: '₦26,000', sizes: ['S','M','L'] },
+  { name: 'Rig Tote',        price: '₦33,500', sizes: ['One size'] },
+];
+
+const inventory = [
+  { name: 'Bushel Overshirt', price: '₦111,500', sizes: ['XS','S','M','L'] },
+  { name: 'Set Tee',          price: '₦31,500',  sizes: ['XS','S','M','L'] },
+  { name: 'Grain Scarf',      price: '₦43,000',  sizes: ['One size'], soldOut: true },
+  { name: 'Takeline Shorts',  price: '₦48,500',  sizes: ['XS','S','M','L'] },
+  { name: 'Monitor Beanie',   price: '₦22,500',  sizes: ['One size'] },
+  { name: 'Cue Cardigan',     price: '₦82,000',  sizes: ['XS','S','M','L'] },
+  { name: 'Flat Cap',         price: '₦28,000',  sizes: ['S','M','L'] },
+  { name: 'Frame Belt',       price: '₦41,000',  sizes: ['S','M','L'] },
+  { name: 'House Socks',      price: '₦13,000',  sizes: ['One size'] },
+  { name: 'Panel Jacket',     price: '₦153,500', sizes: ['S','M','L'], tabletDrop: true },
+];
+
+const stock = [
+  { name: 'Bushel Overshirt', xs: 4,  s: 7,  m: 6,  l: 2 },
+  { name: 'Set Tee',          xs: 11, s: 9,  m: 14, l: 8 },
+  { name: 'Grain Scarf',      xs: 0,  s: 0,  m: 0,  l: 0, soldOut: true },
+  { name: 'Takeline Shorts',  xs: 3,  s: 5,  m: 5,  l: 1 },
+];
+---
+<Layout
+  title="Shop | The Glow Tribe"
+  description="The Glow Tribe shop — pieces made by the tribe, sold by the tribe."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" />
+
+  <!-- ZONE 1 — EMBER, unbroken from the nav to the bottom of the showroom
+       row. Two sections, one ground: the hero is its own thing (client
+       note, 16 Oct) but the ground does not break between it and New
+       Arrivals. -->
+  <div class="shop-ember" data-ground="ember">
+
+    <header class="shop-hero" aria-labelledby="hero-h">
+      <div class="spiral" aria-hidden="true">
+        <div class="spiral__stage">
+          <div class="spiral__crop"><div class="spiral__slot"><span>4:5</span></div></div>
+          <div class="spiral__crop"><div class="spiral__slot"><span>4:5</span></div></div>
+          <div class="spiral__crop"><div class="spiral__slot"><span>4:5</span></div></div>
+          <div class="spiral__crop"><div class="spiral__slot"><span>4:5</span></div></div>
+          <div class="spiral__crop"><div class="spiral__slot"><span>4:5</span></div></div>
+          <div class="spiral__crop"><div class="spiral__slot"><span>4:5</span></div></div>
+        </div>
+      </div>
+
+      <div class="shop-hero__inner">
+        <div class="shop-hero__block">
+          <p class="shop__eyebrow shop-hero__eyebrow">Shop</p>
+          <!-- 17 Oct, client note: "word iconic entrance before the spiral
+               start.. studio level". Same word-reveal device as the
+               conference page's Close.astro (.cw spans, clip-path wipe),
+               reused rather than invented fresh -- the line groups
+               (Wear / the work.) are kept as their own wrappers so the
+               per-word stagger doesn't disturb the existing two-line
+               break. -->
+          <h1 class="shop__h1 shop-hero__h1" id="hero-h">
+            <span class="shop-hero__line"><span class="cw">Wear</span></span>
+            <span class="shop-hero__line"><span class="cw">the</span> <span class="cw">work.</span></span>
+          </h1>
+          <p class="shop__lead shop-hero__lead">Pieces made by the tribe, sold by the tribe.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="shop-showroom shop-container" id="new-arrivals" aria-labelledby="na-h" data-fade>
+      <h2 class="shop__h2 shop-showroom__h" id="na-h">New arrivals.</h2>
+      <div class="shop-grid">
+        {newArrivals.map(p => (
+          <a class="shop-card" href="#">
+            <div class="shop-card__slot">
+              <span>Product 4:5</span>
+              <div class="shop-card__back" aria-hidden="true"><span>Product 4:5 — back</span></div>
+            </div>
+            <div class="shop-card__cap">
+              <span class="shop-card__name">{p.name}</span>
+              <span class="shop-card__price">{p.price}</span>
+              <ul class="shop-card__sizes">{p.sizes.map(s => <li>{s}</li>)}</ul>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </div>
+
+  <!-- THE SEAM — a hard cut. No gradient, no transitional tone. Confirmed
+       directly by the client at D4; unchanged by this port. -->
+
+  <main>
+    <section class="shop-sec shop-dark-0" data-ground="dark" id="catalogue" aria-labelledby="cat-h" data-fade>
+      <div class="shop-container">
+        <p class="shop__eyebrow shop-sec__eyebrow">33 items · updated weekly</p>
+        <h2 class="shop__h2" id="cat-h">The tribe's inventory.</h2>
+        <div class="shop-grid">
+          {inventory.map(p => (
+            <a
+              class={`shop-card${p.tabletDrop ? ' shop-grid__tablet-drop' : ''}`}
+              href="/shop/product"
+              data-state={p.soldOut ? 'sold-out' : undefined}
+            >
+              <div class="shop-card__slot">
+                <span>Product 4:5</span>
+                <div class="shop-card__back" aria-hidden="true"><span>Product 4:5 — back</span></div>
+              </div>
+              <div class="shop-card__cap">
+                <span class="shop-card__name">{p.name}</span>
+                <span class="shop-card__price">{p.price}</span>
+                <ul class="shop-card__sizes">{p.sizes.map(s => <li>{s}</li>)}</ul>
+              </div>
+              {p.soldOut && <span class="visually-hidden">Sold out</span>}
+            </a>
+          ))}
+        </div>
+        <!-- SEE MORE -- 16 Oct, client note: "theres meant to be see more
+             which carries the user to the actual overview.. things sorted
+             by category and all". Goes to /shop/all, which groups the full
+             catalogue into category sections rather than one flat grid --
+             that's what makes it "the actual overview" and not just a
+             longer version of this one. -->
+        <a class="shop-seemore" href="/shop/all">See more <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </section>
+
+    <section class="shop-sec shop-dark-1" data-ground="dark" id="collection" aria-labelledby="coll-h" data-fade>
+      <div class="shop-container">
+        <h2 class="shop__h2" id="coll-h">Set Apart, first run.</h2>
+        <div class="shop-collection__grid">
+          <div class="shop-collection__slot"><span>Collection 4:5</span></div>
+          <ul class="shop-collection__list">
+            <li><span class="shop-collection__row"><span class="shop-collection__k">Pieces</span><span class="shop-collection__v">9</span></span></li>
+            <li><span class="shop-collection__row"><span class="shop-collection__k">Makers</span><span class="shop-collection__v">4</span></span></li>
+            <li><span class="shop-collection__row"><span class="shop-collection__k">Run</span><span class="shop-collection__v">120</span></span></li>
+            <li><span class="shop-collection__row"><span class="shop-collection__k">Remaining</span><span class="shop-collection__v">31</span></span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="shop-sec shop-dark-2" data-ground="dark" id="archive" aria-labelledby="ed-h" data-fade>
+      <div class="shop-container">
+        <h2 class="shop__h2" id="ed-h">Worn, not staged.</h2>
+        <div class="shop-showcase2">
+          <div class="shop-showcase2__slot"><span>Showcase 4:5</span></div>
+          <div class="shop-showcase2__slot"><span>Showcase 4:5</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="shop-sec shop-dark-1" data-ground="dark" aria-labelledby="stock-h" data-fade>
+      <div class="shop-container">
+        <h2 class="shop__h2" id="stock-h">Sizes, live.</h2>
+        <table class="shop-stock">
+          <thead>
+            <tr><th scope="col">Piece</th><th scope="col">XS</th><th scope="col">S</th><th scope="col">M</th><th scope="col">L</th></tr>
+          </thead>
+          <tbody>
+            {stock.map(r => (
+              <tr data-state={r.soldOut ? 'sold-out' : undefined}>
+                <td>{r.name}</td><td>{r.xs}</td><td>{r.s}</td><td>{r.m}</td><td>{r.l}</td>
+                {r.soldOut && <td class="visually-hidden">Sold out</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>

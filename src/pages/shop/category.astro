@@ -1,0 +1,77 @@
+---
+/* CATEGORY — 16 Oct rework, client note: load and inspect
+   vision-naire.com/pages/n-10, take its style for this page. Inspected
+   live: a 2-column editorial grid on a dark ground, large lifestyle-scale
+   images, caption reduced to name + price only (no size chips visible in
+   the grid itself -- those live on the product page, which is the one
+   place they're actually needed). Translated into this project's own
+   system rather than copied: dark ground is already one of this system's
+   three sanctioned grounds (DESIGN.md), not a new addition; type stays
+   Archivo + Martian Mono, no new typeface borrowed from the reference.
+   One representative example (Outerwear, placeholder data). No footer
+   (client note, 16 Oct).
+
+   17 Oct, client note: "that page is out of place and poor .. its also
+   meant to have a hero like i reference with vision-naire.. i specified
+   the page because of its hero and arrangements". Re-inspected n-10 --
+   the part missed the first pass: above its product grid sits a hero
+   that is PURE TYPE, not a photo -- the category name set at ~384px,
+   pinned top-left right under the nav, with a one-line byline pinned near
+   the bottom of the same tall block and a large empty gap between them.
+   That's DESIGN.md's own "type as object" doctrine (Section 1/6: "one
+   monumental type object anchors a screen") -- already this project's
+   rule, just not yet applied here.
+
+   17 Oct, second client note, same day: "remove '4 pieces .. updated
+   weekly' .. the hero is a two column, word and image" -- the pure-type
+   version above is overridden by this more specific instruction. The
+   byline/meta line is gone; the word now shares the hero with an actual
+   image column instead of standing alone against empty space. Still
+   --t-display (this system's biggest token, not the reference's literal
+   384px) -- the brief is "word and image", not "copy n-10 exactly". */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import DropsNotify from '../../components/DropsNotify.astro';
+
+/* 17 Oct, client note: "make everything in naira.. lowest amount being
+   13,000 Naira" -- same per-product price as shop.astro/all.astro. */
+const products = [
+  { name: 'Bushel Overshirt', price: '₦111,500' },
+  { name: 'Ply Hoodie',       price: '₦87,500' },
+  { name: 'Cue Cardigan',     price: '₦82,000' },
+  { name: 'Panel Jacket',     price: '₦153,500' },
+];
+---
+<Layout
+  title="Outerwear | The Glow Tribe Shop"
+  description="Outerwear — pieces made by the tribe, sold by the tribe."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" ctaMuted />
+
+  <main class="shop-dark shop-sub__top">
+    <div class="shop-container" data-fade>
+      <header class="shop-category-hero">
+        <p class="shop-breadcrumb"><a href="/shop">Shop</a> / <a href="/shop/collections">Collections</a> / Outerwear</p>
+        <div class="shop-category-hero__grid">
+          <h1 class="shop-category-hero__name">Outerwear</h1>
+          <div class="shop-category-hero__image"><span>Outerwear 4:5</span></div>
+        </div>
+      </header>
+      <div class="shop-editorial-grid">
+        {products.map(p => (
+          <a class="shop-editorial-item" href="/shop/product">
+            <div class="shop-editorial-item__slot"><span>Product 4:5</span></div>
+            <div class="shop-editorial-item__cap">
+              <span class="shop-editorial-item__name">{p.name}</span>
+              <span class="shop-editorial-item__price">{p.price}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </main>
+
+  <DropsNotify />
+</Layout>

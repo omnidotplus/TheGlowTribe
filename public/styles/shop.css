@@ -1,0 +1,1352 @@
+/* ============================================================================
+   SHOP — Phase 2 marketplace, shop landing page. Real build, 16 Oct 2026.
+
+   Ported from the validated skeleton (skeletons/mp-ac-showroom-ledger/),
+   which proved the structure and the hero spiral's motion. Three things
+   changed in this port, all per the client's direct instruction:
+
+   1. ONE CARD STYLE, EVERYWHERE. The old dark-zone "ledger" (no card
+      outlines, doubled rules, price set at H3 as the loudest object,
+      segment-drop sold-out) is gone. Every product — in "New arrivals" on
+      ember and in "The tribe's inventory" on dark — uses the same paper
+      card: image slot, name, price, size chips, front/back hover swap.
+      "card shape and look should be the same globally .. not a different
+      thing for new sections."
+   2. MINIMAL REAL COLOUR. Five roles, nothing else: --ember-600 (hero
+      ground), the existing --d-0/--d-1/--d-2 ramp (dark section grounds,
+      already used site-wide), --n-50/--n-900 (every card and all text),
+      --flare (the nav CTA only, "once per surface"). No category-taxonomy
+      colours, no semantic colours — none of that applies to a product
+      catalogue skeleton with blank images.
+   3. NO ON-PAGE MEASUREMENT CAPTIONS. The skeleton's `.annot`/`.fold`
+      elements were working notes for the D3/skeleton stage. None of that
+      ships here.
+
+   Spiral geometry, timing and keyframes are UNCHANGED from the skeleton —
+   that math was verified twice and is not being re-derived for this port.
+
+   Loaded second, per Layout.astro's fixed order (skeleton.css -> this file
+   -> footer.css -> reveal.css -> tokens.css -> type.css). Real colour/type
+   tokens referenced here resolve correctly regardless of that order — CSS
+   custom properties cascade by selector match, not by <link> position.
+   ========================================================================= */
+
+:root {
+  --container: 1184px;
+  --pad: clamp(16px, 6vw, 96px);
+}
+@media (max-width: 700px) { :root { --pad: 16px; } }
+
+.shop-container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--pad) * 2);
+  margin: 0 auto;
+  padding-inline: var(--pad);
+}
+
+body.shop { overflow-x: hidden; }
+
+/* ---------------------------------------------------------------------------
+   TYPE — named rules, not utilities, per type.css's own convention ("zero
+   one-off font-size overrides" means every size still traces to the scale,
+   not that a generic .t-h1 class is banned — but this file follows the real
+   site's pattern of per-component selectors instead of introducing one).
+   ------------------------------------------------------------------------ */
+.shop__eyebrow {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); line-height: 1.35; letter-spacing: .14em;
+  text-transform: uppercase; margin: 0;
+}
+.shop__h1 {
+  font-family: var(--f-display); font-variation-settings: 'wdth' 112, 'wght' 900;
+  font-weight: 900;
+  font-size: var(--t-h1); line-height: var(--lh-h1); letter-spacing: var(--tr-h1);
+  margin: 0;
+}
+.shop__lead {
+  font-size: var(--t-lead); line-height: var(--lh-lead); font-weight: 400;
+  margin: 0;
+}
+.shop__h2 {
+  font-family: var(--f-display); font-variation-settings: 'wdth' 112, 'wght' 900;
+  font-weight: 900;
+  font-size: var(--t-h3); line-height: var(--lh-h3); letter-spacing: var(--tr-h3);
+  margin: 0 0 32px;
+}
+
+/* ---------------------------------------------------------------------------
+   ZONE 1 — EMBER. Hero + New Arrivals. Unbroken: the direction's whole point
+   is that the ground does not break between the nav and the bottom of the
+   showroom row — two sections, one ground.
+   ------------------------------------------------------------------------ */
+.shop-ember { background: var(--ember-600); color: var(--n-900); position: relative; }
+
+.shop-hero {
+  /* NOT .hero -- nav.js's reveal logic looks for exactly that class to decide
+     whether to hide the bar until the hero clears. This surface wants the
+     bar present from pixel one (the bag has to be reachable immediately), so
+     this element deliberately does not match that selector.
+
+     16 Oct: a full viewport, not a fraction of one -- "how can't a section
+     fill its own viewport?". 72svh, then 85svh, both still left New Arrivals
+     visible on load at common screen heights. 100svh means it, by
+     definition, cannot -- nothing below the hero is on screen until you
+     scroll, which is what "its own room" actually requires. */
+  min-height: 100svh;
+  display: grid; align-content: center;
+  /* 16 Oct, direct client request in the browser: push the text and
+     spiral down. Equal 96/96 padding centred it exactly, which measured
+     correctly but still read as high -- a true centre on a full-height
+     section sits above the eye's natural resting point. Top/bottom now
+     deliberately asymmetric the OTHER way (was the bug before, is the
+     fix now): more padding above pushes the centred block down, since
+     align-content: center measures from the padding edge, not the box
+     edge. */
+  padding-top: 176px; padding-bottom: 56px;
+  position: relative; overflow: hidden;
+}
+@media (max-width: 700px) { .shop-hero { min-height: 100svh; padding-top: 150px; padding-bottom: 48px; } }
+
+.shop-hero__inner { position: relative; z-index: 2; max-width: var(--container); margin: 0 auto; width: 100%; }
+
+.shop-hero__block {
+  width: 740px; max-width: 100%;
+  margin-inline: auto; text-align: center;
+  position: relative; z-index: 2;
+  /* 16 Oct: the upward shift that used to sit the block slightly above dead
+     centre is gone -- client note "the text should be brought down as well".
+     It now sits at the grid's natural centre, which reads lower given the
+     hero is also taller now. */
+}
+@media (max-width: 700px) {
+  .shop-hero__block { width: 326px; }
+}
+.shop-hero__eyebrow { margin-bottom: 18px; opacity: .72; }
+.shop-hero__h1 { margin-bottom: 20px; }
+.shop-hero__line { display: block; }
+
+/* ---------------------------------------------------------------------------
+   HERO ENTRANCE — 17 Oct, client note: "word iconic entrance before the
+   spiral start.. studio level". Page-load, not scroll-triggered (the hero
+   is excluded from the data-fade system site-wide, same rule this project
+   already uses everywhere else), so this runs on plain @keyframes with
+   fixed delays rather than the IntersectionObserver-driven version
+   Close.astro uses -- same visual device (.cw, clip-path wipe), different
+   trigger because this moment can only ever happen once, on load.
+   Sequence: eyebrow, then each word of the headline, then the lead line,
+   THEN the spiral fades in -- it keeps running underneath the whole time
+   (opacity doesn't pause a CSS animation), so when it appears it's
+   already mid-flight, not starting cold.
+   ------------------------------------------------------------------------ */
+@keyframes shop-hero-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shop-hero-word-in {
+  from { clip-path: inset(0 0 108% 0); transform: translateY(.24em); }
+  to   { clip-path: inset(0 0 -12% 0); transform: none; }
+}
+/* 17 Oct, client note: "the entrance of the spiral has to be far
+   better.. studio level". A flat opacity fade had no point of view --
+   this is an aperture bloom instead: a circular iris opening from the
+   centre, paired with a gentle focus-pull (scale 1.08 -> 1, like a lens
+   settling). DESIGN.md's own doctrine, Section 1: "Light is treated as
+   physics -- exposure, bloom, occlusion, falloff" -- an iris-open IS that
+   physics applied to an entrance, not a new idea borrowed from outside
+   the system. 150% covers the stage at any aspect ratio the breakpoints
+   produce (clip-path circle() sizing is relative to the box, not the
+   crops inside it, so one value holds across --spiral-k's rescales).
+   Longer and slower than this file's UI transitions on purpose -- this is
+   the one marketing/explanatory beat on the page, not a button; the
+   skill's own duration table puts marketing motion outside the <300ms
+   UI band.
+
+   75%, not 150%: circle()'s percentage radius is relative to
+   sqrt((w²+h²)/2) of .spiral's own box, which is noticeably bigger than
+   the 1184x648 stage the crops actually live in -- measured, the stage's
+   own half-diagonal is ~57% of that metric. 150% meant the circle was
+   already well past fully-open while still only a third through the
+   timeline, which is why the first version read as an instant reveal
+   instead of a bloom regardless of easing. 75% clears the stage with
+   margin for crops whose offset-path pushes them slightly past its
+   nominal edge, and now the growth is visible for the animation's actual
+   runtime. */
+@keyframes shop-spiral-in {
+  /* linear, not eased -- a real iris opens at a constant mechanical rate,
+     and the strong ease-out this file uses for buttons front-loads ~95%
+     of the growth into the first half of the duration, which reads as a
+     snap instead of a bloom when timed on something this slow. The
+     element's own ease-out (declared below) takes over for the tail
+     scale-settle instead, where a deceleration is the correct read --
+     a focus pull locking in, not a mechanism opening. */
+  0%   { clip-path: circle(0% at 50% 50%); opacity: 0; transform: scale(1.08); animation-timing-function: linear; }
+  70%  { clip-path: circle(75% at 50% 50%); opacity: 1; transform: scale(1.02); }
+  /* clip-path/opacity repeated here, not left to "hold the previous
+     keyframe" -- a property missing from the 100% stop doesn't hold, it
+     interpolates toward the element's own BASE (pre-animation) style for
+     that property. .spiral's base is clip-path:none / opacity:0 (the
+     pre-reveal hidden state), so omitting them here was quietly
+     animating the whole bloom back to invisible over this last 30%. */
+  100% { clip-path: circle(75% at 50% 50%); opacity: 1; transform: scale(1); }
+}
+/* animation-timing-function split out as its own declaration, not inside
+   the shorthand -- a var() supplying just the easing slot inside the
+   `animation` shorthand silently resolved to the shorthand's default
+   (linear) instead of the custom curve on every one of these, which is
+   why the whole entrance read as mechanical rather than eased. The
+   longhand has no such ambiguity. */
+.shop-hero__eyebrow {
+  opacity: 0;
+  animation: shop-hero-fade-up .6s .05s forwards;
+  animation-timing-function: var(--ease-out);
+}
+.shop-hero__h1 .cw {
+  display: inline-block;
+  clip-path: inset(0 0 108% 0);
+  animation: shop-hero-word-in .8s forwards;
+  animation-timing-function: var(--ease-out);
+}
+.shop-hero__h1 .cw:nth-of-type(1) { animation-delay: .18s; }
+.shop-hero__h1 .cw:nth-of-type(2) { animation-delay: .26s; }
+.shop-hero__h1 .cw:nth-of-type(3) { animation-delay: .34s; }
+.shop-hero__lead {
+  opacity: 0;
+  animation: shop-hero-fade-up .6s .64s forwards;
+  animation-timing-function: var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .shop-hero__eyebrow, .shop-hero__lead { animation: none; opacity: 1; }
+  .shop-hero__h1 .cw { animation: none; clip-path: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   THE SPIRAL — verbatim from the skeleton. Geometry, timing, the veil, the
+   cross-browser nth-child delay fix: unchanged. Only the placeholder colours
+   below (slot / slot caption) move to real tokens.
+   ------------------------------------------------------------------------ */
+.spiral {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  animation: shop-spiral-in 1.3s 1s forwards;
+  animation-timing-function: var(--ease-out);
+  --spiral-dur: 18s;
+  container-type: inline-size;
+}
+.spiral__stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1184px; height: 648px;
+  transform: translate(-50%, -50%) scale(var(--spiral-k, 1));
+}
+.spiral__crop {
+  position: absolute; left: 0; top: 0;
+  width: 272px; height: 340px;
+
+  offset-path: path("M656.0 308.0 L658.0 306.9 L660.0 305.8 L662.1 304.9 L664.3 304.0 L666.6 303.2 L669.0 302.5 L671.4 302.0 L673.9 301.5 L676.4 301.1 L679.1 300.8 L681.7 300.6 L684.5 300.5 L687.2 300.6 L690.1 300.7 L692.9 301.0 L695.8 301.4 L698.7 301.9 L701.6 302.6 L704.6 303.3 L707.5 304.2 L710.5 305.2 L713.4 306.4 L716.3 307.6 L719.3 309.0 L722.2 310.5 L725.1 312.2 L727.9 313.9 L730.7 315.8 L733.5 317.8 L736.2 319.9 L738.9 322.1 L741.5 324.5 L744.0 326.9 L746.5 329.5 L748.9 332.2 L751.1 334.9 L753.3 337.8 L755.4 340.8 L757.4 343.9 L759.3 347.0 L761.1 350.3 L762.7 353.6 L764.3 357.0 L765.6 360.4 L766.9 364.0 L768.0 367.6 L769.0 371.2 L769.8 374.9 L770.5 378.7 L771.0 382.5 L771.3 386.3 L771.5 390.2 L771.6 394.0 L771.4 397.9 L771.1 401.8 L770.6 405.7 L769.9 409.7 L769.0 413.6 L768.0 417.5 L766.8 421.3 L765.3 425.2 L763.7 429.0 L762.0 432.7 L760.0 436.5 L757.8 440.1 L755.5 443.7 L753.0 447.3 L750.2 450.8 L747.3 454.2 L744.3 457.5 L741.0 460.7 L737.5 463.8 L733.9 466.9 L730.1 469.8 L726.2 472.6 L722.1 475.3 L717.8 477.9 L713.3 480.3 L708.7 482.6 L704.0 484.8 L699.1 486.8 L694.0 488.7 L688.9 490.4 L683.6 492.0 L678.1 493.4 L672.6 494.7 L666.9 495.8 L661.2 496.7 L655.3 497.4 L649.4 498.0 L643.4 498.4 L637.3 498.6 L631.1 498.7 L624.9 498.5 L618.7 498.2 L612.4 497.7 L606.0 497.0 L599.7 496.1 L593.3 495.0 L586.9 493.7 L580.6 492.3 L574.2 490.7 L567.9 488.8 L561.5 486.8 L555.3 484.7 L549.1 482.3 L542.9 479.7 L536.8 477.0 L530.8 474.1 L524.9 471.1 L519.1 467.8 L513.4 464.4 L507.8 460.9 L502.3 457.2 L497.0 453.3 L491.8 449.3 L486.7 445.2 L481.9 440.9 L477.2 436.4 L472.6 431.9 L468.3 427.2 L464.2 422.4 L460.2 417.5 L456.5 412.5 L453.0 407.4 L449.7 402.2 L446.7 396.9 L443.9 391.6 L441.4 386.2 L439.1 380.7 L437.0 375.1 L435.3 369.5 L433.8 363.9 L432.6 358.2 L431.6 352.5 L431.0 346.8 L430.6 341.1 L430.5 335.3 L430.8 329.6 L431.3 323.9 L432.1 318.2 L433.2 312.6 L434.7 306.9 L436.4 301.4 L438.5 295.8 L440.8 290.4 L443.5 285.0 L446.5 279.6 L449.7 274.4 L453.3 269.2 L457.2 264.2 L461.4 259.2 L465.9 254.4 L470.7 249.7 L475.7 245.1 L481.1 240.6 L486.7 236.3 L492.6 232.1 L498.8 228.1 L505.3 224.3 L512.0 220.6 L519.0 217.0 L526.2 213.7 L533.7 210.5 L541.3 207.5 L549.3 204.7 L557.4 202.1 L565.7 199.7 L574.3 197.5 L583.0 195.5 L591.9 193.7 L600.9 192.1 L610.1 190.8 L619.5 189.6 L629.0 188.7 L638.6 188.0 L648.4 187.5 L658.2 187.2 L668.1 187.1 L678.1 187.3 L688.2 187.7 L698.3 188.4 L708.4 189.2 L718.6 190.3 L728.7 191.6 L738.9 193.1 L749.0 194.8 L759.2 196.8 L769.2 199.0 L779.2 201.3 L789.2 203.9 L799.0 206.7 L808.8 209.7 L818.4 212.9 L827.9 216.3 L837.3 219.9 L846.5 223.7 L855.5 227.7 L864.4 231.8 L873.1 236.1 L881.5 240.6 L889.8 245.2 L897.8 250.0 L905.5 254.9 L913.1 260.0 L920.3 265.2 L927.2 270.5 L933.9 276.0 L940.2 281.5 L946.3 287.2 L952.0 293.0 L957.4 298.8 L962.4 304.8 L967.1 310.8 L971.4 316.9 L975.4 323.0 L978.9 329.2 L982.1 335.4 L984.9 341.7 L987.3 348.0 L989.3 354.3 L990.8 360.6 L992.0 366.9 L992.7 373.2 L993.0 379.5 L992.9 385.8 L992.3 392.0 L991.3 398.2 L989.9 404.3 L988.0 410.4 L985.7 416.4 L982.9 422.4 L979.7 428.2 L976.1 434.0 L972.1 439.6 L967.6 445.2 L962.6 450.7 L957.3 456.0 L951.5 461.2 L945.3 466.3 L938.7 471.2 L931.7 476.0 L924.3 480.6 L916.4 485.1 L908.2 489.4 L899.6 493.5 L890.7 497.5 L881.4 501.2 L871.7 504.8 L861.7 508.2 L851.4 511.4 L840.7 514.4 L829.7 517.3 L818.5 519.9 L806.9 522.3 L795.1 524.4 L783.0 526.4 L770.7 528.2 L758.1 529.7 L745.4 531.0 L732.4 532.1 L719.3 533.0 L706.0 533.7 L692.5 534.1 L678.9 534.3 L665.2 534.3 L651.4 534.4 L637.5 534.7 L623.5 534.9 L609.5 534.8 L595.5 534.6 L581.4 534.1 L567.4 533.3 L553.3 532.4 L539.3 531.2 L525.4 529.8 L511.6 528.2 L497.8 526.4 L484.2 524.3 L470.7 522.0 L457.3 519.5 L444.2 516.8 L431.2 513.9 L418.4 510.8 L405.8 507.4 L393.5 503.9 L381.4 500.1 L369.6 496.2 L358.1 492.0 L347.0 487.7 L336.1 483.2 L325.6 478.5 L315.4 473.6 L305.6 468.5 L296.2 463.3 L287.2 458.0 L278.6 452.4 L270.5 446.8 L262.8 440.9 L255.5 435.0 L248.7 428.9 L242.4 422.7 L236.6 416.4 L231.2 410.0 L226.4 403.5 L222.1 396.9 L218.3 390.2 L215.1 383.4 L212.4 376.6 L210.2 369.7 L208.6 362.8 L207.5 355.8 L207.1 348.8 L207.1 341.8 L207.8 334.7 L209.0 327.7 L210.8 320.6 L213.2 313.6 L216.1 306.6 L219.7 299.6 L223.7 292.7 L228.4 285.8 L233.6 279.0 L239.4 272.2 L245.8 265.5 L252.7 258.9 L260.2 252.4 L268.2 246.0 L276.7 239.7 L285.8 233.6 L295.3 227.5 L305.4 221.6 L316.0 215.9 L327.1 210.3 L338.6 204.9 L350.6 199.6 L363.1 194.5 L376.0 189.6 L389.3 184.9 L403.1 180.4 L417.2 176.1 L431.7 172.0 L446.5 168.1 L461.7 164.5 L477.3 161.1 L493.1 157.9 L509.2 154.9 L525.6 152.3 L542.2 149.8 L559.1 147.6 L576.2 145.7 L593.4 144.0 L610.9 142.7 L628.4 141.5 L646.1 140.7 L663.9 140.1 L681.8 139.8 L699.7 139.8 L717.7 140.1 L735.7 140.6 L753.7 141.5 L771.6 142.6 L789.5 144.0 L807.3 145.6 L825.0 147.6 L842.5 149.8 L860.0 152.4 L877.2 155.2 L894.3 158.2 L911.1 161.6 L927.7 165.2 L944.0 169.1 L960.1 173.2 L975.8 177.6 L991.2 182.3 L1006.3 187.2 L1020.9 192.3 L1035.2 197.7 L1049.1 203.4 L1062.6 209.2 L1075.6 215.3 L1088.1 221.6 L1100.2 228.1 L1111.7 234.7 L1122.8 241.6 L1133.2 248.7 L1143.2 255.9 L1152.6 263.4 L1161.3 270.9 L1169.5 278.6 L1177.1 286.5 L1184.0 294.5 L1190.4 302.6 L1196.0 310.8 L1201.1 319.2 L1205.4 327.6 L1209.1 336.1 L1212.1 344.7 L1214.4 353.3 L1216.0 362.0");
+  offset-rotate: 0deg;
+  offset-anchor: 50% 50%;
+
+  animation: spiral-travel var(--spiral-dur, 18s) linear infinite;
+  will-change: offset-distance, transform, opacity;
+}
+.spiral__crop:nth-child(1) { animation-delay: -1.5s; }
+.spiral__crop:nth-child(2) { animation-delay: -4.5s; }
+.spiral__crop:nth-child(3) { animation-delay: -7.5s; }
+.spiral__crop:nth-child(4) { animation-delay: -10.5s; }
+.spiral__crop:nth-child(5) { animation-delay: -13.5s; }
+.spiral__crop:nth-child(6) { animation-delay: -16.5s; }
+
+.spiral__slot {
+  width: 100%; height: 100%;
+  background: var(--n-100);
+  outline: 1px solid var(--n-300);
+  outline-offset: -1px;
+  display: grid; place-items: center;
+}
+.spiral__slot span {
+  font-family: var(--f-mono); font-size: 14px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--n-500);
+}
+
+@media (max-width: 1375px) { .spiral__stage { --spiral-k: .93; } }
+@media (max-width: 1279px) { .spiral__stage { --spiral-k: .84; } }
+@media (max-width: 1151px) { .spiral__stage { --spiral-k: .74; } }
+@media (max-width: 1023px) { .spiral__stage { --spiral-k: .55; } }
+@media (max-width:  700px) { .spiral { display: none; } }
+@supports (transform: scale(tan(atan2(1px, 1px)))) {
+  .spiral__stage {
+    --spiral-k: min(1, tan(atan2(calc(100cqw - 2 * var(--pad)), 1184px)));
+  }
+}
+
+@keyframes spiral-travel {
+  0% { offset-distance: 0.0000%; transform: scale(0.1029); opacity: 0.0672; }
+  1% { offset-distance: 0.2664%; transform: scale(0.1031); opacity: 0.0705; }
+  2% { offset-distance: 0.5524%; transform: scale(0.1037); opacity: 0.0738; }
+  3% { offset-distance: 0.8590%; transform: scale(0.1046); opacity: 0.0771; }
+  4% { offset-distance: 1.1865%; transform: scale(0.1058); opacity: 0.0804; }
+  5% { offset-distance: 1.5344%; transform: scale(0.1073); opacity: 0.0837; }
+  6% { offset-distance: 1.9014%; transform: scale(0.1092); opacity: 0.0871; }
+  7% { offset-distance: 2.2855%; transform: scale(0.1113); opacity: 0.0904; }
+  8% { offset-distance: 2.6844%; transform: scale(0.1137); opacity: 0.0937; }
+  9% { offset-distance: 3.0953%; transform: scale(0.1164); opacity: 0.0970; }
+  10% { offset-distance: 3.5160%; transform: scale(0.1194); opacity: 0.1003; }
+  11% { offset-distance: 3.9445%; transform: scale(0.1227); opacity: 0.1036; }
+  12% { offset-distance: 4.3798%; transform: scale(0.1261); opacity: 0.1069; }
+  13% { offset-distance: 4.8222%; transform: scale(0.1299); opacity: 0.1102; }
+  14% { offset-distance: 5.2733%; transform: scale(0.1339); opacity: 0.1135; }
+  15% { offset-distance: 5.7362%; transform: scale(0.1380); opacity: 0.1168; }
+  16% { offset-distance: 6.2152%; transform: scale(0.1425); opacity: 0.1663; }
+  17% { offset-distance: 6.7152%; transform: scale(0.1471); opacity: 0.2209; }
+  18% { offset-distance: 7.2412%; transform: scale(0.1520); opacity: 0.2707; }
+  19% { offset-distance: 7.7976%; transform: scale(0.1570); opacity: 0.3097; }
+  20% { offset-distance: 8.3873%; transform: scale(0.1623); opacity: 0.3176; }
+  21% { offset-distance: 9.0120%; transform: scale(0.1677); opacity: 0.3255; }
+  22% { offset-distance: 9.6712%; transform: scale(0.1734); opacity: 0.3333; }
+  23% { offset-distance: 10.3628%; transform: scale(0.1792); opacity: 0.3412; }
+  24% { offset-distance: 11.0828%; transform: scale(0.1852); opacity: 0.3491; }
+  25% { offset-distance: 11.8256%; transform: scale(0.1914); opacity: 0.3570; }
+  26% { offset-distance: 12.5846%; transform: scale(0.1978); opacity: 0.3648; }
+  27% { offset-distance: 13.3521%; transform: scale(0.2043); opacity: 0.3575; }
+  28% { offset-distance: 14.1202%; transform: scale(0.2110); opacity: 0.3233; }
+  29% { offset-distance: 14.8810%; transform: scale(0.2179); opacity: 0.2822; }
+  30% { offset-distance: 15.6278%; transform: scale(0.2249); opacity: 0.2354; }
+  31% { offset-distance: 16.3552%; transform: scale(0.2321); opacity: 0.1839; }
+  32% { offset-distance: 17.0572%; transform: scale(0.2395); opacity: 0.1663; }
+  33% { offset-distance: 17.7284%; transform: scale(0.2470); opacity: 0.2480; }
+  34% { offset-distance: 18.3654%; transform: scale(0.2548); opacity: 0.3233; }
+  35% { offset-distance: 18.9700%; transform: scale(0.2627); opacity: 0.3570; }
+  36% { offset-distance: 19.5453%; transform: scale(0.2708); opacity: 0.3864; }
+  37% { offset-distance: 20.0956%; transform: scale(0.2791); opacity: 0.4123; }
+  38% { offset-distance: 20.6255%; transform: scale(0.2877); opacity: 0.4354; }
+  39% { offset-distance: 21.1404%; transform: scale(0.2964); opacity: 0.4561; }
+  40% { offset-distance: 21.6462%; transform: scale(0.3053); opacity: 0.4749; }
+  41% { offset-distance: 22.1489%; transform: scale(0.3145); opacity: 0.4920; }
+  42% { offset-distance: 22.6550%; transform: scale(0.3238); opacity: 0.5076; }
+  43% { offset-distance: 23.1707%; transform: scale(0.3334); opacity: 0.5219; }
+  44% { offset-distance: 23.7028%; transform: scale(0.3433); opacity: 0.5352; }
+  45% { offset-distance: 24.2579%; transform: scale(0.3534); opacity: 0.5475; }
+  46% { offset-distance: 24.8431%; transform: scale(0.3638); opacity: 0.5589; }
+  47% { offset-distance: 25.4659%; transform: scale(0.3744); opacity: 0.5696; }
+  48% { offset-distance: 26.1341%; transform: scale(0.3853); opacity: 0.5796; }
+  49% { offset-distance: 26.8563%; transform: scale(0.3966); opacity: 0.5891; }
+  50% { offset-distance: 27.6412%; transform: scale(0.4081); opacity: 0.5980; }
+  51% { offset-distance: 28.4980%; transform: scale(0.4199); opacity: 0.6064; }
+  52% { offset-distance: 29.4362%; transform: scale(0.4321); opacity: 0.6144; }
+  53% { offset-distance: 30.4651%; transform: scale(0.4446); opacity: 0.6219; }
+  54% { offset-distance: 31.5938%; transform: scale(0.4575); opacity: 0.6291; }
+  55% { offset-distance: 32.8306%; transform: scale(0.4707); opacity: 0.6359; }
+  56% { offset-distance: 34.1828%; transform: scale(0.4843); opacity: 0.6424; }
+  57% { offset-distance: 35.6559%; transform: scale(0.4983); opacity: 0.6486; }
+  58% { offset-distance: 37.2530%; transform: scale(0.5126); opacity: 0.6545; }
+  59% { offset-distance: 38.9741%; transform: scale(0.5273); opacity: 0.6601; }
+  60% { offset-distance: 40.8156%; transform: scale(0.5423); opacity: 0.6655; }
+  61% { offset-distance: 42.7693%; transform: scale(0.5577); opacity: 0.6706; }
+  62% { offset-distance: 44.8220%; transform: scale(0.5734); opacity: 0.6755; }
+  63% { offset-distance: 46.9549%; transform: scale(0.5894); opacity: 0.6802; }
+  64% { offset-distance: 49.1443%; transform: scale(0.6058); opacity: 0.6847; }
+  65% { offset-distance: 51.3632%; transform: scale(0.6224); opacity: 0.6890; }
+  66% { offset-distance: 53.5825%; transform: scale(0.6394); opacity: 0.6931; }
+  67% { offset-distance: 55.7730%; transform: scale(0.6567); opacity: 0.6971; }
+  68% { offset-distance: 57.9067%; transform: scale(0.6742); opacity: 0.7009; }
+  69% { offset-distance: 59.9584%; transform: scale(0.6920); opacity: 0.7045; }
+  70% { offset-distance: 61.9070%; transform: scale(0.7101); opacity: 0.7080; }
+  71% { offset-distance: 63.7362%; transform: scale(0.7284); opacity: 0.7114; }
+  72% { offset-distance: 65.4348%; transform: scale(0.7470); opacity: 0.7146; }
+  73% { offset-distance: 66.9969%; transform: scale(0.7658); opacity: 0.7177; }
+  74% { offset-distance: 68.4213%; transform: scale(0.7849); opacity: 0.7207; }
+  75% { offset-distance: 69.7111%; transform: scale(0.8042); opacity: 0.7235; }
+  76% { offset-distance: 70.8730%; transform: scale(0.8237); opacity: 0.7262; }
+  77% { offset-distance: 71.9169%; transform: scale(0.8435); opacity: 0.7289; }
+  78% { offset-distance: 72.8550%; transform: scale(0.8634); opacity: 0.7314; }
+  79% { offset-distance: 73.7014%; transform: scale(0.8836); opacity: 0.7338; }
+  80% { offset-distance: 74.4712%; transform: scale(0.9040); opacity: 0.7276; }
+  81% { offset-distance: 75.1799%; transform: scale(0.9245); opacity: 0.7279; }
+  82% { offset-distance: 75.8426%; transform: scale(0.9452); opacity: 0.6310; }
+  83% { offset-distance: 76.4737%; transform: scale(0.9661); opacity: 0.6310; }
+  84% { offset-distance: 77.0866%; transform: scale(0.9871); opacity: 0.7279; }
+  85% { offset-distance: 77.6941%; transform: scale(1.0083); opacity: 0.7279; }
+  86% { offset-distance: 78.3078%; transform: scale(1.0083); opacity: 0.7279; }
+  87% { offset-distance: 78.9378%; transform: scale(1.0083); opacity: 0.7279; }
+  88% { offset-distance: 79.5927%; transform: scale(1.0083); opacity: 0.7279; }
+  89% { offset-distance: 81.7452%; transform: scale(0.8464); opacity: 0.7279; }
+  90% { offset-distance: 83.8151%; transform: scale(0.8598); opacity: 0.7266; }
+  91% { offset-distance: 85.8849%; transform: scale(0.8733); opacity: 0.7166; }
+  92% { offset-distance: 87.9205%; transform: scale(0.8869); opacity: 0.7430; }
+  93% { offset-distance: 89.8888%; transform: scale(0.9006); opacity: 0.8119; }
+  94% { offset-distance: 91.7589%; transform: scale(0.9145); opacity: 0.8837; }
+  95% { offset-distance: 93.5037%; transform: scale(0.9284); opacity: 0.7994; }
+  96% { offset-distance: 95.1017%; transform: scale(0.9424); opacity: 0.6667; }
+  97% { offset-distance: 96.5404%; transform: scale(0.9566); opacity: 0.5000; }
+  98% { offset-distance: 97.8196%; transform: scale(0.9709); opacity: 0.3333; }
+  99% { offset-distance: 98.9582%; transform: scale(0.9853); opacity: 0.1667; }
+  100% { offset-distance: 100.0000%; transform: scale(1.0000); opacity: 0.0000; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spiral { opacity: 1; animation: none; }
+  .spiral__crop { animation: none; }
+  .spiral__crop:nth-child(1) { offset-distance: 2.6844%; transform: scale(0.1137); opacity: 0.0937; }
+  .spiral__crop:nth-child(2) { offset-distance: 11.8256%; transform: scale(0.1914); opacity: 0.3570; }
+  .spiral__crop:nth-child(3) { offset-distance: 24.6748%; transform: scale(0.3204); opacity: 0.2256; }
+  .spiral__crop:nth-child(4) { offset-distance: 40.7155%; transform: scale(0.4753); opacity: 0.5907; }
+  .spiral__crop:nth-child(5) { offset-distance: 63.2449%; transform: scale(0.6682); opacity: 0.6983; }
+  .spiral__crop:nth-child(6) { offset-distance: 87.9205%; transform: scale(0.8869); opacity: 0.7430; }
+  .spiral__crop:nth-child(6) { animation: spiral-breathe 7s ease-in-out infinite; }
+  @keyframes spiral-breathe {
+    0%, 100% { opacity: 0.7430; }
+    50%      { opacity: 0.6538; }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   NEW ARRIVALS — ember ground, same section family as the dark grid below.
+   ------------------------------------------------------------------------ */
+.shop-showroom { padding-top: 48px; padding-bottom: 26px; }
+@media (max-width: 700px) { .shop-showroom { padding-top: 28px; padding-bottom: 20px; } }
+
+.shop-showroom__h { margin: 0 0 26px; }
+
+.shop-grid {
+  max-width: var(--container); margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px; row-gap: 20px;
+}
+@media (min-width: 701px) and (max-width: 1023px) {
+  .shop-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 20px; row-gap: 20px; }
+}
+@media (min-width: 1024px) {
+  .shop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); column-gap: 26px; row-gap: 26px; }
+}
+/* the dark inventory grid stops at 10 cards, which does not divide evenly
+   into a 3-up tablet row -- the tenth card drops rather than orphaning a
+   short last row, same rule the skeleton used */
+.shop-grid__tablet-drop { display: block; }
+@media (min-width: 701px) and (max-width: 1023px) { .shop-grid__tablet-drop { display: none; } }
+
+/* THE CARD — the single product component, used on both grounds. */
+.shop-card {
+  background: var(--n-50);
+  color: var(--n-900);
+  padding: 10px;
+  display: flex; flex-direction: column;
+  text-decoration: none;
+  position: relative;
+  /* 17 Oct, motion pass: an ink ring on hover, the same device rule C3
+     already uses for flare-on-ember (box-shadow, not a drop shadow --
+     this flat system has no elevation to lift into) -- plus a tiny
+     press-scale so the whole card acknowledges a tap, not just the
+     front/back crossfade inside it. */
+  box-shadow: 0 0 0 0 var(--n-900);
+  transition: box-shadow 180ms var(--ease-out), transform 120ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .shop-card:hover { box-shadow: 0 0 0 2px var(--n-900); }
+}
+.shop-card:active { transform: scale(.98); }
+.shop-card__slot {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--n-100);
+  display: grid; place-items: center;
+}
+.shop-card__slot span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--n-500);
+}
+/* FRONT/BACK SWAP, OPACITY ONLY. Both layers always present, same size --
+   the swap is a pure crossfade and cannot shift the card's geometry. */
+.shop-card__back {
+  position: absolute; inset: 0;
+  background: var(--n-300);
+  display: grid; place-items: center;
+  opacity: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .shop-card__back { transition: opacity .2s ease; }
+  .shop-card:hover .shop-card__back { opacity: 1; }
+}
+.shop-card__cap {
+  min-height: 70px; margin-top: 8px;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 2px;
+}
+.shop-card__name {
+  font-size: var(--t-body); line-height: 1.55; font-weight: 400; margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.shop-card__price {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .12em; margin: 0;
+}
+.shop-card__sizes { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.shop-card__sizes li {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em;
+  border: 1px solid var(--n-400); padding: 1px 4px;
+}
+/* SOLD OUT. The ledger's segment-drop mechanic went with the ledger; a card
+   needs its own state, so this is a small tag over the slot's top-left
+   corner -- structure the card system already has (an overlay on the same
+   stacking context the back layer uses), not a new mechanic. */
+.shop-card[data-state="sold-out"] .shop-card__slot::before {
+  content: 'Sold out';
+  position: absolute; top: 8px; left: 8px; z-index: 1;
+  background: var(--n-900); color: var(--n-50);
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 7px;
+}
+.shop-card[data-state="sold-out"] .shop-card__slot { opacity: .72; }
+
+@media (min-width: 701px) {
+  .shop-card { padding: 16px 14px; }
+  .shop-card__cap { min-height: 52px; margin-top: 12px; }
+}
+@media (min-width: 1024px) {
+  .shop-card { padding: 20px 18px; }
+  .shop-card__cap { min-height: 64px; margin-top: 14px; }
+}
+
+/* ---------------------------------------------------------------------------
+   ZONE 2 — DARK. Catalogue down. Same ramp the rest of the site already
+   uses for Who-is-TGT / Speakers -- not a new addition.
+   ------------------------------------------------------------------------ */
+.shop-dark-0 { background: var(--d-0); color: var(--n-50); }
+.shop-dark-1 { background: var(--d-1); color: var(--n-50); }
+.shop-dark-2 { background: var(--d-2); color: var(--n-50); }
+
+.shop-sec { padding-block: 52px; padding-inline: 0; scroll-margin-top: 86px; }
+@media (min-width: 701px)  { .shop-sec { padding-block: 80px; } }
+@media (min-width: 1024px) { .shop-sec { padding-block: 100px; } }
+
+.shop-sec__eyebrow { margin: 0 0 18px; opacity: .72; }
+
+/* COLLECTION — a 2-part split, deliberately a different layout family from
+   the grid above and the showcase below. */
+.shop-collection__grid {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px;
+}
+@media (min-width: 1024px) {
+  .shop-collection__grid { grid-template-columns: minmax(0, 464px) minmax(0, 1fr); gap: 56px; }
+}
+.shop-collection__slot {
+  aspect-ratio: 4 / 5; background: var(--d-2);
+  display: grid; place-items: center;
+}
+.shop-collection__slot span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--n-50); opacity: .64;
+}
+.shop-collection__list {
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 100%;
+}
+.shop-collection__list li { flex: 1 1 auto; display: flex; align-items: center; padding-block: 18px; position: relative; }
+.shop-collection__list li + li { border-top: 1px solid rgba(255,248,244,.18); }
+.shop-collection__row { width: 100%; display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+.shop-collection__k { font-family: var(--f-mono); font-variation-settings: 'wght' 500; font-size: var(--t-mono-sm); letter-spacing: .14em; text-transform: uppercase; opacity: .72; }
+.shop-collection__v {
+  font-family: var(--f-display); font-variation-settings: 'wdth' 112, 'wght' 900;
+  font-weight: 900; font-size: var(--t-h3); line-height: var(--lh-h3); letter-spacing: var(--tr-h3);
+}
+
+/* SHOWCASE — two equal big columns, no body copy. */
+.shop-showcase2 { display: grid; grid-template-columns: 1fr; gap: 20px; }
+@media (min-width: 1024px) { .shop-showcase2 { grid-template-columns: 1fr 1fr; gap: 26px; } }
+.shop-showcase2__slot {
+  aspect-ratio: 4 / 5; background: var(--d-2);
+  display: grid; place-items: center;
+}
+.shop-showcase2__slot span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--n-50); opacity: .64;
+}
+
+/* SIZE + STOCK TABLE — plain ruled rows. The doubled rule went with the
+   ledger; a single hairline is the real site's own existing convention. */
+.shop-stock { width: 100%; border-collapse: collapse; text-align: left; }
+.shop-stock th, .shop-stock td {
+  padding: 16px 12px 16px 0;
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .08em;
+  border-bottom: 1px solid rgba(255,248,244,.18);
+}
+.shop-stock th { opacity: .62; font-weight: 500; }
+.shop-stock tbody tr[data-state="sold-out"] td:not(:first-child) { opacity: .4; }
+
+/* ===========================================================================
+   SUB-PAGES — product, collections, checkout. 16 Oct. No <Footer /> on any
+   of these (client note) -- each section already carries its own
+   padding-bottom, so the page just ends there rather than needing a
+   spacer. Same minimal colour set as the shop landing page: ember ground
+   on product/collections (they are still "the shop"), paper ground on
+   checkout (a calmer, form-like task wants paper, not ember, under it --
+   the system already permits this per DESIGN.md's three grounds).
+   ========================================================================= */
+.shop-paper { background: var(--n-50); color: var(--n-900); }
+.shop-sub__top { padding-top: 140px; }
+@media (max-width: 700px) { .shop-sub__top { padding-top: 110px; } }
+.shop-breadcrumb {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .1em; text-transform: uppercase;
+  opacity: .6; margin: 0 0 32px;
+}
+.shop-breadcrumb a { color: inherit; text-decoration: none; }
+.shop-breadcrumb a:hover { text-decoration: underline; }
+
+/* ---------------------------------------------------------------------------
+   PRODUCT — gallery left, info right. Single layout family, not the grid,
+   not the ruled table: a two-part split, like the collection block already
+   uses elsewhere on this page.
+   ------------------------------------------------------------------------ */
+.shop-product {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px;
+  padding-bottom: 100px;
+}
+@media (min-width: 1024px) {
+  /* 16 Oct: gallery column capped at 420px -- "the images to the left are
+     too long and wide" was a single full-width 4:5 slot stretching to
+     fill a 1fr column, which at a 1184px container runs well past 700px
+     tall. A capped main image + a small thumbnail row reads as a normal
+     product gallery instead of a wall of image. */
+  /* 16 Oct, client note: the info column should be centred, not stuck to
+     the top -- align-items: center instead of start. */
+  .shop-product { grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 64px; align-items: center; }
+}
+.shop-product__gallery { display: grid; gap: 10px; max-width: 420px; }
+.shop-product__main {
+  aspect-ratio: 4 / 5; background: var(--n-100);
+  display: grid; place-items: center;
+}
+.shop-product__main span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--n-500);
+}
+/* THE THUMBNAILS. Small, normal-sized previews -- client note, 16 Oct. */
+.shop-product__thumbs { display: flex; gap: 10px; }
+.shop-product__thumb {
+  width: 64px; aspect-ratio: 4 / 5; flex: 0 0 auto;
+  background: var(--n-100); border: 1px solid transparent; padding: 0; cursor: pointer;
+  display: grid; place-items: center;
+  transition: border-color 160ms var(--ease-out), opacity 160ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.shop-product__thumb[aria-current="true"] { border-color: var(--n-900); }
+@media (hover: hover) and (pointer: fine) {
+  .shop-product__thumb:not([aria-current="true"]):hover { opacity: .64; }
+}
+.shop-product__thumb:active { transform: scale(.96); }
+.shop-product__thumb span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 8px; letter-spacing: .08em; text-transform: uppercase; color: var(--n-500);
+}
+/* 16 Oct, client note: centred against the gallery column's full height,
+   not pinned to its top -- the grid's own align-items: center now does
+   the vertical placement, so no sticky offset is needed here. */
+.shop-product__name { margin: 0 0 8px; }
+.shop-product__price {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-lead); letter-spacing: .04em; margin: 0 0 28px;
+}
+.shop-product__label {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .14em; text-transform: uppercase;
+  opacity: .62; margin: 0 0 12px;
+}
+.shop-product__sizes {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 28px; padding: 0; list-style: none;
+}
+.shop-product__sizes button {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .08em;
+  min-width: 44px; height: 40px; padding: 0 12px;
+  background: var(--n-50); color: var(--n-900);
+  border: 1px solid var(--n-400); cursor: pointer;
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out),
+              border-color 160ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.shop-product__sizes button[aria-pressed="true"] {
+  background: var(--n-900); color: var(--n-50); border-color: var(--n-900);
+}
+.shop-product__sizes button:disabled {
+  color: var(--n-500); border-color: var(--n-300); text-decoration: line-through; cursor: not-allowed;
+}
+@media (hover: hover) and (pointer: fine) {
+  .shop-product__sizes button:not(:disabled):not([aria-pressed="true"]):hover { border-color: var(--n-900); }
+}
+.shop-product__sizes button:not(:disabled):active { transform: scale(.94); }
+/* THE ASK. The one flare button on this page -- the nav's own CTA goes
+   muted (see Nav.astro `ctaMuted`) specifically so this can be it. */
+.shop-cta {
+  display: block; width: 100%;
+  height: 56px; border: 0; cursor: pointer;
+  background: var(--flare); color: var(--n-900);
+  box-shadow: 0 0 0 2px var(--n-900);   /* Rule C3 -- flare on ember needs an ink ring */
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .12em; text-transform: uppercase;
+  text-decoration: none; text-align: center; line-height: 56px;
+  transition: transform .16s cubic-bezier(.23,1,.32,1), filter .16s var(--ease-out);
+}
+/* 17 Oct, client note: "add to cart need hover effect". filter: brightness
+   keeps the flare hue exactly as COLOUR_SYSTEM.md defines it (the ask
+   doesn't change colour on hover) while still giving a visible response;
+   no new token needed. */
+@media (hover: hover) and (pointer: fine) {
+  .shop-cta:hover { filter: brightness(.93); }
+}
+.shop-cta:active { transform: scale(.98); }
+@media (prefers-reduced-motion: reduce) { .shop-cta { transition-duration: .01ms; } }
+/* 17 Oct: the brief state between "Continue to payment" and the Wix
+   handoff -- a slow pulse, not a spinner (no icon library in this build,
+   and a pulse keeps the flat system's own vocabulary: opacity, not a new
+   shape). Disabled cursor matches the real state -- the button can't be
+   pressed again mid-redirect. */
+.shop-cta:disabled { cursor: not-allowed; }
+.shop-cta[data-state="redirecting"] { animation: shop-cta-pulse 1s ease-in-out infinite; }
+@keyframes shop-cta-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .64; } }
+@media (prefers-reduced-motion: reduce) { .shop-cta[data-state="redirecting"] { animation: none; opacity: .8; } }
+/* On paper (checkout) flare already clears 3:1 without the ring -- Rule C3
+   is an EMBER-ground requirement specifically. */
+.shop-paper .shop-cta { box-shadow: none; }
+
+/* PRODUCT — extra info, 17 Oct client note (reference image): a fabric +
+   fit strip, a fit note, a size-guide link, delivery & returns. Ruled
+   dividers rather than cards -- DESIGN.md's flat system, same device the
+   checkout summary and stock table already use. */
+/* 17 Oct, client note: "this grey is harsh on my eyes" -- n-300 is a
+   decorative-hairline token built for a PAPER card (a hair off n-50/n-100),
+   not for sitting directly on the vivid ember ground, where it reads as a
+   pale streak instead of a quiet rule. Same family of fix as the filter
+   pills (border now var(--n-900)) -- but a divider needs a quiet line, not
+   a solid ink one, so this is ink at low opacity instead: it reads as a
+   rule against ember, not a glare. */
+.shop-product__facts {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-top: 1px solid rgba(26, 20, 17, .22); border-bottom: 1px solid rgba(26, 20, 17, .22);
+  margin: 32px 0 24px;
+}
+.shop-product__facts span {
+  display: block; text-align: center; padding: 14px 8px;
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .08em; text-transform: uppercase;
+}
+.shop-product__facts span:first-child { border-right: 1px solid rgba(26, 20, 17, .22); }
+.shop-product__note { font-size: var(--t-body); opacity: .72; max-width: 46ch; margin: 0 0 32px; }
+.shop-product__guide {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding-bottom: 16px; border-bottom: 1px solid rgba(26, 20, 17, .22); margin-bottom: 32px;
+}
+.shop-product__guide span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .12em; text-transform: uppercase;
+}
+.shop-product__guide a { color: inherit; font-size: var(--t-mono-sm); text-decoration: underline; }
+.shop-product__delivery { display: grid; gap: 18px; }
+.shop-product__delivery-row { display: flex; gap: 14px; align-items: flex-start; }
+.shop-product__delivery-row svg { flex: 0 0 auto; width: 22px; height: 22px; margin-top: 2px; }
+.shop-product__delivery-row p { margin: 0; font-size: var(--t-body); }
+.shop-product__delivery-row p + p { opacity: .72; margin-top: 4px; }
+.shop-product__delivery-row a { color: inherit; }
+
+/* ---------------------------------------------------------------------------
+   COLLECTIONS — 17 Oct rework, client note: "studio level bento per
+   collection .. put a bit of swag with large text". The four compositions
+   (layering / ease / grounded / scatter) are unchanged in kind, but each
+   now gets its own full-width "studio" section -- Tops and Bottoms no
+   longer split a row, so every collection gets the whole container's
+   width to be big in. A large display-scale name per section is
+   DESIGN.md's own "type as object" doctrine (Section 1/6: "one
+   monumental type object anchors a screen"), applied four times instead
+   of once. No rounded corners, no shadows, anywhere here -- this
+   project's own DESIGN.md locks a flat paper-and-ink system with ground
+   changes and concave-cut seams as the only elevation devices; bento
+   variety comes from composition, not from borrowing soft-UI chrome this
+   system doesn't use elsewhere.
+   ------------------------------------------------------------------------ */
+.shop-bento {
+  display: flex; flex-direction: column;
+  padding-bottom: 100px;
+}
+.shop-tile {
+  display: block; text-decoration: none; color: var(--n-900);
+  background: var(--n-50);
+  position: relative;
+  /* 17 Oct, motion pass: an inset ink ring on hover -- outline rather
+     than box-shadow, since several of these tiles (the grounded overlap,
+     the layering stack) have pieces that overlap the tile's own edge and
+     a shadow would clip oddly against them. The press-scale is barely
+     there on purpose: these are large studio-scale blocks, not buttons. */
+  outline: 2px solid transparent; outline-offset: -2px;
+  transition: outline-color 200ms var(--ease-out), transform 160ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .shop-tile:hover { outline-color: var(--n-900); }
+}
+.shop-tile:active { transform: scale(.994); }
+.shop-tile__slot {
+  aspect-ratio: 1 / 1; background: var(--n-100);
+  display: grid; place-items: center;
+}
+.shop-tile__slot span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--n-500);
+}
+
+/* THE STUDIO HEAD. A number, the collection's own name at display scale,
+   and its count -- the big name does the job the small .shop-tile__cap
+   caption used to, "monumental" rather than a label. */
+.shop-studio { margin-bottom: 72px; }
+.shop-studio:last-child { margin-bottom: 0; }
+@media (min-width: 701px) { .shop-studio { margin-bottom: 120px; } }
+.shop-studio__head {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 16px 20px;
+  margin-bottom: 24px;
+}
+.shop-studio__num {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .14em; opacity: .5;
+}
+.shop-studio__name {
+  font-size: var(--t-h2); line-height: var(--lh-h2); letter-spacing: var(--tr-h2);
+  font-weight: 900; margin: 0; flex: 1 1 auto;
+}
+.shop-studio__count {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .08em; opacity: .62;
+  white-space: nowrap;
+}
+/* The ONE flare element on this page -- COLOUR_SYSTEM.md caps flare at
+   2-3 elements per screen, so this stays on Outerwear's count only, not
+   repeated across all four sections. */
+.shop-studio__count--flare {
+  opacity: 1; background: var(--flare); color: var(--n-900); padding: 4px 9px;
+}
+
+/* OUTERWEAR — LAYERING. 2fr dominant image + 1fr of two stacked images,
+   the way a coat sits over what's under it. Fixed height drives the
+   split, not aspect-ratio, so the big image and the two-high stack line
+   up exactly with no rounding gap between them. Studio scale: a full
+   container width to itself now, so the height steps up with it instead
+   of reading thin against the new big name above it. */
+.shop-bento__layering-grid {
+  display: grid; grid-template-columns: 1fr; gap: 2px;
+}
+@media (min-width: 701px) {
+  .shop-bento__layering-grid { grid-template-columns: 2fr 1fr; height: 560px; }
+  .shop-bento__layering-grid .shop-tile__slot { aspect-ratio: auto; height: 100%; }
+}
+@media (min-width: 1024px) {
+  .shop-bento__layering-grid { height: 720px; }
+}
+.shop-bento__stack { display: grid; grid-template-rows: 1fr 1fr; gap: 2px; }
+@media (max-width: 700px) {
+  .shop-bento__stack { grid-auto-flow: column; grid-template-rows: none; grid-template-columns: 1fr 1fr; }
+}
+
+/* TOPS — EASE. Two images, same width, an uneven stagger instead of a
+   regimented pair -- nothing lines up squarely, which is the point of a
+   soft top. Full container width now (no longer sharing a row with
+   Bottoms), so the same 4:5 aspect reads at roughly double its old
+   size without any new rule. */
+.shop-bento__ease-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;
+}
+.shop-bento__ease-a { aspect-ratio: 4 / 5; }
+.shop-bento__ease-b { aspect-ratio: 4 / 5; margin-top: 44px; }
+@media (max-width: 700px) { .shop-bento__ease-b { margin-top: 28px; } }
+
+/* BOTTOMS — GROUNDED. One wide low band (a horizon line, not a stack)
+   with a square detail tile overlapping its bottom-right corner. The
+   wrap's own bottom margin reserves room for the overlap so it never
+   collides with the studio section below it. Full width now for the same
+   reason as Tops -- the 16:9 band alone is already a large image once it
+   isn't fighting Tops for half the row. */
+.shop-bento__grounded-wrap { position: relative; margin-bottom: 40px; }
+.shop-bento__band { aspect-ratio: 16 / 9; width: 100%; }
+.shop-bento__overlap {
+  position: absolute; right: 24px; bottom: -32px;
+  width: 32%; aspect-ratio: 1 / 1;
+  outline: 2px solid var(--n-50); outline-offset: 0;
+}
+@media (max-width: 700px) { .shop-bento__overlap { width: 44%; right: 16px; bottom: -24px; } }
+
+/* ACCESSORIES — SCATTER. 17 Oct rework, client note: the equal five-up
+   row read as thin and gappy, "meant to look more filling". Rebuilt as a
+   lead tile plus a four-up cluster beside it -- Five Plus V5's own move
+   (design_process/references/04-layouts.md: "one dominant panel, mixed-
+   size cards"), translated down from a news grid to a product mosaic.
+   Tighter gap than the other tiles on this page on purpose; density is
+   the point here, the other three collections already have room to
+   breathe. Studio-scale height bump, same move as the other three. */
+.shop-bento__scatter-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  grid-template-areas: "a a" "b c" "d e";
+  /* 17 Oct, client note: "gummed together" -- the gap was only ever the
+     paper card's own n-50 showing through, a hair's-breadth off the
+     slots' own n-100 fill. n-300 is tokens.css's own "decorative hairline
+     only" value -- exactly this job. */
+  background: var(--n-300);
+}
+.shop-bento__scatter-grid .shop-tile__slot:nth-child(1) { grid-area: a; aspect-ratio: 16 / 9; }
+.shop-bento__scatter-grid .shop-tile__slot:nth-child(2) { grid-area: b; }
+.shop-bento__scatter-grid .shop-tile__slot:nth-child(3) { grid-area: c; }
+.shop-bento__scatter-grid .shop-tile__slot:nth-child(4) { grid-area: d; }
+.shop-bento__scatter-grid .shop-tile__slot:nth-child(5) { grid-area: e; }
+@media (min-width: 701px) {
+  .shop-bento__scatter-grid {
+    grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr);
+    grid-template-areas: "a a b c" "a a d e";
+    gap: 12px; height: 480px;
+  }
+  .shop-bento__scatter-grid .shop-tile__slot { aspect-ratio: auto; height: 100%; }
+  /* The mobile 16:9 rule on slot 1 outranks the line above (same
+     specificity tier, :nth-child wins ties the way it's written) and
+     never actually clears at desktop -- the lead tile then sizes its
+     width from height x 16:9 (620 x 16/9 =~ 1100px) instead of
+     stretching to its own 2-column grid area, overflowing across the
+     gap and painting over the 17 Oct hairline fix entirely. This is
+     what "gummed together" actually was. */
+  .shop-bento__scatter-grid .shop-tile__slot:nth-child(1) { aspect-ratio: auto; }
+}
+@media (min-width: 1024px) {
+  .shop-bento__scatter-grid { height: 620px; }
+}
+
+/* ---------------------------------------------------------------------------
+   CHECKOUT — a calmer, form-like task. Paper ground (DESIGN.md's three
+   grounds permit it), line items instead of a product grid, one flare ask
+   at the end: "Continue to payment". Real payment happens on a Wix-hosted
+   page this codebase never touches (MARKETPLACE_ARCHITECTURE.md) -- this
+   screen is the review step before that handoff, not the payment form.
+
+   17 Oct, client note: "the different components and interaction" --
+   added Contact + Shipping address as real form components, not just the
+   line-item recap. Fields use --n-100 for their fill (tokens.css's own
+   "inset surface, filled fields" value) against the paper ground, the
+   same device --n-100 already plays for the product card slot and the
+   cart thumbnail -- a filled field reads as "not the page" the same way
+   a filled image slot does. Flat, square, bordered: this system's own
+   language, not DESIGN.md Section 5's rounded 14px fields, which describe
+   the main site's conference form specifically -- the shop has carried
+   its own flat language throughout and this doesn't break from it.
+   ------------------------------------------------------------------------ */
+.shop-checkout {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px;
+  padding-bottom: 100px;
+}
+@media (min-width: 1024px) {
+  .shop-checkout { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); align-items: start; }
+}
+.shop-checkout__main { display: flex; flex-direction: column; gap: 40px; }
+.shop-checkout__section { display: flex; flex-direction: column; }
+.shop-checkout__label {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .14em; text-transform: uppercase;
+  opacity: .62; margin: 0 0 16px;
+}
+.shop-field-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.shop-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.shop-field--full { grid-column: 1 / -1; }
+.shop-field label {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .62;
+}
+.shop-field input, .shop-field select {
+  height: 48px; padding: 0 14px;
+  background: var(--n-100); color: var(--n-900);
+  border: 1px solid var(--n-400);
+  font-family: var(--f-body); font-size: var(--t-body);
+  transition: border-color 160ms var(--ease-out);
+}
+.shop-field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' stroke='%231A1411' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  /* 17 Oct, client note: "whats up with that large ass stuff" -- no
+     background-size meant the SVG rendered at its unconstrained native
+     size instead of as a small chevron. */
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 12px 8px;
+  padding-right: 36px;
+}
+.shop-field select:invalid { color: var(--n-500); }
+.shop-field input:focus-visible, .shop-field select:focus-visible {
+  border-color: var(--n-900); outline: none;
+}
+@media (max-width: 500px) {
+  .shop-field-grid { grid-template-columns: 1fr; }
+  .shop-field { grid-column: 1 / -1; }
+}
+.shop-checkout__note { font-size: 12px; line-height: 1.5; opacity: .62; margin: 12px 0 0; }
+.shop-cart { display: flex; flex-direction: column; }
+.shop-cart__line {
+  display: grid; grid-template-columns: 80px 1fr auto; gap: 16px; align-items: center;
+  padding-block: 20px; border-bottom: 1px solid var(--n-300);
+}
+.shop-cart__slot {
+  width: 80px; aspect-ratio: 4 / 5; background: var(--n-100);
+  display: grid; place-items: center;
+}
+.shop-cart__slot span { font-family: var(--f-mono); font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--n-500); }
+.shop-cart__name { margin: 0 0 4px; font-size: var(--t-body); }
+.shop-cart__meta {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .06em; opacity: .62; margin: 0;
+}
+.shop-cart__price { font-family: var(--f-mono); font-variation-settings: 'wght' 500; font-size: var(--t-body); white-space: nowrap; }
+
+.shop-summary { background: var(--n-100); padding: 28px; }
+.shop-summary__row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .06em;
+  padding-block: 10px;
+}
+.shop-summary__row--total {
+  border-top: 1px solid var(--n-400); margin-top: 8px; padding-top: 18px;
+  font-size: var(--t-lead); letter-spacing: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   CART, empty state. Centred, low-stimulus -- the same register as
+   checkout, not a browsing surface.
+   ------------------------------------------------------------------------ */
+.shop-empty {
+  max-width: 480px; margin: 0 auto; text-align: center;
+  padding-block: 64px 160px;
+}
+.shop-empty__eyebrow {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .14em; text-transform: uppercase;
+  opacity: .56; margin: 0 0 16px; color: var(--n-900);
+}
+.shop-empty__cta { width: auto; display: inline-block; padding-inline: 32px; }
+
+/* ---------------------------------------------------------------------------
+   CONFIRMATION — 17 Oct, "finalization of order". Ember ground, the
+   project's one real celebratory moment -- same doctrine as the
+   conference flip-card's reveal face (conference.css .ev__backHead em):
+   the one number a person needs to remember IS the graphic, flare at
+   --t-display scale, ink stroke for Rule C3 (flare-on-ember is 2.56:1,
+   under the 3:1 floor -- a stroke because the object is a letterform, not
+   a chip). The recap is body copy, so Rule C1 puts it in a paper card;
+   the ember shows behind the card, never behind the text itself.
+   ------------------------------------------------------------------------ */
+.shop-confirm {
+  max-width: 640px; margin: 0 auto; text-align: center;
+  padding-block: 40px 140px;
+}
+.shop-confirm__eyebrow {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--n-900); opacity: .72; margin: 0;
+}
+.shop-confirm__number {
+  font-family: var(--f-display); font-variation-settings: 'wdth' 125, 'wght' 900;
+  font-size: var(--t-display); line-height: var(--lh-display); letter-spacing: var(--tr-display);
+  color: var(--flare);
+  -webkit-text-stroke: clamp(2px, .34vw, 5px) var(--n-900);
+  paint-order: stroke fill;
+  margin: 4px 0 28px;
+}
+.shop-confirm__lead {
+  color: var(--n-900); opacity: .8; max-width: 52ch;
+  margin: 0 auto 40px;
+}
+.shop-confirm__recap {
+  background: var(--n-50); padding: 28px; text-align: left; margin-bottom: 36px;
+}
+.shop-confirm__recap .shop-cart__line:last-of-type { border-bottom: 0; }
+
+/* SHOP ALL head -- no count badge (client note, 16 Oct): just the
+   heading, using .shop__h2's own built-in spacing. */
+.shop-summary .shop-cta { margin-top: 20px; }
+
+/* SEE MORE — on the landing page's inventory grid, carries to /shop/all.
+   Plain text + arrow, not a boxed button: this section already has one
+   flare-adjacent visual peak (the sold-out tag); a second strong CTA here
+   would compete with it rather than read as a quiet "there's more". */
+.shop-seemore {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 32px;
+  color: inherit; text-decoration: none;
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .1em; text-transform: uppercase;
+  padding-bottom: 2px; border-bottom: 1px solid currentColor;
+}
+.shop-seemore span { transition: transform .16s cubic-bezier(.23,1,.32,1); }
+@media (hover: hover) and (pointer: fine) {
+  .shop-seemore:hover span { transform: translateX(3px); }
+}
+
+/* SHOP ALL, grouped by category. */
+.shop-all__section { margin-top: 56px; }
+.shop-all__section:first-of-type { margin-top: 0; }
+.shop-all__cat { margin: 0 0 20px; opacity: .72; }
+
+/* ---------------------------------------------------------------------------
+   FILTER — /shop/all only. Pills, not a dropdown: the category list is
+   four items, short enough to read all at once, and a dropdown would hide
+   the thing being filtered on behind a click. "All" clears the filter.
+   JS toggles a [hidden] attribute per section rather than re-rendering --
+   this page is static output, so the filter is a progressive-enhancement
+   show/hide, not a data refetch.
+   ------------------------------------------------------------------------ */
+.shop-filter {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 40px;
+}
+.shop-filter button {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .08em; text-transform: uppercase;
+  height: 36px; padding: 0 14px;
+  background: transparent; color: var(--n-900);
+  /* 16 Oct, client note: "this grey isn't working out on this background".
+     --n-400 is a muted neutral built for paper backgrounds; against ember
+     it reads as a dull, low-contrast line. Ink border instead -- the same
+     boundary colour the sold-out tag and card borders already use on this
+     ground. */
+  border: 1px solid var(--n-900); cursor: pointer;
+  transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 120ms var(--ease-out);
+}
+.shop-filter button[aria-pressed="true"] {
+  background: var(--n-900); color: var(--n-50); border-color: var(--n-900);
+}
+.shop-filter button:active { transform: scale(.96); }
+
+/* ---------------------------------------------------------------------------
+   NEW DROPS NOTIFIER — the sub-pages' closing strip, not the full Footer.
+   Ink ground always, regardless of the page's own ember/paper ground, so
+   it reads as chrome rather than more page content.
+   ------------------------------------------------------------------------ */
+/* 16 Oct, client note: "poor job with the footer.. there should be
+   spacing". Was butting directly against whatever content preceded it on
+   pages without their own trailing padding (e.g. /shop/all's last
+   category section). margin-top is a floor, not a replacement for a
+   page's own padding-bottom -- the two add together on pages that already
+   have one, which is the safe direction to be wrong in. */
+/* 16 Oct correction: the 64px gap was a margin-top on THIS element, which
+   has no background of its own over a margin -- it exposed body's default
+   bg underneath, a plain white strip with no relation to either ground.
+   "Why not just extend the orange" is the right fix: the gap now belongs
+   to the ember/paper wrapper that precedes this strip (main.shop-ember /
+   main.shop-paper, below), so the page's own ground fills it instead of
+   whatever body happens to be. */
+.shop-drops { background: var(--n-900); color: var(--n-50); }
+main.shop-ember, main.shop-paper, main.shop-dark { padding-bottom: 64px; }
+
+/* A whole-page dark ground, distinct from the landing page's three-step
+   dark RAMP (.shop-dark-0/-1/-2, which are section-to-section variation
+   within one page). /shop/category is a single ground for its whole
+   surface, so it uses the base --d-0 value directly rather than stepping
+   through the ramp -- there's no second dark section on this page to
+   separate it from. */
+main.shop-dark { background: var(--d-0); color: var(--n-50); }
+
+/* ---------------------------------------------------------------------------
+   CATEGORY HERO — 17 Oct, client note: "meant to have a hero like i
+   reference with vision-naire.. i specified the page because of its hero
+   and arrangements" -- then, same day: "remove '4 pieces .. updated
+   weekly' .. the hero is a two column, word and image" -- then, a third
+   pass: "the hero image is larger than that.. because of that on mobile
+   the placement has to be well done.. text will seat in the image".
+
+   Two different compositions by breakpoint, not one scaled down:
+   - Desktop: still a true two-column split, but the image column is now
+     the BIGGER one (1 : 1.3, word : image) and the row has a fixed,
+     studio-scale height instead of an aspect-ratio box -- the same "big
+     image, fixed height" device the collections page's layering bento
+     already uses, not a new mechanic.
+   - Mobile: a side-by-side split of a now-much-bigger image leaves no
+     room for the word, so it overlays instead -- full-bleed image,
+     the name sits on top of it near the bottom, same way a real
+     editorial cover works. A scrim is baked in now even though it barely
+     shows against the flat placeholder fill, because it's load-bearing
+     the moment this slot is real photography instead of a grey box.
+   ------------------------------------------------------------------------ */
+.shop-category-hero { padding-top: 8px; padding-bottom: 48px; }
+.shop-category-hero .shop-breadcrumb { margin-bottom: 0; }
+.shop-category-hero__grid {
+  position: relative;
+  margin-top: 24px;
+}
+.shop-category-hero__image {
+  aspect-ratio: 4 / 5; min-height: 420px; background: var(--d-2);
+  display: grid; place-items: center;
+  position: relative;
+  /* full-bleed on mobile -- --pad is this file's own responsive
+     container gutter (tokens.css), not a new value, so the image's edge
+     always lines up with wherever the container padding currently is. */
+  margin-inline: calc(-1 * var(--pad));
+}
+.shop-category-hero__image::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.6), rgba(0,0,0,0) 50%);
+  pointer-events: none;
+}
+.shop-category-hero__image span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--n-50); opacity: .5;
+}
+.shop-category-hero__name {
+  position: absolute; left: var(--pad); right: var(--pad); bottom: 24px; z-index: 1;
+  font-size: var(--t-display); line-height: var(--lh-display); letter-spacing: var(--tr-display);
+  font-weight: 900; color: var(--n-50); margin: 0;
+}
+@media (min-width: 701px) {
+  .shop-category-hero__grid {
+    display: grid; grid-template-columns: 1fr 1.3fr; align-items: stretch; gap: 48px;
+    height: 560px;
+  }
+  .shop-category-hero__image {
+    aspect-ratio: auto; min-height: 0; height: 100%; margin-inline: 0;
+  }
+  .shop-category-hero__image::after { content: none; }  /* no overlay text to protect once it has its own column */
+  .shop-category-hero__name {
+    position: static; display: flex; align-items: center;
+  }
+}
+@media (min-width: 1024px) { .shop-category-hero__grid { height: 680px; } }
+
+/* ---------------------------------------------------------------------------
+   CATEGORY — editorial grid, 16 Oct, style taken from vision-naire.com's
+   own collection pages (inspected live): 2 columns, large images, a
+   caption reduced to name + price. Sizes move to the product page, the
+   one place they're actually decided -- the reference doesn't show them
+   in the grid either.
+   ------------------------------------------------------------------------ */
+.shop-editorial-grid {
+  display: grid; grid-template-columns: 1fr; gap: 32px;
+  padding-bottom: 100px;
+}
+@media (min-width: 701px) {
+  /* 17 Oct, client note: "spacing is too close.. give them room to
+     breathe" -- a single `gap: 2px` sets row-gap AND column-gap, so the
+     "images almost touching" intent (column-gap, deliberate) was also
+     crushing the vertical gap between one row's caption and the next
+     row's images down to 2px. Split so the columns stay tight and the
+     rows actually get room. */
+  .shop-editorial-grid { grid-template-columns: 1fr 1fr; column-gap: 2px; row-gap: 56px; }
+  /* Padding on the caption only, not the grid, keeps the images tight
+     while giving name/price their own space instead of reading as one
+     running line. */
+  .shop-editorial-item:nth-child(odd) .shop-editorial-item__cap { padding-right: 32px; }
+  .shop-editorial-item:nth-child(even) .shop-editorial-item__cap { padding-left: 32px; }
+}
+.shop-editorial-item {
+  display: block; text-decoration: none; color: inherit;
+  /* 17 Oct, motion pass: paper ring, not ink -- this sits on the dark
+     ground (main.shop-dark), where an ink ring would be invisible. */
+  outline: 2px solid transparent; outline-offset: -2px;
+  transition: outline-color 200ms var(--ease-out), transform 160ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .shop-editorial-item:hover { outline-color: var(--n-50); }
+}
+.shop-editorial-item:active { transform: scale(.99); }
+.shop-editorial-item__slot {
+  aspect-ratio: 4 / 5; background: var(--d-2);
+  display: grid; place-items: center;
+}
+.shop-editorial-item__slot span {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--n-50); opacity: .5;
+}
+.shop-editorial-item__cap {
+  margin-top: 18px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+}
+.shop-editorial-item__name { font-size: var(--t-body); font-weight: 400; }
+.shop-editorial-item__price {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .06em; white-space: nowrap;
+}
+.shop-drops__inner {
+  padding-block: 56px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px;
+}
+@media (min-width: 701px) {
+  .shop-drops__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); align-items: end; gap: 40px; }
+}
+.shop-drops__k {
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .14em; text-transform: uppercase;
+  margin: 0 0 10px; opacity: .72;
+}
+.shop-drops__lead { margin: 0; max-width: 48ch; }
+/* 17 Oct, motion pass: the confirmation crossfades into the form's own
+   spot instead of the layout jumping when the form disappears -- the
+   action wrapper is the positioning context, same device as the product
+   card's front/back swap (two layers, same box, opacity only). */
+.shop-drops__action { position: relative; min-height: 44px; }
+.shop-drops__form {
+  display: flex; gap: 8px;
+  transition: opacity 220ms var(--ease-out);
+}
+.shop-drops__form input {
+  flex: 1 1 auto; min-width: 0;
+  height: 44px; padding: 0 14px;
+  background: transparent; color: var(--n-50);
+  border: 1px solid rgba(255,248,244,.4);
+  font-family: var(--f-body); font-size: var(--t-body);
+  transition: border-color 160ms var(--ease-out);
+}
+.shop-drops__form input:focus-visible { border-color: var(--n-50); }
+.shop-drops__form input::placeholder { color: rgba(255,248,244,.56); }
+.shop-drops__form button {
+  flex: 0 0 auto; height: 44px; padding: 0 20px;
+  background: var(--n-50); color: var(--n-900); border: 0; cursor: pointer;
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .1em; text-transform: uppercase;
+  transition: transform 140ms var(--ease-out);
+}
+.shop-drops__form button:active { transform: scale(.96); }
+.shop-drops__sent {
+  position: absolute; inset: 0; margin: 0;
+  display: flex; align-items: center;
+  font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+  font-size: var(--t-mono-sm); letter-spacing: .08em; text-transform: uppercase;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out);
+  pointer-events: none;
+}
+.shop-drops[data-sent] .shop-drops__form { opacity: 0; pointer-events: none; }
+.shop-drops[data-sent] .shop-drops__sent { opacity: 1; transform: translateY(0); }
+
+/* ---------------------------------------------------------------------------
+   MOTION — 17 Oct pass. Interactive states for the elements this file's
+   components added without one: cards, bento tiles, editorial items,
+   filter pills, size swatches, thumbnails. Same conventions already set
+   by the nav (skeleton.css) and the hero/CTA in this file: --ease-out for
+   anything entering or responding to a press, rings/outlines instead of
+   shadows (DESIGN.md has no elevation to lift into), scale(.94-.994) on
+   :active scaled to how big the element is, hover gated behind
+   (hover:hover) so touch taps never get stuck "hovered".
+   Reduced motion keeps the colour/opacity feedback (it aids
+   comprehension) and drops everything that moves, same split skeleton.css
+   already uses for .chrome/.submit. ------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .shop-card,
+  .shop-tile,
+  .shop-editorial-item,
+  .shop-filter button,
+  .shop-product__sizes button,
+  .shop-product__thumb,
+  .shop-drops__form button {
+    transition-duration: .01ms;
+  }
+  .shop-card:active,
+  .shop-tile:active,
+  .shop-editorial-item:active,
+  .shop-filter button:active,
+  .shop-product__sizes button:active,
+  .shop-product__thumb:active,
+  .shop-drops__form button:active {
+    transform: none;
+  }
+}

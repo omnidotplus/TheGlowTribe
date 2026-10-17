@@ -1,0 +1,32 @@
+---
+/* CART — empty state. 16 Oct, client note: "i need a layout for [empty]
+   cart". Paper ground, same calm/form register as checkout -- an empty
+   cart is the same kind of low-stimulus moment, not a browsing one. No
+   footer (client note). */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import DropsNotify from '../../components/DropsNotify.astro';
+---
+<Layout
+  title="Your cart | The Glow Tribe Shop"
+  description="Your cart."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" ctaMuted />
+
+  <main class="shop-paper shop-sub__top">
+    <div class="shop-container" data-fade>
+      <p class="shop-breadcrumb"><a href="/shop">Shop</a> / Cart</p>
+
+      <div class="shop-empty">
+        <p class="shop-empty__eyebrow">Cart</p>
+        <h1 class="shop__h2" style="color: var(--n-900)">Nothing in here yet.</h1>
+        <p class="shop__lead" style="color: var(--n-900); opacity: .72; margin-bottom: 28px">Pieces made by the tribe, sold by the tribe — add something to get started.</p>
+        <a class="shop-cta shop-empty__cta" href="/shop">Continue shopping</a>
+      </div>
+    </div>
+  </main>
+
+  <DropsNotify />
+</Layout>

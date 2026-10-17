@@ -8,11 +8,41 @@
    `current` sets aria-current and points the CTA at the right place:
    on the conference page the Register CTA is a same-page anchor; on
    every other page it links across to the conference page's form. */
+/* SHOP (16 Oct, Phase 2): a third state. Different link set (Shop /
+   Collections, not Home / Conference / Work), different CTA (Shop all ->
+   the catalogue, not Register), and a bag affordance that only exists in
+   this state -- the one addition to the component, everything else about
+   it is already built.
+
+   `ctaMuted`: the sub-pages (product, collections, checkout) each have
+   their OWN real ask -- Add to cart, Checkout -- and flare is "the ask,
+   once per surface" (COLOUR_SYSTEM.md Tier 2). Two flare buttons on one
+   screen breaks that, so on those pages the nav's own CTA steps back to a
+   plain outline and lets the page's button be the one flare element. */
 interface Props {
-  current?: 'home' | 'conference';
+  current?: 'home' | 'conference' | 'shop';
+  ctaMuted?: boolean;
 }
-const { current } = Astro.props as Props;
-const ctaHref = current === 'conference' ? '#event' : '/conference#event';
+const { current, ctaMuted } = Astro.props as Props;
+const isShop = current === 'shop';
+/* 16 Oct: "Shop all" now points at its own page, not an in-page anchor on
+   the shop landing -- client note, "shop all is also meant to have its
+   page". */
+const ctaHref = isShop ? '/shop/all' : current === 'conference' ? '#event' : '/conference#event';
+/* 16 Oct, client note: the CTA shouldn't offer to take you somewhere you
+   already are. Path-based, not a new prop -- every shop page already
+   renders this component fresh per request, so Astro.url.pathname is
+   always correct without threading another boolean through six pages. */
+const onShopAll = Astro.url.pathname === '/shop/all';
+/* 17 Oct, client note: "theglowtribe icon redirect to the hero .. theres
+   no shop.. only collection, cart and shop all". The wordmark IS the
+   marketplace's own "home" link now that the standalone Shop text-link is
+   gone -- it points at the shop's own hero (/shop), not the main site's,
+   while every other page keeps the old behaviour (home, or `#` on the
+   home page itself) unchanged. */
+const markHref = isShop ? '/shop' : '/';
+const isCollections = Astro.url.pathname.startsWith('/shop/collections');
+const isCart = Astro.url.pathname === '/shop/cart';
 ---
 <nav class="tnav" id="tnav" aria-label="Primary">
   <!-- Two files rather than one recoloured file: the wordmark is raster, so it
@@ -21,7 +51,7 @@ const ctaHref = current === 'conference' ? '#event' : '/conference#event';
        simply shown on the state it was made for. The orange reads on both.
        The accessible name comes from the hidden text, so the images are
        decorative and both carry an empty alt rather than announcing twice. -->
-  <a class="tnav__mark" href="/">
+  <a class="tnav__mark" href={markHref}>
     <img class="tnav__wordmark tnav__wordmark--ink"   src="/img/wordmark-ink.webp"
          width="269" height="72" alt="" decoding="async">
     <img class="tnav__wordmark tnav__wordmark--paper" src="/img/wordmark-paper.webp"
@@ -36,13 +66,36 @@ const ctaHref = current === 'conference' ? '#event' : '/conference#event';
     </svg>
   </button>
   <div class="tnav__links" id="tnavLinks">
-    <a href="/" aria-current={current === 'home' ? 'page' : undefined}>Home</a>
-    <a href="/conference" aria-current={current === 'conference' ? 'page' : undefined}>Conference</a>
-    <!-- Projects / Our Work is Phase 1 (SC2) but NOT BUILT yet. Pointing at the
-         teaser strip is a stand-in so the nav is honest about the IA; it must
-         repoint at the real page before launch. -->
-    <a href="/#teaser">Work</a>
+    {isShop ? (
+      <Fragment>
+        <a href="/shop/collections" aria-current={isCollections ? 'page' : undefined}>Collections</a>
+      </Fragment>
+    ) : (
+      <Fragment>
+        <a href="/" aria-current={current === 'home' ? 'page' : undefined}>Home</a>
+        <a href="/conference" aria-current={current === 'conference' ? 'page' : undefined}>Conference</a>
+        {/* Projects / Our Work is Phase 1 (SC2) but NOT BUILT yet. Pointing at the
+            teaser strip is a stand-in so the nav is honest about the IA; it must
+            repoint at the real page before launch. */}
+        <a href="/#teaser">Work</a>
+      </Fragment>
+    )}
   </div>
-  <a class="tnav__cta" href={ctaHref}>Register</a>
+  {/* THE BAG. 22px glyph, 38x38px hit area, 16px badge. The only part of
+      this component added for the marketplace -- added 16 Oct, real
+      markup ported from the validated skeleton. Colour comes from
+      currentColor (the bar's own --tnav-fg), so it flips with the bar. */}
+  {isShop && (
+    <a class="tnav__bag" href="/shop/cart" aria-label="Bag, 2 items" aria-current={isCart ? 'page' : undefined}>
+      <svg viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path d="M4 7h14l-1.2 12H5.2L4 7Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M8 7V5.4a3 3 0 0 1 6 0V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="tnav__bag-count" aria-hidden="true"><span>2</span></span>
+    </a>
+  )}
+  {!onShopAll && (
+    <a class={`tnav__cta${ctaMuted ? ' tnav__cta--muted' : ''}`} href={ctaHref}>{isShop ? 'Shop all' : 'Register'}</a>
+  )}
 </nav>
 <div class="tnav__scrim" id="tnavScrim" aria-hidden="true"></div>

@@ -350,6 +350,57 @@ body.dev .note--inline { display: block; }
 }
 .tnav__cta:active { transform: scale(.97); }
 
+/* MUTED CTA — sub-pages where the page itself owns the one flare ask
+   (Add to cart, Checkout). Plain outline in the bar's own foreground
+   colour instead of the flare fill, so flare still only appears once on
+   screen. The wipe-on-hover mechanic stays; it just wipes to the bar's fg
+   colour instead of flare. */
+.tnav__cta--muted {
+  background: transparent;
+  color: var(--tnav-fg, var(--n-50));
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+.tnav__cta--muted::before { background: var(--tnav-fg, var(--n-50)); }
+@media (hover: hover) and (pointer: fine) {
+  .tnav__cta--muted:hover, .tnav__cta--muted:focus-visible { color: var(--tnav-bg, var(--n-900)); }
+}
+
+/* THE BAG — the one element the shop state adds to this otherwise-shared
+   component. 38x38px hit area (22px glyph), matching the hamburger's own box
+   so the bar's rhythm doesn't change. Colour is currentColor on the glyph (it
+   flips with --tnav-fg automatically) and --tnav-fg/--tnav-bg INVERTED on the
+   badge -- not a new colour, just the bar's own two tones swapped, which
+   guarantees contrast in both bar states without adding a third hue the
+   "minimal colours" brief didn't ask for. */
+.tnav__bag {
+  position: relative;
+  display: grid; place-items: center;
+  width: 38px; height: 38px; flex: 0 0 auto;
+  color: inherit;
+  /* 17 Oct, motion pass: matches the nav's own link opacity-on-hover
+     language (.tnav__links a) rather than inventing a new hover device
+     for the one icon in the bar. */
+  transition: opacity .18s ease, transform .16s cubic-bezier(.23,1,.32,1);
+  opacity: .72;
+}
+@media (hover: hover) and (pointer: fine) { .tnav__bag:hover { opacity: 1; } }
+/* 17 Oct, client note: "when i'm on a page theres meant to be an
+   indication on the nav" -- same current-page signal .tnav__links a
+   already carries, translated to the one nav item that isn't a text link. */
+.tnav__bag[aria-current="page"] { opacity: 1; }
+.tnav__bag:active { transform: scale(.92); }
+@media (prefers-reduced-motion: reduce) { .tnav__bag { transition-duration: .01ms; } }
+.tnav__bag svg { width: 22px; height: 22px; }
+.tnav__bag-count {
+  position: absolute; top: 2px; right: 2px;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--tnav-fg, var(--n-50));
+  color: var(--tnav-bg, var(--n-900));
+  font-family: var(--f-mono, var(--mono));
+  font-size: 9px; font-weight: 700; line-height: 1;
+}
+
 /* ============ MOBILE — a real toggle, not a dropped destination ==========
    The first pass hid Home/Conference/Work entirely below 700px, on the
    reasoning that all three are reachable elsewhere. Client: bring them back

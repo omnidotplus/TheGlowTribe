@@ -96,6 +96,13 @@
 
   /* the schedule field — was a grey placeholder, now the ground turns it on */
   --day-ground: var(--ember-600);
+
+  /* Motion — the curve already used inline across nav.js/skeleton.css
+     (tnav__cta, chrome, submit), named so new work reaches for the token
+     instead of retyping the literal. ease-out: entrances/presses, starts
+     fast so the UI reads as responsive. ease-in-out: on-screen movement. */
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-in-out: cubic-bezier(.77, 0, .175, 1);
 }
 
 /* ---------------------------------------------------------------------------

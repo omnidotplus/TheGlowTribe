@@ -14,7 +14,14 @@
   const nav = document.querySelector('.tnav');
   if (!nav) return;
 
-  const hero = document.querySelector('.hero');
+  /* 17 Oct, client note: "i still see the nav when i'm in the hero ..
+     for the landing page its till i enter new arrivals it should reveal
+     itself". The shop landing page's hero is .shop-hero, a different
+     class from the main site's .hero -- this selector only ever matched
+     the latter, so the shop page fell into the "no hero" branch and
+     showed the nav immediately instead of holding it back the same way
+     the home page does. The two classes never coexist on one page. */
+  const hero = document.querySelector('.hero, .shop-hero');
 
   /* WCAG relative luminance — the same maths the contrast audit uses, so the
      nav's idea of "dark" cannot disagree with the rest of the system. */
@@ -39,8 +46,22 @@
   function update() {
     ticking = false;
 
-    /* reveal */
-    const show = hero ? (window.scrollY > hero.offsetHeight * 0.92) : true;
+    /* reveal. 17 Oct, client note, with a screenshot pinned to the exact
+       moment: "like when i reach this level the nav should show" -- that
+       moment was New Arrivals' heading just entering the bottom of the
+       viewport, at ~16% of the way down a hero that is a full 100svh tall.
+       A flat 92%-of-hero-height threshold assumes the hero and "the next
+       thing" are proportioned the way the home page's hero happens to be;
+       on a hero sized to exactly fill the viewport, 92% means waiting
+       for almost a second full scroll past it, way later than the next
+       section has already started arriving. Reveal from the NEXT
+       section's own position instead -- generic (no id hardcoded), so it
+       reads correctly on any hero regardless of its height, and keeps
+       working for the home page's .hero the same way. */
+    const heroEnd = hero && hero.nextElementSibling;
+    const show = heroEnd
+      ? (window.scrollY + window.innerHeight * 0.85 > heroEnd.offsetTop)
+      : (hero ? window.scrollY > hero.offsetHeight * 0.92 : true);
     nav.dataset.show = show ? '1' : '0';
     if (!show) return;
 

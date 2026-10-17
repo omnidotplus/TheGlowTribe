@@ -1,0 +1,79 @@
+---
+/* CONFIRMATION — 17 Oct, client note: "finalization of order". What Wix
+   would redirect back to once Paystack clears the charge
+   (MARKETPLACE_ARCHITECTURE.md) -- this codebase's side of that handoff
+   is just a landing page, not a payment result it computed itself.
+
+   Ember ground, not paper: checkout/cart are a calm form-like task, but a
+   confirmed order is this project's one real celebratory moment -- the
+   same distinction the conference registration flip-card already draws
+   (conference.css .ev__face--back: "the moment is a DATE. So the date is
+   the graphic... on the ember ground with no card under it"). Here the
+   one thing a person needs to remember is the order number, so the order
+   number is the graphic: flare, --t-display scale, an ink stroke for
+   Rule C3 (flare-on-ember is 2.56:1, under the 3:1 floor -- a stroke
+   because the object is a letterform, not a chip or a fill). The recap
+   beneath it is body copy, so Rule C1 puts it in a paper card -- the
+   ground shows behind the card, never behind the text itself. No footer
+   (client note, consistent with every other shop sub-page).
+
+   17 Oct, client note: "no tgt again" -- the order number had a TGT-
+   prefix, the exact thing the client already ruled out on the hero text
+   once before. Dropped the prefix entirely rather than finding a lighter
+   way to say it; "#" reads as an order number on its own, no brand
+   mention needed to make the point. */
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import DropsNotify from '../../components/DropsNotify.astro';
+
+/* 17 Oct, client note: "make everything in naira.. lowest amount being
+   13,000 Naira" -- same per-product price as checkout, so the recap here
+   never disagrees with what was just paid for. */
+const order = {
+  number: '#4821',
+  lines: [
+    { name: 'Bushel Overshirt', size: 'M', qty: 1, price: '₦111,500' },
+    { name: 'Ply Hoodie',       size: 'S', qty: 1, price: '₦87,500' },
+  ],
+  total: '₦199,000',
+};
+---
+<Layout
+  title="Order confirmed | The Glow Tribe Shop"
+  description="Your order is confirmed."
+  pageStylesHref="/styles/shop.css"
+  bodyClass="shop"
+>
+  <Nav current="shop" ctaMuted />
+
+  <main class="shop-ember shop-sub__top">
+    <div class="shop-container" data-fade>
+      <div class="shop-confirm">
+        <p class="shop-confirm__eyebrow">Order confirmed</p>
+        <p class="shop-confirm__number">{order.number}</p>
+        <p class="shop-confirm__lead">A confirmation email is on its way. Runs are small, so if anything in your order sells through before it ships, we'll reach out directly rather than leave you guessing.</p>
+
+        <div class="shop-confirm__recap">
+          <p class="shop-checkout__label">Order summary</p>
+          <div class="shop-cart">
+            {order.lines.map(l => (
+              <div class="shop-cart__line">
+                <div class="shop-cart__slot"><span>4:5</span></div>
+                <div>
+                  <p class="shop-cart__name">{l.name}</p>
+                  <p class="shop-cart__meta">Size {l.size} · Qty {l.qty}</p>
+                </div>
+                <span class="shop-cart__price">{l.price}</span>
+              </div>
+            ))}
+          </div>
+          <div class="shop-summary__row shop-summary__row--total"><span>Total</span><span>{order.total}</span></div>
+        </div>
+
+        <a class="shop-cta shop-empty__cta" href="/shop">Continue shopping</a>
+      </div>
+    </div>
+  </main>
+
+  <DropsNotify />
+</Layout>

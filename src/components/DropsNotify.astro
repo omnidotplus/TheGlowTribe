@@ -1,0 +1,42 @@
+---
+/* NEW DROPS NOTIFIER — 16 Oct. Replaces "no footer" on the shop sub-pages
+   (product/collections/category/checkout/cart/all) with something lighter
+   than the full site <Footer /> but not nothing: a single-row strip, not
+   the dense multi-column grid Footer.astro carries. Copy is deliberately
+   NOT the site's "Newsletter" text (Footer.astro: "Occasional notes on
+   what the tribe is making. No spam, no sermons.") -- this is the shop's
+   own drops list, reusing the copy already written for it in the original
+   skeleton. Ink ground regardless of the page's own ground (ember or
+   paper) so it reads as chrome closing the page out, the same job
+   Footer.astro does elsewhere.
+
+   No flare button here -- every page this sits on already has its own
+   primary ask (Add to cart, Continue to payment, See more...), so this
+   button stays plain ink-on-paper to keep flare at one element per
+   screen, same rule the nav's `ctaMuted` exists for.
+
+   17 Oct, motion pass: the submit handler set data-sent on the FORM, but
+   shop.css's rule checked .shop-drops[data-sent] -- an ancestor that
+   never actually got the attribute, so "Notify me" did nothing visible.
+   Fixed to target the section, and the old instant display:none is now a
+   crossfade to a confirmation line (CSS transition on the attribute
+   toggle, not a keyframe -- same reasoning as the toasts in Sonner: a
+   state that's set once, not re-triggered, still crossfades better than
+   it snaps). */
+---
+<section class="shop-drops" aria-labelledby="drops-h" data-fade>
+  <div class="shop-container shop-drops__inner">
+    <div>
+      <p class="shop-drops__k" id="drops-h">New drops</p>
+      <p class="shop-drops__lead">Runs are small and most sell through in a week. The list goes out the morning a run opens.</p>
+    </div>
+    <div class="shop-drops__action">
+      <form class="shop-drops__form" onsubmit="event.preventDefault(); this.closest('.shop-drops').dataset.sent='1';">
+        <label class="visually-hidden" for="drops-email">Email address</label>
+        <input id="drops-email" name="email" type="email" placeholder="you@studio.com" autocomplete="email" required>
+        <button type="submit">Notify me</button>
+      </form>
+      <p class="shop-drops__sent" aria-live="polite">You're on the list.</p>
+    </div>
+  </div>
+</section>
