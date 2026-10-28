@@ -1,5 +1,11 @@
 ---
-/* FAQ — a switchboard, not an accordion list. One answer panel, wiped on change. */
+/* FAQ — a switchboard, not an accordion list. One answer panel, wiped on change.
+
+   17 Oct, client note: "The current FAQs on the homescreen are all about
+   the conference. It should move to the conference tab. The home should
+   be more about TGT." The old conference-logistics questions moved to
+   ConferenceFaq.astro (conference.astro); this component keeps the same
+   mechanic but now carries the TGT-community questions instead. */
 ---
 <section class="faq g-paper" id="faq" data-fade>
   <div class="faq__head">
@@ -22,41 +28,65 @@
         <button class="faq__item" type="button" data-i="0" data-on="1"
                 aria-selected="true" role="tab" aria-controls="fp0">
           <span class="faq__n">01</span>
-          <span class="faq__qt">Is it really free?</span>
+          <span class="faq__qt">What is The Glow Tribe?</span>
         </button>
         <button class="faq__item" type="button" data-i="1" data-on="0"
                 aria-selected="false" role="tab" aria-controls="fp1">
           <span class="faq__n">02</span>
-          <span class="faq__qt">Do I have to be a Christian?</span>
+          <span class="faq__qt">What does TGT make?</span>
         </button>
         <button class="faq__item" type="button" data-i="2" data-on="0"
                 aria-selected="false" role="tab" aria-controls="fp2">
           <span class="faq__n">03</span>
-          <span class="faq__qt">Can I come alone?</span>
+          <span class="faq__qt">What are the hangouts?</span>
         </button>
         <button class="faq__item" type="button" data-i="3" data-on="0"
                 aria-selected="false" role="tab" aria-controls="fp3">
           <span class="faq__n">04</span>
-          <span class="faq__qt">Am I good enough?</span>
+          <span class="faq__qt">Who is it for?</span>
         </button>
         <button class="faq__item" type="button" data-i="4" data-on="0"
                 aria-selected="false" role="tab" aria-controls="fp4">
           <span class="faq__n">05</span>
-          <span class="faq__qt">What should I bring?</span>
+          <span class="faq__qt">Do I have to be a Christian to be part of it?</span>
         </button>
         <button class="faq__item" type="button" data-i="5" data-on="0"
                 aria-selected="false" role="tab" aria-controls="fp5">
           <span class="faq__n">06</span>
-          <span class="faq__qt">Where exactly is it?</span>
+          <span class="faq__qt">Is TGT a church?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="6" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp6">
+          <span class="faq__n">07</span>
+          <span class="faq__qt">How do I get involved?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="7" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp7">
+          <span class="faq__n">08</span>
+          <span class="faq__qt">What is No Bushels, and how does it relate to TGT?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="8" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp8">
+          <span class="faq__n">09</span>
+          <span class="faq__qt">Can I partner with or support TGT?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="9" data-on="0"
+                aria-selected="false" role="tab" aria-controls="fp9">
+          <span class="faq__n">10</span>
+          <span class="faq__qt">What's coming next?</span>
         </button>
     </div>
     <div class="faq__display">
-        <p class="faq__answer" id="fp0" data-i="0" data-on="1" role="tabpanel">Yes. No ticket, no fee, no catch. Register so we know how many chairs to put out.</p>
-        <p class="faq__answer" id="fp1" data-i="1" data-on="0" role="tabpanel">No. No Bushels is cross-denominational and creatives-first. If you make things, you belong in the room.</p>
-        <p class="faq__answer" id="fp2" data-i="2" data-on="0" role="tabpanel">Most people do. That's rather the point of it.</p>
-        <p class="faq__answer" id="fp3" data-i="3" data-on="0" role="tabpanel">There's no bar. Bring whatever you're working on, however finished it is.</p>
-        <p class="faq__answer" id="fp4" data-i="4" data-on="0" role="tabpanel">Yourself, and the thing you're making. Instruments, laptops and hard drives all welcome.</p>
-        <p class="faq__answer" id="fp5" data-i="5" data-on="0" role="tabpanel">EU Centre, Warri · 21 November 2026. Full directions go out with your confirmation.</p>
+        <p class="faq__answer" id="fp0" data-i="0" data-on="1" role="tabpanel">A community of Christian creatives, across every kind of creative art, making work and making space for each other to grow. We believe faith and craft belong in the same room, and we use the arts to put Godly culture into media, art and entertainment.</p>
+        <p class="faq__answer" id="fp1" data-i="1" data-on="0" role="tabpanel">Creative work across the arts: music, film, poetry, painting, fine art, writing, design and more. We also host hangouts, our creative conclaves. Some of the work is on the projects page, and more is coming.</p>
+        <p class="faq__answer" id="fp2" data-i="2" data-on="0" role="tabpanel">Our creative conclaves. They're relaxed gatherings where creatives refresh, have fun, collaborate and network, with no pressure to perform.</p>
+        <p class="faq__answer" id="fp3" data-i="3" data-on="0" role="tabpanel">Anyone who makes things: musicians, filmmakers, poets, painters, fine artists, writers, photographers, designers, producers, and whatever else you create that we haven't named.</p>
+        <p class="faq__answer" id="fp4" data-i="4" data-on="0" role="tabpanel">TGT is a Christian creative community and the faith runs through the work, but it is cross-denominational and creatives-first. If you make things and want to grow, you're welcome in the room.</p>
+        <p class="faq__answer" id="fp5" data-i="5" data-on="0" role="tabpanel">No. The Glow Tribe is a creative community, not a church. We're here to help creatives grow in their craft and their faith, and we encourage everyone to stay rooted in a local church.</p>
+        <p class="faq__answer" id="fp6" data-i="6" data-on="0" role="tabpanel">Start with No Bushels on 21 November, which is the easiest way into the room. Then join the newsletter and follow us on social to stay close to what's coming.</p>
+        <p class="faq__answer" id="fp7" data-i="7" data-on="0" role="tabpanel">TGT is the community. No Bushels is our conference and accountability structure, built for the consistency and growth of the people in the community. The conference on 21 November is where it begins, and it's also where members can opt into the accountability side.</p>
+        <p class="faq__answer" id="fp8" data-i="8" data-on="0" role="tabpanel">Yes. We're looking for people who want to fund projects, lend their craft or help spread the work. Use the partner button above and write to us.</p>
+        <p class="faq__answer" id="fp9" data-i="9" data-on="0" role="tabpanel">Merch, The NoBushels App, a Christmas short film, and other developments. The newsletter is where you'll hear first.</p>
       <span class="faq__wipe" aria-hidden="true"></span>
     </div>
   </div>

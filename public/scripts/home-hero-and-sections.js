@@ -289,35 +289,9 @@ function tickClose() {
 }
 tickClose(); setInterval(tickClose, 60000);
 
-/* ---- FAQ switchboard. Radio behaviour — one always selected, because an
-        empty panel reads as broken rather than as a choice. The wipe runs on
-        every change so the answer is uncovered, not merely swapped. ---- */
-const faqItems   = [...document.querySelectorAll('.faq__item')];
-const faqAnswers = [...document.querySelectorAll('.faq__answer')];
-const faqWipe    = document.querySelector('.faq__wipe');
-const FAQ_REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-faqItems.forEach(item => {
-  item.addEventListener('click', () => {
-    const i = item.dataset.i;
-    if (item.dataset.on === '1') return;
-
-    faqItems.forEach(x => {
-      const on = x === item;
-      x.dataset.on = on ? '1' : '0';
-      x.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-
-    const swap = () => faqAnswers.forEach(a => { a.dataset.on = a.dataset.i === i ? '1' : '0'; });
-
-    if (FAQ_REDUCE || !faqWipe) { swap(); return; }
-    /* swap under cover of the wipe, at the point it fully covers the panel */
-    faqWipe.dataset.run = '0';
-    void faqWipe.offsetWidth;               // restart the animation
-    faqWipe.dataset.run = '1';
-    setTimeout(swap, 260);
-  });
-});
+/* ---- FAQ switchboard moved to /scripts/faq-switchboard.js (17 Oct) --
+        now shared with the conference page's own FAQ, loaded as a
+        separate script tag in Layout rather than duplicated here. ---- */
 
 /* ---- footer wordmark: fit-to-width.
         clamp() cannot do this — the ratio between viewport and container

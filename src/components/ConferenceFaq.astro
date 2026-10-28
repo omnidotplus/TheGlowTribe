@@ -1,0 +1,57 @@
+---
+/* CONFERENCE FAQ — 17 Oct, client note: "the current FAQs on the
+   homescreen are all about the conference. It should move to the
+   conference tab." Moved here verbatim from Faq.astro, which now carries
+   the home page's new TGT-community questions instead. Same switchboard
+   mechanic (see Faq.astro for the full rationale) -- styled in
+   conference.css, driven by the shared /scripts/faq-switchboard.js. */
+---
+<section class="faq g-paper" id="faq" data-fade>
+  <div class="faq__head">
+    <p class="eyebrow" style="margin:0">Questions</p>
+    <p class="faq__note">Everything people actually ask</p>
+  </div>
+  <div class="faq__board" data-placeholder="P9">
+    <div class="faq__index" role="tablist" aria-label="Questions">
+        <button class="faq__item" type="button" data-i="0" data-on="1"
+                aria-selected="true" role="tab" aria-controls="cfp0">
+          <span class="faq__n">01</span>
+          <span class="faq__qt">Is it really free?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="1" data-on="0"
+                aria-selected="false" role="tab" aria-controls="cfp1">
+          <span class="faq__n">02</span>
+          <span class="faq__qt">Do I have to be a Christian?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="2" data-on="0"
+                aria-selected="false" role="tab" aria-controls="cfp2">
+          <span class="faq__n">03</span>
+          <span class="faq__qt">Can I come alone?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="3" data-on="0"
+                aria-selected="false" role="tab" aria-controls="cfp3">
+          <span class="faq__n">04</span>
+          <span class="faq__qt">Am I good enough?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="4" data-on="0"
+                aria-selected="false" role="tab" aria-controls="cfp4">
+          <span class="faq__n">05</span>
+          <span class="faq__qt">What should I bring?</span>
+        </button>
+        <button class="faq__item" type="button" data-i="5" data-on="0"
+                aria-selected="false" role="tab" aria-controls="cfp5">
+          <span class="faq__n">06</span>
+          <span class="faq__qt">Where exactly is it?</span>
+        </button>
+    </div>
+    <div class="faq__display">
+        <p class="faq__answer" id="cfp0" data-i="0" data-on="1" role="tabpanel">Yes. No ticket, no fee, no catch. Register so we know how many chairs to put out.</p>
+        <p class="faq__answer" id="cfp1" data-i="1" data-on="0" role="tabpanel">No. No Bushels is cross-denominational and creatives-first. If you make things, you belong in the room.</p>
+        <p class="faq__answer" id="cfp2" data-i="2" data-on="0" role="tabpanel">Most people do. That's rather the point of it.</p>
+        <p class="faq__answer" id="cfp3" data-i="3" data-on="0" role="tabpanel">There's no bar. Bring whatever you're working on, however finished it is.</p>
+        <p class="faq__answer" id="cfp4" data-i="4" data-on="0" role="tabpanel">Yourself, and the thing you're making. Instruments, laptops and hard drives all welcome.</p>
+        <p class="faq__answer" id="cfp5" data-i="5" data-on="0" role="tabpanel">EU Centre, Warri · 21 November 2026. Full directions go out with your confirmation.</p>
+      <span class="faq__wipe" aria-hidden="true"></span>
+    </div>
+  </div>
+</section>

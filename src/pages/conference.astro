@@ -5,6 +5,7 @@ import Event from '../components/Event.astro';
 import Theme from '../components/Theme.astro';
 import Speakers from '../components/Speakers.astro';
 import Schedule from '../components/Schedule.astro';
+import ConferenceFaq from '../components/ConferenceFaq.astro';
 import Footer from '../components/Footer.astro';
 ---
 <Layout
@@ -17,7 +18,13 @@ import Footer from '../components/Footer.astro';
   <Theme />
   <Speakers />
   <Schedule />
+  <!-- 17 Oct, client note: the conference-logistics FAQ moved here from
+       home -- paper ground, breaking cleanly from Schedule's ember and
+       Footer's dark, same "no two adjacent sections share a ground" rule
+       every other section on this page already follows. -->
+  <ConferenceFaq />
   <Footer />
 
   <script src="/scripts/conference-behaviour.js" is:inline></script>
+  <script src="/scripts/faq-switchboard.js" is:inline></script>
 </Layout>
