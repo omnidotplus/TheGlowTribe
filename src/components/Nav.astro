@@ -35,12 +35,14 @@ const ctaHref = isShop ? '/shop/all' : current === 'conference' ? '#event' : '/c
    always correct without threading another boolean through six pages. */
 const onShopAll = Astro.url.pathname === '/shop/all';
 /* 17 Oct, client note: "theglowtribe icon redirect to the hero .. theres
-   no shop.. only collection, cart and shop all". The wordmark IS the
-   marketplace's own "home" link now that the standalone Shop text-link is
-   gone -- it points at the shop's own hero (/shop), not the main site's,
-   while every other page keeps the old behaviour (home, or `#` on the
-   home page itself) unchanged. */
-const markHref = isShop ? '/shop' : '/';
+   no shop.. only collection, cart and shop all" -- the wordmark pointed
+   at /shop while Shop had no entry on the main nav.
+   29 Oct, client note: "shop should be on the main nav .. anything
+   related to marketplace or shop should link to the site" -- the main
+   nav now carries its own Shop link (below), so the wordmark goes back
+   to being the universal "take me to the site" mark everywhere,
+   including on shop pages. */
+const markHref = '/';
 const isCollections = Astro.url.pathname.startsWith('/shop/collections');
 const isCart = Astro.url.pathname === '/shop/cart';
 ---
@@ -78,6 +80,11 @@ const isCart = Astro.url.pathname === '/shop/cart';
             teaser strip is a stand-in so the nav is honest about the IA; it must
             repoint at the real page before launch. */}
         <a href="/#teaser">Work</a>
+        {/* 29 Oct, client note: "shop should be on the main nav which
+            leads to the marketplace" -- the marketplace's own nav state
+            (isShop) never renders this branch, so this link only ever
+            needs to point INTO the shop, never mark itself current. */}
+        <a href="/shop">Shop</a>
       </Fragment>
     )}
   </div>
