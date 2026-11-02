@@ -4,7 +4,7 @@
 
    Setup, troubleshooting and the "Execute as" trap: REGISTRATION_SETUP.md */
 
-var NOTIFY = 'theglowtribe@gmail.com';   // told about each signup; blank to disable
+var NOTIFY = 'theglowtribeng@gmail.com';   // told about each signup; blank to disable
 var SHEET  = 'TheGlowTribe_NoBushels';   // rename if your tab is called something else
 
 /* ---- event facts, in one place so the email and any future change agree ---- */
