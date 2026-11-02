@@ -1,0 +1,71 @@
+---
+/* PARTNER — 29 Oct, client note: "a simple partnership area with good UI
+   and UX" on both home and conference, different copy for each ("TGT
+   generally" vs "the conference"). One component, not two -- the
+   structure is identical, only the words and the ground differ, which is
+   exactly the case this codebase reaches for a prop over a duplicate file
+   (contrast ConferenceFaq.astro, which earned its own file because the
+   FAQ split was structural, not just copy).
+
+   Layout: an asymmetric lead/list split (1.34fr : 1fr, Why.astro's own
+   ratio) rather than three equal cards -- 04-layouts.md bans the naive
+   even split, and three offers in boxes is exactly that cliché. The
+   offers read as a short ruled list instead (the FAQ index's own device,
+   without the interactive switchboard -- these don't need one).
+
+   Ground-aware by construction, not by duplicating the component: --ink
+   and --paper already flip per g-ember/g-dark (tokens.css), so the CTA's
+   wipe-fill is the only place that needs an explicit per-ground rule --
+   on dark ground --ink and --paper resolve to the SAME value (both
+   light), so the two-tone wipe needs the literal tier tokens there,
+   same reason close__cta/who__cta each hardcode their own pair instead
+   of sharing one.
+
+   29 Oct, client note, second pass: "should feel more like a section ..
+   the partner header is just not telling of a section .. those three
+   .. should stand out with its own background." Two changes from the
+   first version: the eyebrow+heading move out of the narrow lead column
+   into their own full-width line (Why.astro's own move -- its eyebrow
+   and lead statement run the full --why__inner width before the
+   two-column stage begins below), so the section announces itself
+   before the split starts; and the offer list becomes an actual card --
+   paper on ember, --d-2 on dark, DESIGN.md's own "cards lift by ground"
+   rule (Section 4), the same device NoBushels.astro's .nb__card already
+   uses on this exact ember ground. */
+interface Offer { k: string; v: string; }
+interface Props {
+  ground: 'ember' | 'dark';
+  id: string;
+  eyebrow: string;
+  heading: string;
+  body: string;
+  offers: Offer[];
+  ctaLabel: string;
+  ctaHref: string;
+}
+const { ground, id, eyebrow, heading, body, offers, ctaLabel, ctaHref } = Astro.props as Props;
+const hasNote = Astro.slots.has('note');
+---
+<section class={`partner g-${ground}`} id={id} data-fade>
+  <div class="partner__intro">
+    <p class="eyebrow">{eyebrow}</p>
+    <h2 class="partner__head">{heading}</h2>
+  </div>
+  <div class="partner__inner">
+    <div class="partner__lead">
+      <p class="partner__body">{body}</p>
+      <a class={`partner__cta btnfx partner__cta--${ground}`} href={ctaHref}>
+        <span>{ctaLabel}</span> <span aria-hidden="true">→</span>
+      </a>
+      {hasNote && <p class="partner__note"><slot name="note" /></p>}
+    </div>
+    <ul class={`partner__list partner__list--${ground}`}>
+      {offers.map(o => (
+        <li>
+          <p class="partner__k">{o.k}</p>
+          <p class="partner__v">{o.v}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

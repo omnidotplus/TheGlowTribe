@@ -5,6 +5,7 @@ import Event from '../components/Event.astro';
 import Theme from '../components/Theme.astro';
 import Speakers from '../components/Speakers.astro';
 import Schedule from '../components/Schedule.astro';
+import Partner from '../components/Partner.astro';
 import ConferenceFaq from '../components/ConferenceFaq.astro';
 import Footer from '../components/Footer.astro';
 ---
@@ -18,6 +19,26 @@ import Footer from '../components/Footer.astro';
   <Theme />
   <Speakers />
   <Schedule />
+  <!-- 29 Oct, client note: "a simple partnership area .. for the
+       conference page about partnering with the conference". Dark
+       ground, breaking cleanly between Schedule's ember and the FAQ's
+       paper -- same "no two adjacent sections share a ground" rule. -->
+  <Partner
+    ground="dark"
+    id="partner"
+    eyebrow="Partner"
+    heading="Help us put the lamp on a stand."
+    body="No Bushels is free to walk into, and it stays that way because people back it. If you run a church, a brand, a studio, a school or a business, or you simply believe creatives deserve a room that takes both the craft and the faith seriously, there's a place for you here."
+    offers={[
+      { k: 'Fund it.', v: 'Help cover the venue, the honorariums and the food.' },
+      { k: 'Equip it.', v: 'Sound, AV, printing, catering, or anything the day needs.' },
+      { k: 'Announce it.', v: 'Churches, communities and creators who put the word in front of their people.' },
+    ]}
+    ctaLabel="Become a partner"
+    ctaHref="mailto:theglowtribeng@gmail.com?subject=Partnering%20with%20No%20Bushels"
+  >
+    <Fragment slot="note">Prefer to talk first? Write to us at <a href="mailto:theglowtribeng@gmail.com">theglowtribeng@gmail.com</a>.</Fragment>
+  </Partner>
   <!-- 17 Oct, client note: the conference-logistics FAQ moved here from
        home -- paper ground, breaking cleanly from Schedule's ember and
        Footer's dark, same "no two adjacent sections share a ground" rule
@@ -27,4 +48,5 @@ import Footer from '../components/Footer.astro';
 
   <script src="/scripts/conference-behaviour.js" is:inline></script>
   <script src="/scripts/faq-switchboard.js" is:inline></script>
+  <script src="/scripts/speaker-bio.js?v=1" is:inline></script>
 </Layout>

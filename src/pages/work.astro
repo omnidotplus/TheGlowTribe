@@ -1,0 +1,115 @@
+---
+/* WORK — 2 Nov. The real catalogue, replacing the "/#teaser stand-in" the
+  nav has carried since the port (Nav.astro said so in a comment: "Projects
+  / Our Work is Phase 1 (SC2) but NOT BUILT yet ... it must repoint at the
+  real page before launch"). This is that page.
+
+  ARCHETYPE: Five Plus V5 (04-layouts.md, verified) -- "one large lead,
+  then mixed-size cards at three scales". 04-layouts' own filter puts a
+  catalogue of many items on Five Plus V3/V5/V6, and the taste skill bans
+  the obvious alternative outright: a row of equal cards.
+
+  THE RHYTHM LANDS EXACTLY ON ELEVEN: 1 + 2 + 3 + 2 + 3. There is no empty
+  cell and no orphan, which is the bento cell-count rule stated precisely.
+
+  SCALE IS CURATION, NOT DECORATION. The rows are grouped by kind, so how
+  big a thing is says what kind of thing it is:
+    lead  the cinematic short film
+    2-up  the other two films
+    3-up  the short-form pieces -- a cover, a skit, a poem
+    2-up  the music videos
+    3-up  the songs, and the album they live on
+  Reorder the array and the grouping still holds, because `rows` below
+  describes the shape and the array describes the programme.
+
+  Captions sit BELOW the artwork, never on it -- these thumbnails already
+  carry their own title lettering, and a second label over the top is the
+  pattern the taste skill bans by name.
+
+  Everything here leaves the site, so every card is a real external link
+  with its destination named for screen readers. */
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const YT = 'https://www.youtube.com/watch?v=';
+
+/* Titles are the real ones off the channel, trimmed to the name of the
+   piece -- the full YouTube titles carry search keywords that read as
+   noise in a catalogue ("Christian Girl Talk Valentine's Pressure, Sing
+   Worship & Embrace God's Timing"). */
+const works = [
+  { title: 'The One',               kind: 'Short film',   img: 'w03', href: YT + '9q9jkKM_9Ok' },
+
+  { title: 'A Booless Valentine',   kind: 'Short film',   img: 'w01', href: YT + 'xFOJf6QBQ9M' },
+  { title: 'A TGT Christmas',       kind: 'Short musical',img: 'w05', href: YT + 'miVNeeYhCRk' },
+
+  { title: 'Pilot Me',              kind: 'Worship cover',img: 'w02', href: YT + '7-mWFTe6Ylg' },
+  { title: 'Upper Room',            kind: 'Skit',         img: 'w04', href: YT + '7HFFfwQcHe0' },
+  { title: 'The Prayer',            kind: 'Poetry',       img: 'w09', href: YT + '-2ys1kibyIw' },
+
+  { title: 'Papa God',              kind: 'Music video',  img: 'w06', href: YT + 'QLe3zpkoeRM' },
+  { title: "Till We're Old and Grey", kind: 'Music video',img: 'w08', href: YT + '801peg_nm1g' },
+
+  { title: 'The One',               kind: 'Love song',    img: 'w07', href: YT + '71qW7kzqUmw' },
+  { title: 'Bukola',                kind: 'Love song',    img: 'w10', href: YT + 'tfLkWl97aO0' },
+  { title: 'Love',                  kind: 'Album',        img: 'album-love', square: true,
+    href: 'https://open.spotify.com/album/7soaml3pt2v4q9XLJfvTfm', on: 'Spotify' },
+];
+
+/* the shape of the programme, in cards per row */
+const rows = [1, 2, 3, 2, 3];
+let cursor = 0;
+const grouped = rows.map(n => works.slice(cursor, cursor += n));
+---
+<Layout
+  title="Work | The Glow Tribe"
+  description="Films, music, skits and poetry made by The Glow Tribe."
+  pageStylesHref="/styles/work.css"
+>
+  <Nav current="work" />
+
+  <main class="wk g-dark" id="work">
+    <header class="wk__head" data-fade>
+      <p class="eyebrow">Work</p>
+      <h1 class="wk__title">What the tribe has made.</h1>
+      <p class="wk__lead">Films, music, skits and poetry. Made by members, most of it on the channel.</p>
+    </header>
+
+    <div class="wk__grid">
+      {grouped.map(row => (
+        <div class="wk__row" style={`--n:${row.length}`} data-fade>
+          {row.map(w => (
+            <a class="wk__item" href={w.href} target="_blank" rel="noopener noreferrer">
+              <span class={'wk__shot' + (w.square ? ' wk__shot--square' : '')}>
+                <img src={`/img/work/${w.img}.webp`} alt=""
+                     width={w.square ? 620 : 1100} height={w.square ? 620 : 619}
+                     loading="lazy" decoding="async">
+                {/* persistent, not hover-only: these are things you play, and
+                    half of traffic has no hover to discover it with. */}
+                <span class="wk__play" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M9 6.5 L18 12 L9 17.5 Z" fill="currentColor"/></svg>
+                </span>
+              </span>
+              <span class="wk__cap">
+                <span class="wk__kind">{w.kind}</span>
+                <span class="wk__name">{w.title}</span>
+              </span>
+              <span class="visually-hidden">— watch on {w.on || 'YouTube'}, opens in a new tab</span>
+            </a>
+          ))}
+        </div>
+      ))}
+    </div>
+
+    <p class="wk__more">
+      <a href="https://www.youtube.com/@theglowtribeng" target="_blank" rel="noopener noreferrer">
+        Everything else on YouTube <span aria-hidden="true">&#8599;</span>
+      </a>
+    </p>
+  </main>
+
+  <Footer />
+  {/* no script tag here: Layout already loads reveal.js (and nav.js) for
+      every page, so the [data-fade] blocks above are already driven. */}
+</Layout>

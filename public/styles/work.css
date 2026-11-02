@@ -1,0 +1,117 @@
+  /* ============ WORK — the catalogue =================================
+     ARCHETYPE: Five Plus V5 (04-layouts.md) -- one large lead, then
+     mixed-size cards at three scales. Row shape 1+2+3+2+3 = 11, which is
+     the exact number of works, so there is no empty cell anywhere.
+
+     GROUND: dark. These are eleven bright, busy video thumbnails; on
+     paper they fight each other and the page reads as a contact sheet.
+     On --d-0 they behave like a screening room, which is also what the
+     page IS. The nav's luminance sampler flips itself over this with no
+     per-page wiring, same as /shop/category.
+
+     NO LABELS ON THE ARTWORK. The thumbnails already carry their own
+     title lettering; a second caption on top of that is the exact pattern
+     the taste skill bans. Captions sit under the frame instead.
+     =================================================================== */
+  .wk {
+    background: var(--d-0); color: var(--n-50);
+    padding: clamp(96px,11vw,150px) clamp(16px,6vw,96px) clamp(60px,8vw,110px);
+  }
+
+  .wk__head { max-width: 1184px; margin: 0 auto clamp(40px,6vw,76px); }
+  .wk__title {
+    margin: clamp(10px,1.6vw,16px) 0 clamp(14px,2vw,20px);
+    font-family: var(--f-display); font-variation-settings: 'wdth' 112, 'wght' 900;
+    font-size: var(--t-h2); line-height: var(--lh-h2); letter-spacing: var(--tr-h2);
+    max-width: 16ch;
+  }
+  .wk__lead {
+    margin: 0; max-width: 46ch;
+    font-size: var(--t-lead); line-height: var(--lh-lead); color: var(--n-300);
+  }
+
+  .wk__grid {
+    max-width: 1184px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: clamp(26px,3.6vw,52px);
+  }
+  /* --n is set per row in the markup, so the shape lives with the data
+     rather than being hard-coded per nth-child here. */
+  .wk__row {
+    display: grid; gap: clamp(16px,2.2vw,30px);
+    grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr));
+  }
+  @media (max-width: 860px) {
+    /* three-up is unreadable on a phone; two-up still is, so rows of 3
+       become 2 and the lone leftover sits full width under them. */
+    .wk__row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .wk__row > :nth-child(3):last-child { grid-column: 1 / -1; }
+  }
+  @media (max-width: 560px) {
+    .wk__row { grid-template-columns: minmax(0,1fr); }
+    .wk__row > :nth-child(3):last-child { grid-column: auto; }
+  }
+
+  .wk__item {
+    display: block; text-decoration: none; color: inherit; min-width: 0;
+  }
+  .wk__shot {
+    position: relative; display: block; overflow: hidden;
+    aspect-ratio: 16 / 9; background: var(--d-2);
+    outline: 2px solid transparent; outline-offset: -2px;
+    transition: outline-color .22s var(--ease-out);
+  }
+  .wk__shot img {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    transition: transform .5s var(--ease-out);
+  }
+  /* the album is a 1:1 record sleeve, not a 16:9 frame. Contained rather
+     than cropped -- cover art loses its meaning the moment you cut it. */
+  .wk__shot--square img { object-fit: contain; padding: clamp(10px,1.6vw,22px); }
+
+  .wk__play {
+    position: absolute; left: 12px; bottom: 12px; z-index: 2;
+    width: 34px; height: 34px; border-radius: 999px;
+    display: grid; place-items: center;
+    background: var(--n-50); color: var(--n-900);
+    transition: transform .22s var(--ease-out);
+  }
+  .wk__play svg { width: 17px; height: 17px; margin-left: 1px; }
+
+  .wk__cap {
+    display: flex; flex-direction: column; gap: 5px;
+    padding-top: clamp(11px,1.5vw,15px);
+  }
+  .wk__kind {
+    font-family: var(--f-mono); font-variation-settings: 'wght' 500;
+    font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--n-300);
+  }
+  .wk__name { font-size: var(--t-body); line-height: 1.3; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .wk__item:hover .wk__shot { outline-color: var(--n-50); }
+    .wk__item:hover .wk__shot img { transform: scale(1.03); }
+    .wk__item:hover .wk__play { transform: scale(1.12); }
+  }
+  .wk__item:focus-visible .wk__shot { outline-color: var(--n-50); }
+  .wk__item:active .wk__shot img { transform: scale(1.01); }
+
+  .wk__more {
+    max-width: 1184px; margin: clamp(40px,6vw,76px) auto 0;
+    font-family: var(--f-mono); font-size: var(--t-mono-sm);
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .wk__more a {
+    color: var(--n-50); text-decoration: none;
+    border-bottom: 1px solid rgba(255,248,244,.34); padding-bottom: 3px;
+    transition: border-color .2s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .wk__more a:hover { border-bottom-color: var(--n-50); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wk__shot, .wk__shot img, .wk__play { transition-duration: .01ms; }
+    .wk__item:hover .wk__shot img, .wk__item:active .wk__shot img { transform: none; }
+    .wk__item:hover .wk__play { transform: none; }
+  }

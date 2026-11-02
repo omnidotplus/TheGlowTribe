@@ -97,7 +97,7 @@
 .ev__backHead,
 .close__head, .day__title, .day__title--big,
 .theme__statement, .spk__head,
-.why__lead, .why__resolve, .why__third {
+.why__lead, .why__resolve {
   font-family: var(--f-display);
   font-variation-settings: 'wdth' 112, 'wght' 900;
   font-weight: 900;
@@ -146,7 +146,11 @@ p, li, dd, blockquote { max-width: var(--measure); }
    ------------------------------------------------------------------------ */
 .mark, .day__title--big   { font-size: var(--t-display); line-height: var(--lh-display); letter-spacing: var(--tr-display); }
 .close__head { font-size: var(--t-h1); line-height: var(--lh-h1); letter-spacing: var(--tr-h1); }
-.theme__statement, .spk__head { font-size: var(--t-h2); line-height: var(--lh-h2); letter-spacing: var(--tr-h2); }
+/* .why__resolve joins the h2 tier 29 Oct: the Why section's monument is
+   now its PAYOFF ("we made a third room"), not its setup. The lead drops
+   to h3 below, so the hierarchy runs setup -> argument -> payoff instead
+   of peaking on the first line and fading. */
+.theme__statement, .spk__head, .why__resolve { font-size: var(--t-h2); line-height: var(--lh-h2); letter-spacing: var(--tr-h2); }
 .ev__backHead, .why__lead { font-size: var(--t-h3); line-height: var(--lh-h3); letter-spacing: var(--tr-h3); }
 
 /* The Who-is-TGT statement was measured off newformcap at weight 550 — their

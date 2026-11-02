@@ -5,7 +5,12 @@
      full viewport of still PINNED distance after the sequence ends, so the
      card is read, and the wordmark is under-exposed out before the viewport's
      top edge can ever reach it. See HERO_CHOREOGRAPHY.md "Two clocks". */
-  .hero { height: 500vh; position: relative; }   /* 9 beats, HERO_CHOREOGRAPHY v2.1 */
+  /* 2 Nov: 500vh -> 440vh. The last viewport of the old height was the
+     `tail`, reserved for beat 8's card handoff; with the card removed
+     all it did was hold an empty stage, which is the "crazy space"
+     after the hero. Beats 0-7 keep ~295vh of their original 300vh, so
+     the sequence itself is essentially unchanged. */
+  .hero { height: 440vh; position: relative; }   /* 9 beats, HERO_CHOREOGRAPHY v2.1 */
   /* On a phone 500vh of hero plus 460vh of Who meant 9.6 of the page's 14.5
      viewports were SCROLL-PINNED: you swipe, the page does not move, only an
      animation advances. With a thumb that reads as the page being stuck, which
@@ -29,7 +34,7 @@
        viewport height and does not move, so the pin length is fixed whatever
        the browser chrome does. Matching the unit the stages already use also
        means the section and its stage can no longer disagree. */
-    .hero { height: 360svh; }
+    .hero { height: 320svh; }
   }
 
   .stage {
@@ -382,10 +387,87 @@
     .core__below { position: static; transform: none; width: min(92vw, 680px);
                    margin: clamp(18px,3vw,32px) auto 0; }
     .core  { transform: none !important; }
+    /* 2 Nov: .sub/.venue/.timer/.core__below are DEAD selectors now -- the
+       hero card they styled was removed. Left in place deliberately rather
+       than ripped out mid-feature: they match nothing, so they cost
+       nothing, and this file's hero rules are densely interleaved with the
+       .cta rules that are still live. Worth a dedicated cleanup pass.
+       `.cta` below is still live and now matches the flyer promo's button,
+       where killing the press travel is exactly what reduced motion wants. */
+    .core__below         { opacity: 1 !important; }
     .sub, .venue, .timer, .cta {
       opacity: 1 !important; transform: none !important;
       transition: opacity .25s linear;
     }
+  }
+
+  /* ============ FLYER PROMO — 2 Nov ===================================
+     Client: "after the hero the flyer eases in (like all those promotion
+     thing that pops on the screen) with a cancel button but on the flyer
+     theres a clear 'save a seat' button (keep that hover effect)."
+     The button IS the old hero card's `.cta .btnfx`, reused rather than
+     rebuilt, so the ink wipe-fill hover is the same object it always was.
+     =================================================================== */
+  html.promo-locked { overflow: hidden; }
+
+  .promo {
+    padding: 0; border: 0; background: none;
+    max-width: none; max-height: none;
+    /* overflow:visible so the close button can hang off the corner without
+       the dialog growing a scrollbar for it -- <dialog> defaults to auto.
+       The 66vh term caps by HEIGHT using the flyer's own 4:5 ratio
+       (0.8 x 82vh), so on a short window the promo shrinks instead of
+       running off the screen. */
+    overflow: visible;
+    width: min(420px, 86vw, 66vh);
+  }
+  .promo::backdrop { background: rgba(10,7,6,.74); }
+
+  .promo__panel { position: relative; line-height: 0; }
+  .promo__flyer {
+    display: block; width: 100%; height: auto;
+    border: 1px solid var(--n-900);
+  }
+
+  .promo__close {
+    position: absolute; top: -14px; right: -14px; z-index: 3;
+    width: 38px; height: 38px; display: grid; place-items: center;
+    border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--n-50); color: var(--n-900);
+    box-shadow: 0 0 0 2px var(--n-900);
+    transition: transform .16s cubic-bezier(.23,1,.32,1);
+  }
+  .promo__close svg { width: 18px; height: 18px; }
+  .promo__close:active { transform: scale(.94); }
+  @media (max-width: 480px) { .promo__close { top: -10px; right: -10px; width: 34px; height: 34px; } }
+
+  /* the ask sits ON the flyer, per the brief. The scrim is for legibility
+     over whatever part of the artwork ends up behind it -- flare on ink
+     reads anywhere, but the arrow and the ring need a settled ground. */
+  .promo__cta {
+    position: absolute; left: 50%; bottom: clamp(14px, 4%, 26px);
+    transform: translateX(-50%); z-index: 2;
+    white-space: nowrap;
+  }
+  .promo__cta:active { transform: translateX(-50%) scale(.96); }
+  /* no scrim behind the button: client, 2 Nov -- "i don't want that grey
+     background". The flare fill plus its 2px ink ring already clears
+     contrast against the artwork on its own, which is exactly what rule
+     C3's ring is for. */
+
+  /* "eases in" -- rise + settle, not a snap. One element, transform and
+     opacity only. */
+  .promo[open] { animation: promoIn .42s cubic-bezier(.23,1,.32,1); }
+  .promo[open]::backdrop { animation: promoFade .3s linear; }
+  @keyframes promoIn {
+    from { opacity: 0; transform: translateY(16px) scale(.94); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes promoFade { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .promo[open] { animation: promoFade .2s linear; }
+    .promo__close:active { transform: none; }
+    .promo__cta:active { transform: translateX(-50%); }
   }
 
   /* ============ BUTTON HOVER — colour change on every one (client) ======
@@ -704,14 +786,38 @@
   .teaser__item {
     align-self: start;                         /* card 4 sat ~10px low: flex
                                                   items were stretching */
-    flex: 0 0 auto; width: clamp(190px,26vw,340px);
+    /* 2 Nov: widened for the 16:9 slot. At the old portrait width a
+       landscape thumbnail rendered ~107px tall and the artwork was
+       unreadable. */
+    flex: 0 0 auto; width: clamp(260px,32vw,440px);
     margin: 0; scroll-snap-align: start;
     position: relative;
     margin-right: clamp(5px,0.7vw,9px);      /* tiny, and uniform across the seam */
   }
   /* no :last-child exception: a uniform gap is what keeps the loop seamless */
-  .teaser__item .slot { width: 100%; aspect-ratio: 4/5; }
-  .teaser__item .slot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  /* 2 Nov: 4/5 -> 16/9. These are video works now, and a portrait slot
+     cropped the title lettering off every thumbnail. */
+  .teaser__item .slot { display: block; width: 100%; aspect-ratio: 16/9; }
+  .teaser__link { display: block; text-decoration: none; color: inherit; }
+  .teaser__link:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 4px; }
+  /* the cards open a real video now, so they have to answer a pointer.
+     Transform and opacity only, and the press lands in the same 0.98 band
+     every other pressable in this build uses. */
+  .teaser__item .slot { overflow: hidden; }
+  .teaser__item .slot img {
+    display: block; width: 100%; height: 100%; object-fit: cover;
+    transition: transform .45s cubic-bezier(.23,1,.32,1);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .teaser__link:hover .slot img { transform: scale(1.045); }
+  }
+  .teaser__link { transition: transform .16s cubic-bezier(.23,1,.32,1); }
+  .teaser__link:active { transform: scale(.985); }
+  @media (prefers-reduced-motion: reduce) {
+    .teaser__item .slot img, .teaser__link { transition-duration: .01ms; }
+    .teaser__link:hover .slot img { transform: none; }
+    .teaser__link:active { transform: none; }
+  }
 
   /* the continuous slide. transform only; -50% of the doubled row is exactly
      one track, so the loop is seamless. Pauses on hover so a card can be read. */
@@ -904,107 +1010,291 @@
     clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
   }
 
-  /* ============ WHY WE EXIST — two rooms → a third ============ */
+  /* ============ WHY WE EXIST — rebuilt 29 Oct ==========================
+     CLIENT: "the layout and sequence is terrible ... there's so much
+     happening and there's a lot of cognitive load."
+
+     WHAT WAS WRONG. Diagnosed against this project's own doctrine in
+     design_process/ (awwwards-motion + awwwards-sections). The old
+     scroll-scrubbed aperture broke five of its rules at once:
+
+       1. "No essential information is conveyed ONLY through animation."
+          Every line of the argument was clip-path-hidden until scroll, so
+          the section could not be read at rest. That IS the cognitive
+          load: you cannot read ahead, and at any one scroll position you
+          are looking at a half-opened box.
+       2. "No competing motion (two elements fighting for attention at the
+          same time)." A looping film ran beside text animating in.
+       3. "The Layout Animator: animating width, height ... Fix: only
+          animate transform and opacity." The aperture scrubbed --apX then
+          --apY -- width then height -- as its entire mechanic.
+       4. "Maximum 2-3 complex animations running simultaneously." It ran
+          nine: the aperture clip, two panel exposures, the film exposure,
+          and five staggered text reveals.
+       5. "Keep scroll reveals under 900ms." The reveal was scrubbed across
+          the section's whole height (top 82% to bottom 62%).
+
+     WHAT IT IS NOW. The copy is a five-beat argument that turns: origin,
+     room A fails, room B fails, the bind, the third room. 04-layouts' own
+     filter row ("editorial, portfolio, art-directed -> One Column") picks
+     the archetype, and the catalogue describes One Column as "one thing
+     at a time" -- exactly the fix for the complaint. One vertical column,
+     five beats, each a single idea, all of it readable standing still.
+
+     THE LAYOUT CARRIES THE ARGUMENT, which is what the aperture was
+     reaching for and missed.
+
+     2 Nov, second pass. Client: "i need to be able to understand the
+     message being passed." The beats were right; their WEIGHT was not.
+     Beats 1 and 5 were set at h3 and h2, while beats 2-4 -- the actual
+     reason this community exists -- were short --dim sentences stretched
+     across a 1184px measure with a 104px void on either side. The eye
+     travelled monument to monument and never read the middle.
+
+     The copy is about ROOMS, so the layout is three rooms you can count.
+     01 and 02 are OUTLINED plates sharing a 2px wall: rooms that existed
+     but stood empty for us. 03 is a FILLED plate spanning the width the
+     other two share. Fill against outline states the argument in one
+     glance before a word is read, and a ground change is precisely how
+     DESIGN.md Section 4 says this system expresses depth -- not a shadow,
+     not a glow. Each room is numbered and named so the sequence is
+     stated, not inferred. The bind moved inside the problem block with
+     its two rooms, because it is the same thought and the section gap
+     was cutting it in half. No copy changed.
+
+     MOTION is now the site's own shared section reveal (reveal.css's
+     [data-fade] + [data-r]) and nothing else: five beats at a 90ms
+     stagger, inside awwwards-motion's own 80-150ms band, one arrival
+     instead of a scrubbed sequence. The custom ScrollTrigger block is
+     deleted from home-hero-and-sections.js; the only JS left here is the
+     film's lazy play/pause, which is bandwidth, not choreography. ===== */
   .why { padding: clamp(56px,10vw,150px) clamp(16px,6vw,96px); border-top: 1px solid var(--line); }
-  .why__inner { max-width: 1184px; margin: 0 auto; }
-  .why__lead {
-    font-size: clamp(24px,4.2vw,54px); line-height: 1.08; font-weight: 800;
-    letter-spacing: -.03em; margin: 0 0 clamp(34px,6vw,80px); max-width: 20ch;
+  .why__inner {
+    max-width: 1184px; margin: 0 auto;
+    display: flex; flex-direction: column;
+    /* 2 Nov: was clamp(44px,7vw,104px). At 104px every beat sat on its own
+       island and the section read as five slides rather than one argument.
+       The beats that belong together are grouped in .why__problem now, so
+       the outer gap only has to separate the three movements. */
+    gap: clamp(36px, 4.6vw, 76px);
   }
-  /* ============ WHY WE EXIST — the aperture ==========================
-     ARCHETYPE: Two Columns V6 (node 31:402, Arch Agency), chosen by
-     seed L1-why-1 YHUgcTRsU6e0d0Q4QgUuxW3 from a set filtered to
-     asymmetric sparse/medium splits. Not an even 50/50 — the naive even
-     split is the thing the catalogue warns about.
+  .why__k { margin: 0; font-weight: 400; }
 
-     MECHANIC (client, 15 Sept): two illustrations joined, which then OPEN —
-     the width expands first, then the height, and the text is what the height
-     reveals. A video plays at the right, exposed as the aperture opens.
-
-     Why it fits the copy rather than decorating it: this section is already
-     about two rooms nobody could reconcile, resolving into a third. The two
-     joined panels ARE those rooms, and what the opening reveals is the third.
-     The numbers (01/02/03) and the dividing rules are gone — client asked,
-     and the aperture now carries the structure the rules used to. ======== */
-  .why__stage {
-    display: grid;
-    grid-template-columns: minmax(0, 1.34fr) minmax(0, 1fr);   /* asymmetric */
-    gap: clamp(18px, 3.4vw, 54px);
-    align-items: start;
+  /* BEAT 1 — the origin. The two stills are joined at 2px, the same join
+     the shop's editorial grid uses, so they read as one room rather than
+     two separate photographs. */
+  .why__origin {
+    display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr);
+    gap: clamp(24px,4vw,64px); align-items: center;
   }
-  @media (max-width: 860px) { .why__stage { grid-template-columns: minmax(0,1fr); } }
+  @media (max-width: 860px) { .why__origin { grid-template-columns: minmax(0,1fr); gap: 28px; } }
+  /* 24ch, not 18: at 18 the lead broke into five lines of 44px bold, which
+     gave the opening beat more visual mass than the 76px payoff. Four lines
+     restores the order the type scale already intended. */
+  .why__lead { margin: 0; max-width: 24ch; }
+  .why__shots { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .why__shots img {
+    display: block; width: 100%; height: auto; aspect-ratio: 4 / 5;
+    object-fit: cover; background: var(--d-2);
+  }
 
-  /* the joined pair. --apX closes it horizontally, --apY vertically; both are
-     driven by scroll. clip-path is the sanctioned fourth animatable property
-     alongside transform/opacity. */
-  .why__aperture {
-    position: relative;
-    clip-path: inset(var(--apY, 46%) var(--apX, 46%) round 3px);
-    will-change: clip-path;
+  /* ---- BEATS 2-4, THE PROBLEM --------------------------------------
+     One unit. "Here are the two rooms" and "here is what they cost you"
+     are a single thought, and the old section-gap was cutting it in half.
+     ------------------------------------------------------------------ */
+  .why__problem { display: grid; gap: clamp(20px, 2.4vw, 30px); }
+
+  /* THE TWO ROOMS. Outlined plates sharing a wall: rooms that existed but
+     stood empty for us. No fill -- the fill is reserved for room three,
+     and that contrast is the entire argument rendered as layout. The 2px
+     gap is the wall between them. */
+  .why__rooms { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .why__room {
+    margin: 0; padding: clamp(20px,2.4vw,32px) clamp(20px,2.4vw,34px) clamp(24px,3vw,38px);
+    border: 1px solid var(--line);
+    display: grid; gap: clamp(12px,1.4vw,18px); align-content: start;
+  }
+  /* the room key. Numbered AND named, so the sequence is stated rather
+     than inferred from reading order -- which is what the client could
+     not follow. Mono at the section's existing eyebrow spec. */
+  .why__roomk {
+    margin: 0; display: flex; align-items: baseline; gap: 10px;
+    font-family: var(--mono); font-size: var(--t-mono-sm);
+    letter-spacing: .16em; text-transform: uppercase; color: var(--dim);
+  }
+  .why__roomk span {
+    color: var(--ink); font-weight: 700;
+  }
+  .why__roomline {
+    margin: 0; max-width: 32ch;
+    font-size: var(--t-lead); line-height: var(--lh-lead); color: var(--ink);
+  }
+  @media (max-width: 700px) {
+    .why__rooms { grid-template-columns: minmax(0,1fr); }
+    /* stacked, the two plates share a horizontal wall instead of a
+       vertical one -- collapse the doubled border rather than leaving a
+       2px seam of ground showing through */
+    .why__rooms { gap: 0; }
+    .why__room + .why__room { border-top: 0; }
+    .why__roomline { max-width: none; }
+  }
+
+  /* BEAT 4 — the bind, under both rooms and tied to them by proximity.
+     Ink, not dim: this is the thesis of the whole section and it was
+     previously the faintest text on the screen. Body family on purpose --
+     the section gets exactly two display moments (the lead and the
+     resolve) and a third would flatten the hierarchy. */
+  .why__bind {
+    margin: 0; max-width: 46ch;
+    font-size: var(--t-lead); line-height: var(--lh-lead); color: var(--ink);
+  }
+
+  /* ---- BEAT 5, THE THIRD ROOM --------------------------------------
+     The filled plate, spanning the width the two outlined rooms share.
+     Ground change, not shadow (DESIGN.md Section 4). The film is PORTRAIT
+     (506x900) cropped to 3:4 here: at its native ratio a 300px column ran
+     534px tall and left a 270px void beside the text, which was the empty
+     space the client flagged at the bottom of this section.
+     ------------------------------------------------------------------ */
+  .why__turn {
     background: var(--d-2);
+    padding: clamp(24px,3vw,44px);
+    display: grid; grid-template-columns: minmax(0,1fr) minmax(0,240px);
+    gap: clamp(24px,3vw,44px);
+    align-items: stretch;
+    /* the plate has to be tall enough that a 240px film column still reads
+       as a portrait frame rather than a letterboxed strip; it also gives
+       .why__turncol's space-between something to distribute */
+    min-height: clamp(300px, 32vw, 430px);
   }
-  .why__panels { display: grid; grid-template-columns: 1fr 1fr; }  /* joined: no gap */
-  .why__panel { position: relative; aspect-ratio: 4 / 5; overflow: hidden; }
-  .why__panel img {
-    display: block; width: 100%; height: 100%; object-fit: cover;
-    /* exposure, not decoration: the panels come up out of the dark as the
-       aperture opens, which is the same light-as-physics rule the hero uses */
-    opacity: calc(.30 + var(--expose, 0) * .70);
+  /* label at the top edge, monument at the bottom: the text column fills
+     the plate's height deliberately instead of floating in the middle of
+     it, and the resolve's last line lands level with the film's base. */
+  .why__turncol { display: grid; align-content: space-between; gap: clamp(24px,3vw,40px); }
+  .why__roomk--third span { color: var(--flare); }
+  @media (max-width: 860px) {
+    .why__turn { grid-template-columns: minmax(0,1fr); gap: 32px; min-height: 0; }
+    /* stacked, there is no sibling column to match height with, so the
+       film goes back to a real ratio instead of stretching */
+    .why__film { max-width: 300px; }
+    .why__film video { aspect-ratio: 3 / 4; height: auto; }
   }
-
-  /* what the height reveals */
-  .why__rooms {
-    display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-    gap: clamp(20px,4vw,56px);
-    padding: clamp(20px,3vw,38px) clamp(18px,2.6vw,34px) 0;
+  /* the tail needs real air under a 76px monument; 22px read as cramped */
+  .why__resolve { margin: 0 0 clamp(18px,2.6vw,32px); }
+  /* 46ch, not 40: at 40 the line broke with "find." alone on the second */
+  .why__tail {
+    margin: 0; max-width: 46ch;
+    font-size: var(--t-body); line-height: var(--lh-body); color: var(--dim);
   }
-  @media (max-width: 700px) { .why__rooms { grid-template-columns: minmax(0,1fr); gap: 22px; } }
-  .why__text { font-size: clamp(15px,1.8vw,21px); line-height: 1.5; color: var(--ink); margin: 0; }
-  .why__mid {
-    margin: clamp(18px,2.6vw,30px) clamp(18px,2.6vw,34px) 0;
-    max-width: 48ch; font-size: clamp(14px,1.5vw,16px); line-height: 1.6; color: var(--dim);
-  }
-  .why__third { padding: clamp(18px,2.6vw,32px) clamp(18px,2.6vw,34px) clamp(22px,3.4vw,40px); }
-  .why__resolve {
-    margin: 0 0 .5em;
-    font-size: clamp(26px,4.4vw,58px); line-height: 1.0;
-    font-weight: 800; letter-spacing: -.035em;
-  }
-  .why__tail { margin: 0; max-width: 44ch; font-size: clamp(14px,1.5vw,17px); line-height: 1.6; color: var(--dim); }
-
-  /* per-line text reveal, driven by the same open. Masked rather than faded:
-     the line is uncovered, which reads as part of the aperture opening. */
-  .why__rooms, .why__mid, .why__third { --tr: 0; }
-  .why__reveal {
-    display: block;
-    clip-path: inset(0 0 calc((1 - var(--tr, 0)) * 100%) 0);
-    transform: translateY(calc((1 - var(--tr, 0)) * .34em));
-    will-change: clip-path, transform;
-  }
-
-  /* the film, right column. Exposed as the aperture opens. */
-  .why__film {
-    margin: 0; position: relative; overflow: hidden; border-radius: 3px;
-    background: var(--d-0); aspect-ratio: 4 / 5;
-  }
+  /* the film fills its column top to bottom, so the plate reads as one
+     room with a window in it rather than a text block with a photo parked
+     beside it. Its native 506x900 is cropped by object-fit, which is why
+     there is no aspect-ratio here: at 506/900 a 240px column ran 427px and
+     left a void beside a 3-line monument -- the empty space the client
+     flagged at the bottom of this section. */
+  .why__film { margin: 0; position: relative; overflow: hidden; background: var(--d-1); min-height: 0; }
   .why__film video {
-    display: block; width: 100%; height: 100%; object-fit: cover;
-    opacity: var(--expose, 0);
-    transition: opacity .12s linear;
+    display: block; width: 100%; height: 100%;
+    object-fit: cover; object-position: 50% 35%;
   }
   .why__cap {
     position: absolute; left: 12px; bottom: 10px; z-index: 2;
     font-family: var(--mono); font-size: 10px; letter-spacing: .18em;
     text-transform: uppercase; color: var(--n-300);
   }
+  /* No .why-specific reduced-motion block any more: the section's only
+     motion is reveal.css's shared [data-r], which already degrades to an
+     opacity-only fade there. The film is held paused in JS instead. */
 
-  @media (prefers-reduced-motion: reduce) {
-    /* the designed static state: already open, already exposed, text present.
-       No opening, no travel — but it must look finished. */
-    .why__aperture { clip-path: none !important; }
-    .why__panel img, .why__film video { opacity: 1 !important; }
-    .why__reveal { clip-path: none !important; transform: none !important; }
+  /* ============ PARTNER — 29 Oct, client note: "a simple partnership
+     area with good UI and UX". Shared with conference.css verbatim: the
+     component (Partner.astro) renders on both grounds.
+
+     Second pass, same day: "should feel more like a section .. the
+     partner header is just not telling of a section .. those three ..
+     should stand out with its own background." The eyebrow+heading now
+     run the full section width before the split starts (Why.astro's own
+     move — see .why__lead), so the section announces itself; the offer
+     list is an actual card now (paper on ember, --d-2 on dark, DESIGN.md
+     Section 4 "cards lift by ground" — NoBushels.astro's .nb__card is
+     the same device on this exact ground), not plain text on the page's
+     own ember. Asymmetric lead/list split (Why.astro's own 1.34fr:1fr
+     ratio, not an even split — 04-layouts.md's own warning against the
+     naive three-equal-card row is exactly what the offers would read as
+     in boxes). The offer list reuses the FAQ index's ruled-row device,
+     minus the switchboard — nothing here needs to be clicked to be
+     read. */
+  .partner { padding: clamp(56px,10vw,150px) clamp(16px,6vw,96px); border-top: 1px solid var(--line); }
+  .partner__intro { max-width: 1184px; margin: 0 auto clamp(40px,5.6vw,64px); }
+  .partner__head {
+    font-size: clamp(32px,5.4vw,60px); line-height: 1.04; font-weight: 800;
+    letter-spacing: -.03em; margin: clamp(10px,1.6vw,16px) 0 0;
+    max-width: 20ch;
   }
+  .partner__inner {
+    max-width: 1184px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(0,1.34fr) minmax(0,1fr);
+    gap: clamp(32px,5vw,72px);
+    align-items: start;
+  }
+  @media (max-width: 860px) { .partner__inner { grid-template-columns: minmax(0,1fr); } }
+
+  .partner__body {
+    font-size: clamp(15px,1.6vw,18px); line-height: 1.6; color: var(--dim);
+    max-width: 54ch; margin: 0 0 clamp(26px,3.4vw,36px);
+  }
+
+  .partner__cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: clamp(11px,1.4vw,15px) clamp(18px,2.2vw,24px);
+    border: 1px solid var(--ink);
+    font-family: var(--mono); font-size: clamp(10px,1.1vw,12px);
+    letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+    color: var(--ink);
+    transition: transform .16s cubic-bezier(.23,1,.32,1), color .28s ease;
+  }
+  .partner__cta span:last-child { font-size: 1.3em; line-height: 0; }
+  .partner__cta:active { transform: scale(.97); }
+  /* ember: ink border/text, wipes to a solid ink fill with paper text.
+     dark: --ink and --paper resolve to the SAME value there (both n-50),
+     so the wipe needs the literal tier tokens, not the aliases — same
+     reason close__cta/who__cta each hardcode their own pair below. */
+  .partner__cta--ember::before { background: var(--n-900); }
+  .partner__cta--dark { border-color: var(--n-50); color: var(--n-50); }
+  .partner__cta--dark::before { background: var(--n-50); }
+  @media (hover: hover) and (pointer: fine) {
+    .partner__cta--ember:hover, .partner__cta--ember:focus-visible { color: var(--n-50); }
+    .partner__cta--dark:hover, .partner__cta--dark:focus-visible { color: var(--n-900); }
+    .partner__cta--ember:hover::before, .partner__cta--ember:focus-visible::before,
+    .partner__cta--dark:hover::before, .partner__cta--dark:focus-visible::before { clip-path: inset(0 0 0 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .partner__cta::before { transition: opacity .2s linear; clip-path: inset(0 0 0 0); opacity: 0; }
+    .partner__cta:hover::before { opacity: 1; }
+    .partner__cta:active { transform: none; }
+  }
+
+  .partner__note { margin: clamp(18px,2.4vw,24px) 0 0; font-size: 13px; line-height: 1.5; color: var(--dim); }
+  .partner__note a { color: inherit; }
+
+  .partner__list {
+    display: flex; flex-direction: column; min-width: 0;
+    margin: 0; padding: clamp(6px,.8vw,10px) clamp(22px,2.8vw,34px);
+    list-style: none; border-radius: clamp(14px,1.6vw,20px);
+  }
+  /* ember: NoBushels.astro's own .nb__card pair (paper fill, n-700 body) */
+  .partner__list--ember { background: var(--paper); color: var(--n-900); }
+  .partner__list--ember .partner__v { color: var(--n-700); }
+  .partner__list--ember li + li { border-top: 1px solid var(--n-300); }
+  /* dark: --d-2 card surface, n-300 secondary text — the same value
+     --dim already resolves to on g-dark, kept explicit here since the
+     card isn't itself a declared ground. */
+  .partner__list--dark { background: var(--d-2); color: var(--n-50); }
+  .partner__list--dark .partner__v { color: var(--n-300); }
+  .partner__list--dark li + li { border-top: 1px solid rgba(255,248,244,.14); }
+  .partner__list li { padding: clamp(18px,2.4vw,26px) 0; }
+  .partner__k { margin: 0 0 6px; font-size: clamp(15px,1.7vw,19px); font-weight: 700; letter-spacing: -.01em; }
+  .partner__v { margin: 0; font-size: clamp(13px,1.3vw,15px); line-height: 1.5; max-width: 42ch; }
 
   /* ============ FAQ — a switchboard, not a list ============
      Archetype: Five Plus V2 — one dominant panel plus a narrow index.

@@ -26,36 +26,13 @@
         <div class="mark__shine" id="markShine" aria-hidden="true"><span class="mark__ln">THE</span><span class="mark__ln">GLOW</span><span class="mark__ln">TRIBE</span></div>
       </div>
 
-      <!-- Everything below is absolutely positioned beneath the mark so it takes
-           NO part in centring. The mark alone is dead centre of the viewport
-           until beat 5, when the group below animates in and the mark rises. -->
-      <div class="core__below" id="below">
-        <div class="hcard">
-          <p class="sub" id="sub">No Bushels</p>
-          <div class="hcard__top">
-            <!-- the facts, arranged as stats: value large, label beneath -->
-            <div class="venue" id="venue">
-              <div><b>21 NOV</b><span>2026</span></div>
-              <div><b>EU Centre</b><span>Warri</span></div>
-              <div><b>Free</b><span>Entry</span></div>
-            </div>
-            <a class="cta btnfx" id="cta" href="/conference#event">
-              <span>Save a chair</span> <span aria-hidden="true">&#8599;</span>
-            </a>
-          </div>
-          <!-- labels sit ABOVE the numbers via `order: -1`, so the markup keeps
-               number-then-label order for screen readers -->
-          <div class="timer" id="timer">
-            <div><b data-c="d">00</b><span>Days</span></div>
-            <i aria-hidden="true">:</i>
-            <div><b data-c="h">00</b><span>Hrs</span></div>
-            <i aria-hidden="true">:</i>
-            <div><b data-c="m">00</b><span>Mins</span></div>
-            <i aria-hidden="true">:</i>
-            <div><b data-c="s">00</b><span>Secs</span></div>
-          </div>
-        </div>
-      </div>
+      <!-- 2 Nov, client note: the facts/countdown/"Save a chair" card that
+           used to sit under the mark is GONE -- "so now its just the hero".
+           Everything it carried now arrives as the flyer promo that eases in
+           once you leave the hero (FlyerPromo.astro), so the ask is made
+           once, deliberately, instead of competing with the wordmark for the
+           first screen. The mark now simply holds dead centre and fades;
+           home-hero-and-sections.js no longer has a group to lift it off. -->
     </div>
 
     <div class="cue" id="cue">Scroll</div>

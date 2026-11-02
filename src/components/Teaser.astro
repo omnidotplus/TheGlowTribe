@@ -1,35 +1,59 @@
 ---
-/* SELECTED WORK — a continuous marquee (client, 15 Sept), not swipe-driven. */
+/* SELECTED WORK — a continuous marquee (client, 15 Sept), not swipe-driven.
+
+  2 Nov, client note: "selected work is meant to be literally the works..
+  you just use their thumbnails not this pictures". It was showing studio
+  portraits of members under placeholder captions ("Project title", "Short
+  film title"). It now shows the actual works, with their actual
+  thumbnails and actual names, and each one links to the thing itself.
+
+  Six rather than four: the strip is a marquee, and six gives it enough
+  travel that the loop point is harder to catch. The slot is 16:9 now
+  because the source material is video -- a 4:5 slot cropped the title
+  lettering straight off each thumbnail.
+
+  The full catalogue is /work; this is the teaser for it, so "All
+  projects" finally points somewhere real. */
+const YT = 'https://www.youtube.com/watch?v=';
+const picks = [
+  { cat: 'Film',  title: 'The One',             img: 'w03', href: YT + '9q9jkKM_9Ok' },
+  { cat: 'Music', title: 'Pilot Me',            img: 'w02', href: YT + '7-mWFTe6Ylg' },
+  { cat: 'Film',  title: 'A Booless Valentine', img: 'w01', href: YT + 'xFOJf6QBQ9M' },
+  { cat: 'Music', title: 'Papa God',            img: 'w06', href: YT + 'QLe3zpkoeRM' },
+  { cat: 'Writing', title: 'The Prayer',        img: 'w09', href: YT + '-2ys1kibyIw' },
+  { cat: 'Music', title: 'Bukola',              img: 'w10', href: YT + 'tfLkWl97aO0' },
+];
 ---
 <section class="teaser g-paper" id="teaser" data-fade>
   <div class="teaser__head">
     <p class="eyebrow" style="margin:0">Selected work</p>
-    <a class="teaser__all" href="#">All projects →</a>
+    <a class="teaser__all" href="/work">All projects &rarr;</a>
   </div>
   <!-- Slides continuously (client, 15 Sept). One track, duplicated once, and
        the whole row translated by exactly -50%: the seam lands where the copy
-       begins, so there isn't one. The duplicate is aria-hidden, or the four
-       projects would be announced twice. -->
+       begins, so there isn't one. The duplicate is aria-hidden AND inert, or
+       the six projects would be announced twice and their links would be
+       six extra tab stops leading nowhere. -->
   <div class="teaser__row" id="teaserRow">
     <div class="teaser__track">
-      <figure class="teaser__item" data-cat="music"><div class="slot" data-placeholder="P4"><img src="/img/teaser-music.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Music</b> · <span>Project title</span></figcaption></figure>
-      <figure class="teaser__item" data-cat="film"><div class="slot" data-placeholder="P4"><img src="/img/teaser-film.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Film</b> · <span>Short film title</span></figcaption></figure>
-      <figure class="teaser__item" data-cat="hangouts"><div class="slot" data-placeholder="P4"><img src="/img/teaser-hangouts.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Hangouts</b> · <span>Session name</span></figcaption></figure>
-      <figure class="teaser__item" data-cat="music"><div class="slot" data-placeholder="P4"><img src="/img/teaser-music2.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Music</b> · <span>Project title</span></figcaption></figure>
+      {picks.map(w => (
+        <figure class="teaser__item" data-cat={w.cat.toLowerCase()}>
+          <a class="teaser__link" href={w.href} target="_blank" rel="noopener noreferrer">
+            <span class="slot"><img src={`/img/work/${w.img}.webp`} alt="" loading="lazy" decoding="async"></span>
+            <figcaption><b class="teaser__cat">{w.cat}</b> · <span>{w.title}</span></figcaption>
+          </a>
+        </figure>
+      ))}
     </div>
-    <div class="teaser__track" aria-hidden="true">
-      <figure class="teaser__item" data-cat="music"><div class="slot" data-placeholder="P4"><img src="/img/teaser-music.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Music</b> · <span>Project title</span></figcaption></figure>
-      <figure class="teaser__item" data-cat="film"><div class="slot" data-placeholder="P4"><img src="/img/teaser-film.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Film</b> · <span>Short film title</span></figcaption></figure>
-      <figure class="teaser__item" data-cat="hangouts"><div class="slot" data-placeholder="P4"><img src="/img/teaser-hangouts.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Hangouts</b> · <span>Session name</span></figcaption></figure>
-      <figure class="teaser__item" data-cat="music"><div class="slot" data-placeholder="P4"><img src="/img/teaser-music2.webp" alt="" loading="lazy" decoding="async"></div>
-        <figcaption><b class="teaser__cat">Music</b> · <span>Project title</span></figcaption></figure>
+    <div class="teaser__track" aria-hidden="true" inert>
+      {picks.map(w => (
+        <figure class="teaser__item" data-cat={w.cat.toLowerCase()}>
+          <span class="teaser__link">
+            <span class="slot"><img src={`/img/work/${w.img}.webp`} alt="" loading="lazy" decoding="async"></span>
+            <figcaption><b class="teaser__cat">{w.cat}</b> · <span>{w.title}</span></figcaption>
+          </span>
+        </figure>
+      ))}
     </div>
   </div>
 </section>

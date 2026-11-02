@@ -5,6 +5,8 @@ import Hero from '../components/Hero.astro';
 import Who from '../components/Who.astro';
 import Teaser from '../components/Teaser.astro';
 import Why from '../components/Why.astro';
+import FlyerPromo from '../components/FlyerPromo.astro';
+import Partner from '../components/Partner.astro';
 import Faq from '../components/Faq.astro';
 import NoBushels from '../components/NoBushels.astro';
 import Close from '../components/Close.astro';
@@ -20,14 +22,30 @@ import Footer from '../components/Footer.astro';
   <Who />
   <Teaser />
   <Why />
+  <Partner
+    ground="ember"
+    id="partner"
+    eyebrow="Partner"
+    heading="Help us make content that builds faith."
+    body="The Glow Tribe exists to shape culture through the creative arts, putting Godly culture into music, film and media where people are already looking. Good work takes real resources and real skill, and we'd rather build it with people who believe in it."
+    offers={[
+      { k: 'Fund a project.', v: 'Help cover production costs for the next music project or short film.' },
+      { k: 'Lend your craft.', v: 'Studio time, gear, locations, editing, design, or anything you do well.' },
+      { k: 'Amplify the work.', v: 'Put what we make in front of your church, community or audience.' },
+    ]}
+    ctaLabel="Partner with us"
+    ctaHref="mailto:theglowtribeng@gmail.com?subject=Partnering%20with%20The%20Glow%20Tribe"
+  />
   <Faq />
   <NoBushels />
   <Close />
   <Footer />
+  <FlyerPromo />
 
   <script src="/vendor/gsap/gsap.min.js" is:inline></script>
   <script src="/vendor/gsap/ScrollTrigger.min.js" is:inline></script>
   <script src="/scripts/home-hero-and-sections.js" is:inline></script>
   <script src="/scripts/faq-switchboard.js" is:inline></script>
+  <script src="/scripts/flyer-promo.js?v=1" is:inline></script>
   <script src="/scripts/dialkit-rig.js" is:inline></script>
 </Layout>

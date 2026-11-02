@@ -484,7 +484,7 @@
   }
 
   .spk__card { position: relative; min-width: 0; }
-  .spk__img { width: 100%; aspect-ratio: 1/1; overflow: hidden; }   /* square, as measured */
+  .spk__img { display: block; width: 100%; aspect-ratio: 1/1; overflow: hidden; }   /* square, as measured */
   .spk__img img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
   .spk__bar {
@@ -492,7 +492,10 @@
     background: var(--d-2); color: var(--paper);
     padding: 13px 15px 15px;
   }
-  .spk__name { margin: 0; font-size: clamp(15px,1.6vw,19px); font-weight: 700; letter-spacing: -.01em; }
+  /* margin-right:auto rather than relying on space-between: the bar can hold
+     three children (name, HOST, the bio cue) and space-between would strand
+     HOST in the middle of the bar instead of grouping it with the cue. */
+  .spk__name { margin: 0 auto 0 0; font-size: clamp(15px,1.6vw,19px); font-weight: 700; letter-spacing: -.01em; }
 
   /* ---- the host ----
      Victor hosts, which the client called out as important, so his card is not
@@ -508,6 +511,187 @@
     text-transform: uppercase;
     background: var(--n-900); color: var(--n-50);
     padding: 4px 8px; border-radius: 999px;
+  }
+
+  /* ============ SPEAKER BIOS — 29 Oct ==================================
+     Client: hover gives a short line, click opens the full bio with their
+     picture. See Speakers.astro for the direction; the short version is
+     that this section already owns one signature device (the host bar
+     INVERTING to paper) and the bio surface reuses it rather than
+     importing modal chrome. Paper over a dark section is how DESIGN.md
+     Section 4 says this system expresses depth: "No drop shadows as the
+     primary separator ... 1. Ground changes." No shadow anywhere below.
+     ==================================================================== */
+
+  /* the card is a real <button> now: strip the UA chrome, keep the layout */
+  button.spk__card {
+    display: block; width: 100%; padding: 0; border: 0;
+    background: none; color: inherit; font: inherit; text-align: left;
+    cursor: pointer;
+  }
+  .spk__card { position: relative; min-width: 0; }
+  /* the whole card reacts, not just the badge -- press feedback at the
+     0.95-0.97 band the craft floor fixes for every pressable in this build */
+  button.spk__card { transition: transform .16s cubic-bezier(.23,1,.32,1); }
+  button.spk__card:active { transform: scale(.985); }
+  button.spk__card:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+
+  /* the persistent affordance. 08-interaction's duality rule: hover is the
+     accelerator and can never be the floor, because roughly half of traffic
+     has no hover at all -- so the card has to LOOK openable at rest.
+     2 Nov, client: "no plus signs". This was a + badge pinned to the photo's
+     top-right, which read as stray UI furniture sitting on a face. It is a
+     word in the bar now: same job, no glyph to decode, and it states the
+     action rather than implying it. Underlined with a hairline rule so it
+     reads as the one actionable thing in the bar without spending colour. */
+  .spk__cue {
+    flex: 0 0 auto; align-self: baseline;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
+    text-transform: uppercase; opacity: .62;
+    padding-bottom: 2px; border-bottom: 1px solid currentColor;
+    transition: opacity .18s ease;
+  }
+  .spk__bar { position: relative; overflow: visible; }
+
+  /* THE HOVER PLATE. Absolutely positioned off the bar's TOP edge, so it
+     grows upward over the photo and the card's own height never changes --
+     no reflow in a 6-column grid, and no reflow in a live scroller either.
+     Same --d-2 fill as the bar, so the two read as one plate extending. */
+  .spk__reveal {
+    position: absolute; left: 0; right: 0; bottom: 100%;
+    display: block; padding: 13px 15px 11px;
+    background: var(--d-2); color: var(--paper);
+    transform: translateY(100%); opacity: 0;
+    pointer-events: none;
+  }
+  .spk__card--host .spk__reveal { background: var(--n-50); color: var(--n-900); }
+  .spk__role {
+    display: block;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .16em;
+    text-transform: uppercase; opacity: .72; margin-bottom: 6px;
+  }
+  .spk__teaser { display: block; font-size: 13px; line-height: 1.45; }
+
+  /* hover is desktop-only by construction; :focus-within carries the same
+     reveal to the keyboard, which is the half of the duality rule that is
+     easiest to forget */
+  @media (hover: hover) and (pointer: fine) {
+    .spk__reveal { transition: transform .24s cubic-bezier(.23,1,.32,1), opacity .24s ease; }
+    .spk__card:hover .spk__reveal,
+    .spk__card:focus-visible .spk__reveal { transform: translateY(0); opacity: 1; }
+    .spk__card:hover .spk__cue,
+    .spk__card:focus-visible .spk__cue { opacity: 1; }
+  }
+  /* the rail's cards have no .spk__reveal at all (it is a drifting
+     carousel, there is nothing to hover), so nothing to suppress here */
+
+  /* ---- the reading room ----
+     Lock <html>, not <body>: the documented trap on this project (see
+     nav.js / html.tnav-locked). showModal() does not reliably stop the
+     page behind the dialog scrolling, so this is still needed. */
+  html.bio-locked { overflow: hidden; }
+  .bio {
+    width: min(1040px, calc(100vw - 2 * clamp(12px,4vw,48px)));
+    max-width: none; max-height: min(88vh, 900px);
+    padding: 0; border: 0; overflow: hidden;
+    background: var(--n-50); color: var(--n-900);
+  }
+  .bio::backdrop { background: rgba(10,7,6,.72); }
+  .bio[open] { animation: bioIn .22s cubic-bezier(.23,1,.32,1); }
+  .bio[open]::backdrop { animation: bioFade .22s linear; }
+  @keyframes bioIn   { from { opacity: 0; transform: scale(.985); } }
+  @keyframes bioFade { from { opacity: 0; } }
+  /* reduced motion: it still opens, it just does not travel */
+  .bio[data-reduce] { animation: bioFade .18s linear; }
+
+  .bio__panel {
+    position: relative;
+    max-height: min(88vh, 900px); overflow-y: auto; overscroll-behavior: contain;
+  }
+  .bio__close {
+    position: absolute; top: 12px; right: 12px; z-index: 3;
+    width: 38px; height: 38px; display: grid; place-items: center;
+    border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--n-900); color: var(--n-50);
+    transition: transform .16s cubic-bezier(.23,1,.32,1);
+  }
+  .bio__close svg { width: 18px; height: 18px; }
+  .bio__close:active { transform: scale(.94); }
+
+  .bio__entry { display: grid; grid-template-columns: minmax(0,1fr); }
+  /* MUST come after the rule above. `display: grid` on .bio__entry beats the
+     UA stylesheet's `[hidden] { display: none }`, so without this every one
+     of the five bios renders stacked and only the controller thinks they are
+     hidden. [hidden] is 0,2,0 against 0,1,0, so it wins with no !important. */
+  .bio__entry[hidden] { display: none; }
+  @media (min-width: 801px) {
+    .bio__entry { grid-template-columns: minmax(0,360px) minmax(0,1fr); align-items: start; }
+    /* the portrait holds while a long bio scrolls past it. Adah Gold's runs
+       seven paragraphs and Itohan's two -- sticky is what lets one layout
+       carry both without either looking wrong. */
+    .bio__media { position: sticky; top: 0; }
+  }
+  .bio__media img {
+    display: block; width: 100%; height: auto; aspect-ratio: 1/1;
+    object-fit: cover; background: var(--n-100);
+  }
+  .bio__body { padding: clamp(22px,3.4vw,44px); }
+  .bio__role {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin: 0 0 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--n-700);
+  }
+  .bio__hostTag { font-size: 9px; }
+  .bio__name {
+    margin: 0 0 clamp(16px,2.4vw,24px);
+    font-family: var(--f-display); font-variation-settings: 'wdth' 112, 'wght' 900;
+    font-size: clamp(26px,3.4vw,42px); line-height: 1.04; letter-spacing: -.03em;
+  }
+  .bio__p {
+    margin: 0 0 1em; max-width: 62ch;
+    font-size: clamp(14px,1.45vw,16px); line-height: 1.62; color: var(--n-700);
+  }
+  .bio__p:last-child { margin-bottom: 0; }
+
+  /* prev/next turns the dialog from a dead end into a browsable set:
+     five people, and someone reading one of them is the likeliest person
+     to want the next. Arrow keys do the same thing (speaker-bio.js). */
+  .bio__nav {
+    position: sticky; bottom: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px clamp(22px,3.4vw,44px);
+    background: var(--n-50); border-top: 1px solid var(--n-300);
+  }
+  .bio__step {
+    border: 1px solid var(--n-900); background: none; color: var(--n-900);
+    padding: 9px 16px; cursor: pointer;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em;
+    text-transform: uppercase;
+    transition: background-color .18s ease, color .18s ease, transform .14s cubic-bezier(.23,1,.32,1);
+  }
+  .bio__step:active { transform: scale(.96); }
+  @media (hover: hover) and (pointer: fine) {
+    .bio__step:hover { background: var(--n-900); color: var(--n-50); }
+  }
+  .bio__count {
+    margin: 0; font-family: var(--mono); font-size: 10px;
+    letter-spacing: .14em; color: var(--n-700);
+  }
+  @media (max-width: 420px) {
+    /* the two controls plus the counter stop fitting; the counter is the
+       one that can go, since the buttons already say where you are going */
+    .bio__count { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bio[open], .bio[open]::backdrop { animation-duration: .01ms; }
+    .spk__reveal { transition-duration: .01ms; }
+    button.spk__card, .bio__close, .bio__step { transition-duration: .01ms; }
+    button.spk__card:active, .bio__close:active, .bio__step:active { transform: none; }
+    /* the cue's hover state is an opacity change, not travel, so it stays --
+       reduced motion means no movement, not no feedback. */
+    .spk__cue { transition-duration: .01ms; }
   }
 
   /* ============ THE DAY — reference R-11, measured ============
@@ -625,6 +809,90 @@
   }
   @media (prefers-reduced-motion: reduce) { .day * { transition: none; } }
 
+  /* ============ BUTTONS — the fill WIPES, it does not cross-fade. Ported
+     from home.css verbatim (Partner.astro renders on this page too and
+     needs the same device; conference.css never had its own copy because
+     nothing on this page used it before). See home.css for the full
+     rationale. ============ */
+  .btnfx { position: relative; overflow: hidden; isolation: isolate; }
+  .btnfx > span { position: relative; z-index: 1; }
+  .btnfx::before {
+    content: ''; position: absolute; inset: 0; z-index: 0;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path .42s cubic-bezier(.23,1,.32,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btnfx::before { transition: opacity .2s linear; clip-path: inset(0 0 0 0); opacity: 0; }
+  }
+
+  /* ============ PARTNER — 29 Oct, client note: "a simple partnership
+     area with good UI and UX". Ported from home.css verbatim, including
+     the second pass (full-width eyebrow+heading, the offer list as a
+     real --d-2 card) — see home.css for the full rationale. ============ */
+  .partner { padding: clamp(56px,10vw,150px) clamp(16px,6vw,96px); border-top: 1px solid var(--line); }
+  .partner__intro { max-width: 1184px; margin: 0 auto clamp(40px,5.6vw,64px); }
+  .partner__head {
+    font-size: clamp(32px,5.4vw,60px); line-height: 1.04; font-weight: 800;
+    letter-spacing: -.03em; margin: clamp(10px,1.6vw,16px) 0 0;
+    max-width: 20ch;
+  }
+  .partner__inner {
+    max-width: 1184px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(0,1.34fr) minmax(0,1fr);
+    gap: clamp(32px,5vw,72px);
+    align-items: start;
+  }
+  @media (max-width: 860px) { .partner__inner { grid-template-columns: minmax(0,1fr); } }
+
+  .partner__body {
+    font-size: clamp(15px,1.6vw,18px); line-height: 1.6; color: var(--dim);
+    max-width: 54ch; margin: 0 0 clamp(26px,3.4vw,36px);
+  }
+
+  .partner__cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: clamp(11px,1.4vw,15px) clamp(18px,2.2vw,24px);
+    border: 1px solid var(--ink);
+    font-family: var(--mono); font-size: clamp(10px,1.1vw,12px);
+    letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+    color: var(--ink);
+    transition: transform .16s cubic-bezier(.23,1,.32,1), color .28s ease;
+  }
+  .partner__cta span:last-child { font-size: 1.3em; line-height: 0; }
+  .partner__cta:active { transform: scale(.97); }
+  .partner__cta--ember::before { background: var(--n-900); }
+  .partner__cta--dark { border-color: var(--n-50); color: var(--n-50); }
+  .partner__cta--dark::before { background: var(--n-50); }
+  @media (hover: hover) and (pointer: fine) {
+    .partner__cta--ember:hover, .partner__cta--ember:focus-visible { color: var(--n-50); }
+    .partner__cta--dark:hover, .partner__cta--dark:focus-visible { color: var(--n-900); }
+    .partner__cta--ember:hover::before, .partner__cta--ember:focus-visible::before,
+    .partner__cta--dark:hover::before, .partner__cta--dark:focus-visible::before { clip-path: inset(0 0 0 0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .partner__cta::before { transition: opacity .2s linear; clip-path: inset(0 0 0 0); opacity: 0; }
+    .partner__cta:hover::before { opacity: 1; }
+    .partner__cta:active { transform: none; }
+  }
+
+  .partner__note { margin: clamp(18px,2.4vw,24px) 0 0; font-size: 13px; line-height: 1.5; color: var(--dim); }
+  .partner__note a { color: inherit; }
+
+  .partner__list {
+    display: flex; flex-direction: column; min-width: 0;
+    margin: 0; padding: clamp(6px,.8vw,10px) clamp(22px,2.8vw,34px);
+    list-style: none; border-radius: clamp(14px,1.6vw,20px);
+  }
+  .partner__list--ember { background: var(--paper); color: var(--n-900); }
+  .partner__list--ember .partner__v { color: var(--n-700); }
+  .partner__list--ember li + li { border-top: 1px solid var(--n-300); }
+  .partner__list--dark { background: var(--d-2); color: var(--n-50); }
+  .partner__list--dark .partner__v { color: var(--n-300); }
+  .partner__list--dark li + li { border-top: 1px solid rgba(255,248,244,.14); }
+  .partner__list li { padding: clamp(18px,2.4vw,26px) 0; }
+  .partner__k { margin: 0 0 6px; font-size: clamp(15px,1.7vw,19px); font-weight: 700; letter-spacing: -.01em; }
+  .partner__v { margin: 0; font-size: clamp(13px,1.3vw,15px); line-height: 1.5; max-width: 42ch; }
+
   /* ============ FAQ — 17 Oct, client note: "the current FAQs .. should
      move to the conference tab". Ported from home.css verbatim (same
      switchboard mechanic, same tokens, the JS it depends on also moved to
@@ -726,5 +994,3 @@
     .faq__answer { transition: opacity .2s ease; transform: none; }
     .faq__wipe[data-run="1"] { animation: none; }
   }
-
-</style>

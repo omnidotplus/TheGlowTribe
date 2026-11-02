@@ -36,12 +36,18 @@ const planes = [...room.children];
 const baseScale = i => Math.pow(0.66, DEPTH - 1 - i);
 
 /* ---------------- build the work ---------------- */
+/* 2 Nov: these are TGT's REAL work now, not stock -- ten films, videos and
+   skits from the channel (see src/pages/work.astro for the catalogue).
+   They are all 16:9 because that is what the source material is; cropping a
+   video frame to 3/4 or 4/5 cut the title lettering straight off the
+   artwork. The slots stay unequal the way the room's walls are unequal --
+   the variety now comes from SCALE and angle rather than from ratio. */
 const WORK = [
-  {w:170, ar:'3/4',  a:-28, d:1.00}, {w:130, ar:'1/1',  a: 34, d:0.86},
-  {w:200, ar:'16/9', a:  8, d:1.12}, {w:110, ar:'4/5',  a:-62, d:0.78},
-  {w:150, ar:'4/5',  a: 72, d:0.94}, {w:180, ar:'3/4',  a:-96, d:1.06},
-  {w:120, ar:'1/1',  a:124, d:0.82}, {w:160, ar:'16/9', a:158, d:0.98},
-  {w:140, ar:'3/4',  a:-140,d:0.90}, {w:105, ar:'4/5',  a:196, d:0.74}
+  {w:170, ar:'16/9', a:-28, d:1.00}, {w:130, ar:'16/9', a: 34, d:0.86},
+  {w:200, ar:'16/9', a:  8, d:1.12}, {w:110, ar:'16/9', a:-62, d:0.78},
+  {w:150, ar:'16/9', a: 72, d:0.94}, {w:180, ar:'16/9', a:-96, d:1.06},
+  {w:120, ar:'16/9', a:124, d:0.82}, {w:160, ar:'16/9', a:158, d:0.98},
+  {w:140, ar:'16/9', a:-140,d:0.90}, {w:105, ar:'16/9', a:196, d:0.74}
 ];
 const workEl = document.getElementById('work');
 WORK.forEach((w, i) => {
@@ -50,10 +56,8 @@ WORK.forEach((w, i) => {
   el.dataset.slot = 'TGT WORK ' + String(i + 1).padStart(2, '0');
   el.dataset.placeholder = 'P4';
   el.style.cssText = `--w:clamp(${Math.round(w.w * .42)}px, ${w.w / 13}vw, ${w.w}px); --ar:${w.ar};`;
-  /* each source pre-cropped to THIS slot's declared aspect ratio, so object-fit
-     never crops a second time. 600px covers the largest slot at its maximum
-     fly-past scale on a 2x display. Still P4: real photographs, but stock
-     standing in for TGT's own work. */
+  /* every slot is 16:9 now and so is every source, so object-fit never has
+     to crop at all. No longer a placeholder: these are the real works. */
   const img = document.createElement('img');
   img.src = `/img/work/w${String(i + 1).padStart(2, '0')}.webp`;
   img.alt = '';
@@ -66,13 +70,16 @@ const works = [...workEl.children];
 
 /* ---------------- elements ---------------- */
 const mark  = document.getElementById('mark');
-const sub   = document.getElementById('sub');
-const timer = document.getElementById('timer');
-const venue = document.getElementById('venue');
-const cta   = document.getElementById('cta');
 const cue   = document.getElementById('cue');
 const beat  = document.getElementById('beat');
 const core  = document.querySelector('.core');
+/* 2 Nov: the hero card was removed (see Hero.astro), so #below no longer
+   exists on the page. Everything that touched it is guarded rather than
+   deleted -- the sequence's beat numbering, timing table and the rest of
+   the choreography are unchanged, and the lift it used to drive simply
+   resolves to zero now, which is exactly "the mark holds dead centre".
+   #sub/#timer/#venue/#cta were declared here and never read anywhere
+   else, so they are gone outright. */
 const below = document.getElementById('below');
 
 /* ===================================================================
@@ -102,7 +109,7 @@ const T = {
   /* beat 8, on the `tail` clock. markOut ends before handIn * (markH/2) can
      carry the lockup's top edge anywhere near 0, which is the whole point:
      the name is gone BEFORE the edge could cut it. */
-  markOut: 0.26, handIn: 0.22, handOut: 0.56
+  markOut: 0.80, handIn: 0.22, handOut: 0.56   /* markOut 0.26 -> 0.80: the tail is short now, so the fade uses it */
 };
 
 /* --- the O's centre, MEASURED. The reveal and the bloom both originate
@@ -211,11 +218,14 @@ function emitFrame(now) {
 /* Measured, not guessed — the lift has to equal half the below-group's real
    height or the final lockup sits off-centre. Recomputed on resize. */
 let _belowH = 0, _markH = 0, _cardMid = 0;
-const _hcard = below.querySelector('.hcard');
+const _hcard = below ? below.querySelector('.hcard') : null;
 const measureBelow = () => {
+  _markH = mark.getBoundingClientRect().height;
+  /* no card any more: both terms of the lift fall to zero, so `settle` and
+     `extra` below cancel out and the mark never rises. */
+  if (!below) { _belowH = 0; _cardMid = 0; return; }
   const b = below.getBoundingClientRect();
   _belowH = b.height;
-  _markH  = mark.getBoundingClientRect().height;
   /* The thing that gets centred at the handoff is the VISIBLE card, not its
      wrapper -- .core__below carries a padding-top, so centring the wrapper
      leaves the card half that padding low. Measured, like everything else
@@ -229,7 +239,7 @@ const measureBelow = () => {
    card hanging on the boundary with the next section. */
 if (window.ResizeObserver) {
   const ro = new ResizeObserver(() => { measureBelow(); ScrollTrigger.refresh(); });
-  ro.observe(below);
+  if (below) ro.observe(below);
   ro.observe(mark);
 }
 const belowH = () => _belowH;
@@ -252,6 +262,9 @@ function trueValues() {
   };
 }
 function paint(v) {
+  /* the hero countdown lived in the removed card; the Close section's own
+     day-count is separate and still runs (tickClose, below). */
+  if (!node('d')) return;
   node('d').textContent = pad(v.d); node('h').textContent = pad(v.h);
   node('m').textContent = pad(v.m); node('s').textContent = pad(v.s);
 }
@@ -363,7 +376,10 @@ function measureSeq() {
      is 900px, exactly the viewport it was already using, so SEQ_END stays
      0.75. Mobile now computes 0.75 too, which means the sequence has the same
      shape on a phone as on a desktop rather than a compressed one. */
-  const hold = Math.min(innerHeight, span * 0.25);
+  /* 2 Nov: was min(innerHeight, span*0.25) -- a full viewport held for
+     beat 8's card arrival. No card now, so the tail only has to carry
+     the wordmark's fade, and a viewport of it was dead scroll. */
+  const hold = Math.min(innerHeight * 0.45, span * 0.14);
   SEQ_END = span > hold ? (span - hold) / span : 1;
 }
 measureSeq();
@@ -498,10 +514,12 @@ function heroUpdate(self) {
   }
 
   /* — beat 7: the card, as ONE object — */
-  const rise = (1 - easeOut(card)) * T.cardRise;
-  below.style.opacity   = card;
-  below.style.transform =
-    `translateX(-50%) translateY(${rise}px) scale(${(0.972 + easeOut(card) * 0.028).toFixed(4)})`;
+  if (below) {
+    const rise = (1 - easeOut(card)) * T.cardRise;
+    below.style.opacity   = card;
+    below.style.transform =
+      `translateX(-50%) translateY(${rise}px) scale(${(0.972 + easeOut(card) * 0.028).toFixed(4)})`;
+  }
 
   const s6 = at(p, T.b.card, 0.99);
   if (REDUCE) { if (!locked) { locked = true; paint(trueValues()); } }
@@ -560,62 +578,41 @@ window.__hero = {
 };
 
 /* =====================================================================
-   WHY WE EXIST — the aperture opens: width, then height, then the text.
-   Two clearly separated phases, because the client asked for width FIRST
-   and then height; running them together would read as a plain scale-up.
+   WHY WE EXIST — 29 Oct: the scroll-scrubbed aperture is GONE. It broke
+   five rules in design_process/ at once (full list in home.css above the
+   .why block); the two structural ones were "no essential information is
+   conveyed ONLY through animation" -- every line of the argument was
+   clip-path-hidden until scroll -- and "no competing motion", the film
+   looping beside text that was animating in.
+
+   The section's reveal is now reveal.css's shared [data-fade] + [data-r],
+   the same one every other section uses, so there is no bespoke
+   choreography left here at all. What remains is bandwidth management,
+   not motion: a looping 3MB clip running off-screen is pure waste on a
+   mobile-first site (SC7), so the film only loads and plays while the
+   section is actually visible.
    ===================================================================== */
 (() => {
-  const ap = document.getElementById('whyAp');
+  const sec  = document.getElementById('why');
   const film = document.getElementById('whyFilm');
-  if (!ap) return;
-  const sec = document.getElementById('why');
-  const panels = [...ap.querySelectorAll('.why__panel img')];
-  const reveals = [...ap.querySelectorAll('.why__reveal')];
+  if (!sec || !film) return;
 
-  if (REDUCE) {
-    /* designed static state — open, exposed, readable. Never zero. */
-    ap.style.clipPath = 'none';
-    panels.forEach(i => i.style.setProperty('--expose', '1'));
-    if (film) { film.style.setProperty('--expose', '1'); }
-    reveals.forEach(r => r.style.setProperty('--tr', '1'));
-    return;
-  }
+  /* Under reduced motion the film stays on its poster frame. A looping
+     video is motion whether or not we animated it, and the doctrine's
+     reduced-motion rule is "gentler, never zero" -- the poster still
+     shows the room, it just doesn't move. */
+  if (REDUCE) return;
 
-  /* the video only ever loads and plays while the section is on screen: a
-     looping 3MB clip running off-screen is pure waste on a mobile-first site */
   let playing = false;
   const io = new IntersectionObserver(es => es.forEach(e => {
-    if (!film) return;
     if (e.isIntersecting && !playing) {
       playing = true; film.preload = 'auto';
       const pr = film.play(); if (pr && pr.catch) pr.catch(() => {});
-    } else if (!e.isIntersecting && playing) { playing = false; film.pause(); }
+    } else if (!e.isIntersecting && playing) {
+      playing = false; film.pause();
+    }
   }), { threshold: 0.15 });
   io.observe(sec);
-
-  ScrollTrigger.create({
-    trigger: sec, start: 'top 82%', end: 'bottom 62%', scrub: 0.5,
-    onUpdate: self => {
-      const q = self.progress;
-      /* phase 1: width. phase 2: height. Deliberately sequential. */
-      const wide = at(q, 0.00, 0.42);
-      const tall = at(q, 0.40, 0.78);
-      ap.style.setProperty('--apX', ((1 - easeOut(wide)) * 46).toFixed(2) + '%');
-      ap.style.setProperty('--apY', ((1 - easeOut(tall)) * 46).toFixed(2) + '%');
-
-      /* exposure rides the opening: the panels and the film come up out of the
-         dark together rather than being switched on */
-      const ex = ease(at(q, 0.12, 0.72));
-      panels.forEach(i => i.style.setProperty('--expose', ex.toFixed(3)));
-      if (film) film.style.setProperty('--expose', ex.toFixed(3));
-
-      /* the text is what the height reveals, staggered down the block */
-      reveals.forEach((r, i) => {
-        const t = at(q, 0.46 + i * 0.055, 0.74 + i * 0.055);
-        r.style.setProperty('--tr', easeOut(t).toFixed(3));
-      });
-    }
-  });
 })();
 
 /* =====================================================================

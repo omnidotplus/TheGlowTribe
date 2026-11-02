@@ -189,13 +189,7 @@
     padding-top: .4em;
   }
 
-  /* digits clustered at the very end */
-  .ft__strip {
-    max-width: 1184px; margin: 0 auto;
-    border-top: 1px solid var(--line);
-    display: flex; flex-wrap: wrap; gap: 6px clamp(14px,3vw,44px);
-    padding: clamp(14px,2vw,18px) 0 clamp(26px,5vw,34px);
-    line-height: 1.9;
-    font-family: var(--mono); font-size: 10px;
-    letter-spacing: .12em; text-transform: uppercase; color: var(--dim);
-  }
+  /* .ft__strip (the "© 2026" line) removed 29 Oct, client note: "that
+     @2026 and the white space below the footer needs to go" -- .ft__mark
+     already carries its own bottom padding (line 134), so the footer
+     still closes out cleanly without it. */

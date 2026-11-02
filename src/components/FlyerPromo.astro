@@ -1,0 +1,42 @@
+---
+/* FLYER PROMO — 2 Nov, client note: "after the hero the flyer eases in
+  (like all those promotion thing that pops on the screen) with a cancel
+  button but on the flyer theres a clear 'save a seat' button (keep that
+  hover effect)."
+
+  This is the other half of removing the hero card. That card made the ask
+  on the first screen, competing with the wordmark; the ask now arrives
+  once, on its own, the moment you leave the hero.
+
+  Native <dialog> + showModal(), same as the speaker bios: the focus trap,
+  Escape and the top layer are the platform's job rather than hand-rolled.
+
+  "Keep that hover effect" -- the button is literally the same `.cta btnfx`
+  the hero card used, so the ink wipe-fill and the flare label are the same
+  component, not a reimplementation. Flare budget is unchanged on this page
+  too: the hero card's flare CTA went away as this one arrived, so home
+  still runs the nav's Register plus one, inside COLOUR_SYSTEM's cap.
+
+  Shown ONCE per session (sessionStorage) -- a promo that reopens every
+  time you scroll past is the thing everyone hates about these. */
+---
+<dialog class="promo" id="flyerPromo" aria-label="No Bushels, 21 November 2026, Warri">
+  <div class="promo__panel">
+    <button type="button" class="promo__close" id="promoClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <img class="promo__flyer" src="/img/flyer-no-bushels.webp"
+         width="900" height="1125"
+         alt="No Bushels, a Christian creative conference presented by The Glow Tribe. Saturday 21 November 2026, Warri, Delta State. Free entry, registration required."
+         decoding="async">
+
+    <!-- the ask, sitting on the flyer itself. Same .cta .btnfx as the old
+         hero card, so the wipe-fill hover is the same object. -->
+    <a class="cta btnfx promo__cta" href="/conference#event">
+      <span>Save a seat</span> <span aria-hidden="true">&#8599;</span>
+    </a>
+  </div>
+</dialog>

@@ -6,22 +6,116 @@
   ink HOST tag while everyone else's stays dark. The inversion reuses the
   ground system the nav already uses rather than inventing a highlight.
 
-  No roles beyond that. The client was explicit that the speakers have no
-  titles, so nothing is invented to fill the slot, and the per-discipline name
-  tints stay gone for the same reason.
-
   One data array, rendered three times: the desktop grid and the two marquee
   tracks. Hand-duplicating five cards across three containers is how they
-  drift apart. */
+  drift apart.
+
+  29 Oct, client note: bios per speaker -- hover gives a short line, click
+  opens the full bio with their picture. The direction:
+
+  THE CARD OPENS INTO A READING ROOM. This section already owns exactly one
+  signature device, the host card's bar INVERTING from --d-2 to paper. The
+  bio surface reuses it instead of importing modal chrome: the panel is
+  paper over a dark section, which is how DESIGN.md Section 4 says this
+  system expresses depth ("No drop shadows as the primary separator ...
+  1. Ground changes"). No shadow, no glass, nothing borrowed.
+
+  Three states of one object:
+    rest   name (+ HOST), and a persistent READ BIO cue in the bar so touch
+           users can see the card opens -- 08-interaction's duality rule:
+           hover is the accelerator, it can never be the floor, because
+           roughly half of traffic has no hover at all. 2 Nov, client: "no
+           plus signs" -- the cue was a + badge pinned over the photo, which
+           read as stray UI furniture on top of someone's face. It is a word
+           in the bar now, which says what it does instead of implying it.
+    hover  the label plate grows UPWARD over the photo to add the role and
+           a one-line teaser. It is absolutely positioned off the bar's top
+           edge, so the card's own height never changes and the grid cannot
+           reflow. Shown on :focus-within too, so keyboard gets it.
+    open   the full bio, with prev/next through all five.
+
+  WHY THE BIOS LIVE IN THE DIALOG AND NOT IN THE CARDS. The mobile rail is a
+  real scroller whose track is rendered TWICE so the loop has somewhere to
+  wrap to (see conference-behaviour.js). Putting bio copy in the card would
+  put every bio in the document three times. They live in the dialog
+  instead: one copy each, present in the built HTML, so they are crawlable
+  and survive with JS off.
+
+  The duplicated track also carries `inert`, not just aria-hidden: cards are
+  real <button>s now, and an aria-hidden clone full of focusable buttons is
+  a keyboard trap that reads every name twice. */
 /* 17 Oct, client note: Dafe Richards moved ahead of Adah Gold -- he's the
    out-of-town invited guest (Lagos), so he takes the more prominent slot
-   next to the host. */
+   next to the host.
+   29 Oct: `role` is the hover line, `teaser` the one-sentence hover
+   summary, `bio` the full copy as paragraphs. Client's wording kept; only
+   their inline * emphasis markers are dropped, since they were markdown
+   that would render literally here. */
 const speakers = [
-  { name: 'Victor Obute',  img: 'spk-victor',  host: true },
-  { name: 'Dafe Richards', img: 'spk-dafe' },
-  { name: 'Adah Gold',     img: 'spk-asah' },
-  { name: 'Brave',         img: 'spk-brave' },
-  { name: 'Itohan',        img: 'spk-itohan' },
+  {
+    name: 'Victor Obute',
+    img: 'spk-victor',
+    host: true,
+    role: 'Media creator',
+    teaser: 'Blends humour, faith and history to change the stories young people believe about themselves.',
+    bio: [
+      'Victor Obute, known to his audience as Obute The Storyteller, is a media creator who believes that stories shape culture and that whoever tells them influences the future. Through his platform, he blends humour, faith and history to change the stories young people believe about themselves and about where they come from, and inspire them to reach for more.',
+      'He firmly believes in taking responsibility and starting where you are, and that is exactly what he does through Discover Delta, where he is showing the world a different Delta State, one full of rich history, culture and opportunity. His passion for community comes alive in The Glow Tribe, a growing community of more than 50 Christian content creators and aspiring influencers learning to shape culture instead of just following it. His media company, The SI Company, creates stories that connect people and start conversations.',
+      'Victor is also passionate about strengthening marriages and families. After his faith, his family comes first. He is married to Bukola, and together they are raising their daughter.',
+    ],
+  },
+  {
+    name: 'Dafe Richards',
+    img: 'spk-dafe',
+    role: 'Content creator, speaker and event host',
+    teaser: 'A three-time TEDx speaker using storytelling and humour to connect with people and create impact.',
+    bio: [
+      'Dafe Richards is a content creator, social media influencer, speaker and professional event host who uses storytelling, humour and communication to connect with people and create impact.',
+      'As a content creator and social media influencer, Dafe has built a community of over 100,000 followers across his platforms by creating relatable, funny, engaging and thought-provoking content. He has partnered with brands to drive visibility, engagement and audience connection, while also training aspiring creators and professionals to develop the skills and confidence to tell their own stories.',
+      'He is a recognised speaker and teacher with experience speaking and training on leadership, content creation, marketing and personal development. He is a three-time TEDx Speaker and Performer, and has used his voice across stages, classrooms, digital platforms and creative projects to inspire and equip people.',
+      'He is also a professional event host and compere, known for his charisma, humour, audience engagement and ability to coordinate events seamlessly. Whether on stage or behind a microphone, Dafe brings energy, structure and personality to every room, creating memorable experiences for both audiences and organisers.',
+      'Professionally, Dafe is a marketing communications professional with over six years of experience helping brands, from startups to established enterprises, communicate better and grow through strategy-driven campaigns. His experience spans digital strategy, influencer management, copywriting, content creation, social media and marketing strategy. He has worked with some of Nigeria’s leading brands, delivering creative and strategic solutions that connect brands with their audiences.',
+      'Dafe is also the author of Unleash Your Greatness, a book for anyone ready to discover purpose, embrace their potential and make an impact.',
+      'At the heart of everything he does is one simple mission: to help people find their light by shining his.',
+    ],
+  },
+  {
+    name: 'Adah Gold',
+    img: 'spk-asah',
+    role: 'Singer, songwriter and vocal coach',
+    teaser: 'Project Fame finalist, vocal coach, and the voice behind Beneath the Stars.',
+    bio: [
+      'Adanoritsewo Gold Tosanwumi, popularly known as Adah Gold, is a dynamic singer, songwriter, vocal coach, creative director and on-air personality from Delta State, Nigeria. With a voice that captivates and a presence that commands the stage, she has made a name for herself in the Nigerian music and entertainment industry through years of dedication, talent and passion.',
+      'She rose to national prominence as the third runner-up in MTN Project Fame West Africa Season 8, a platform that showcased her vocal prowess and performance charisma. She further solidified her place in the spotlight as third runner-up in Access The Stars Season 1, proving her consistency and wide appeal across audiences.',
+      'Adah Gold has graced some of Nigeria’s biggest stages, including Warri Again, Livespot Music Festival and Fashion Festival, sharing the spotlight with A-list artists such as Sound Sultan, Oritsefemi and Chidinma, among others. Her experience and versatility have made her a sought-after performer in live music circuits and high-profile events.',
+      'Beyond the stage, Adah Gold is a vocal coach, helping nurture the next generation of music talents. She has served as a judge on several music competitions, including Take the Stage, G Gospel Got Talent, The Voice Nigeria, Naija Delta Talent Show and Hit The Mic, bringing her expertise and mentorship to aspiring singers and other talents across the country.',
+      'Adah is also the visionary behind the annual concert Beneath the Stars with Adah Gold, an inspiring and entertaining musical experience that attracts over 2,000 attendees every year. The event is a blend of worship, artistry and community spirit, and continues to grow in reach and impact.',
+      'With a repertoire that spans genres, eras and cultures, Adah Gold performs with her band, The Band Aurum, at weddings, birthdays, anniversaries, karaoke bars and all events, delivering soulful, energetic performances tailored to each audience.',
+      'Whether she is live on stage, coaching behind the scenes, or hosting on radio, Adah Gold brings her vibrant energy, professionalism and deep love for music to everything she does, making her one of the most respected and admired voices of her generation.',
+    ],
+  },
+  {
+    name: 'Brave',
+    img: 'spk-brave',
+    role: 'Creative director and visual storyteller',
+    teaser: 'A decade of visual storytelling, and the voice behind the ReasonnAm Podcast.',
+    bio: [
+      'Providence Brave is a Creative Director, Brand Communicator, Strategist, Writer and Visual Storyteller. With over a decade of experience in the branding and visual storytelling industry, he has crafted compelling visual narratives for notable brands including Lifeedge Consulting, Sparkup Woman Global, Safari Group, ProvidusBank, DP Foundation, TEDxOkumagbaAve, Royal Iwere Foundation, Bole Festival and the Edo State Government, among many others, through his agency, TheBrave Creatives.',
+      'He is the host and creator of the ReasonnAm Podcast and of Mudiagha Creators Hub, a community for creators to learn, grow and amplify their work, and he is at the forefront of several creative movements in the Warri-Effurun metropolis.',
+      'Known for his creativity and commitment to excellence, Brave believes that media is a powerful tool for purpose, ministry, life transformation, and for influencing people towards the Kingdom of God.',
+      'He is happily married to his beautiful genius, Beloveth Amaka Iyomih.',
+    ],
+  },
+  {
+    name: 'Itohan',
+    img: 'spk-itohan',
+    role: 'Author and filmmaker',
+    teaser: 'Two novels and over fifty short films, told to inspire and to point people toward Christ.',
+    bio: [
+      'Itohan Esther Benjamin-Emmanuel is a Christian, published author, certified filmmaker and passionate documentary storyteller. She is the author of two novels: The Glitch, which addresses human trafficking among secondary school students, and Breaking the Basis, which explores unfair bride price practices.',
+      'With over 50 short films and digital productions, Itohan uses storytelling in two ways: to preach the Gospel, and to address social issues that can make society safer and better. She is passionate about telling stories that inspire, create awareness, preserve real experiences, and ultimately point people toward Jesus Christ.',
+    ],
+  },
 ];
 ---
 <section class="spk g-dark" id="speakers" data-fade>
@@ -42,51 +136,109 @@ const speakers = [
   <!-- DESKTOP: two rows, two up and three under. Six columns so a 3-span pair
        and a 2-span trio share the same outer edges. -->
   <div class="spk__grid">
-    {speakers.map(s => (
-      <article class={'spk__card' + (s.host ? ' spk__card--host' : '')}>
-        <div class="spk__img">
+    {speakers.map((s, i) => (
+      <button
+        type="button"
+        class={'spk__card' + (s.host ? ' spk__card--host' : '')}
+        data-bio={i}
+        aria-label={`Read ${s.name}'s biography`}
+      >
+        <span class="spk__img">
           <img src={`/img/${s.img}.webp`} width="720" height="720"
                alt={s.name} loading="lazy" decoding="async" />
-        </div>
-        <div class="spk__bar">
-          <p class="spk__name">{s.name}</p>
+        </span>
+        <span class="spk__bar">
+          <span class="spk__reveal">
+            <span class="spk__role">{s.role}</span>
+            <span class="spk__teaser">{s.teaser}</span>
+          </span>
+          <span class="spk__name">{s.name}</span>
           {s.host && <span class="spk__tag">Host</span>}
-        </div>
-      </article>
+          <span class="spk__cue" aria-hidden="true">Read bio</span>
+        </span>
+      </button>
     ))}
   </div>
 
-  <!-- MOBILE: a moving carousel. The track is rendered twice and the row
-       translates -50%, so the loop is seamless; the duplicate is aria-hidden
-       or every name is announced twice. -->
+  <!-- MOBILE: a moving carousel. The track is rendered twice and the rail
+       wraps at the halfway mark, so the loop is seamless; the duplicate is
+       inert as well as aria-hidden, or its five buttons would be focusable
+       clones announcing every name a second time. -->
   <div class="spk__rail" id="spkRail">
     <div class="spk__track">
-      {speakers.map(s => (
-        <article class={'spk__card' + (s.host ? ' spk__card--host' : '')}>
-          <div class="spk__img">
+      {speakers.map((s, i) => (
+        <button
+          type="button"
+          class={'spk__card' + (s.host ? ' spk__card--host' : '')}
+          data-bio={i}
+          aria-label={`Read ${s.name}'s biography`}
+        >
+          <span class="spk__img">
             <img src={`/img/${s.img}.webp`} width="720" height="720"
                  alt={s.name} loading="lazy" decoding="async" />
-          </div>
-          <div class="spk__bar">
-            <p class="spk__name">{s.name}</p>
+          </span>
+          <span class="spk__bar">
+            <span class="spk__name">{s.name}</span>
             {s.host && <span class="spk__tag">Host</span>}
-          </div>
-        </article>
+            <span class="spk__cue" aria-hidden="true">Read bio</span>
+          </span>
+        </button>
       ))}
     </div>
-    <div class="spk__track" aria-hidden="true">
-      {speakers.map(s => (
-        <article class={'spk__card' + (s.host ? ' spk__card--host' : '')}>
-          <div class="spk__img">
+    <div class="spk__track" aria-hidden="true" inert>
+      {speakers.map((s, i) => (
+        <span class={'spk__card' + (s.host ? ' spk__card--host' : '')}>
+          <span class="spk__img">
             <img src={`/img/${s.img}.webp`} width="720" height="720"
                  alt="" loading="lazy" decoding="async" />
-          </div>
-          <div class="spk__bar">
-            <p class="spk__name">{s.name}</p>
+          </span>
+          <span class="spk__bar">
+            <span class="spk__name">{s.name}</span>
             {s.host && <span class="spk__tag">Host</span>}
-          </div>
-        </article>
+            <span class="spk__cue" aria-hidden="true">Read bio</span>
+          </span>
+        </span>
       ))}
     </div>
   </div>
+
+  <!-- THE READING ROOM. Native <dialog> + showModal(), so the focus trap,
+       Escape, the top layer and ::backdrop are the platform's job rather
+       than hand-rolled -- less code and better behaviour than a div.
+       All five bios are rendered here once and hidden; the controller only
+       toggles which is shown. That is why the copy is in the built HTML
+       exactly once despite the cards existing three times over. -->
+  <dialog class="bio" id="bioDialog">
+    <div class="bio__panel" id="bioPanel">
+      <button type="button" class="bio__close" id="bioClose" aria-label="Close biography">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      {speakers.map((s, i) => (
+        <article class="bio__entry" data-entry={i} hidden>
+          <div class="bio__media">
+            <img src={`/img/${s.img}.webp`} width="720" height="720"
+                 alt={s.name} loading="lazy" decoding="async" />
+          </div>
+          <div class="bio__body">
+            <p class="bio__role">{s.role}{s.host && <span class="spk__tag bio__hostTag">Host</span>}</p>
+            <h3 class="bio__name">{s.name}</h3>
+            {s.bio.map(p => <p class="bio__p">{p}</p>)}
+          </div>
+        </article>
+      ))}
+
+      <nav class="bio__nav" aria-label="Browse speakers">
+        <button type="button" class="bio__step" data-step="-1">
+          <span aria-hidden="true">&larr;</span> Previous
+        </button>
+        <p class="bio__count" id="bioCount" aria-live="polite"></p>
+        <button type="button" class="bio__step" data-step="1">
+          Next <span aria-hidden="true">&rarr;</span>
+        </button>
+      </nav>
+    </div>
+  </dialog>
 </section>

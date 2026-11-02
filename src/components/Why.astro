@@ -1,51 +1,152 @@
 ---
-/* WHY WE EXIST — the aperture: two joined panels that open width-then-height,
-  revealing text, with a video exposed alongside. See HERO_CHOREOGRAPHY.md-
-  adjacent notes in STATUS.md for the taste-loop history behind this shape. */
+/* WHY WE EXIST — rebuilt 29 Oct. Client: "the layout and sequence is
+  terrible .. there's so much happening and there's a lot of cognitive
+  load."
+
+  The copy was never the problem. It is a five-beat argument that turns:
+  origin, room A fails, room B fails, the bind, the third room. The old
+  build buried that sequence inside a scroll-scrubbed "aperture" that
+  opened width-then-height and uncovered each line as you scrolled, with
+  the film looping beside it the whole time. Diagnosed against this
+  project's own design_process doctrine, that build broke five rules at
+  once -- the full list is in home.css above the .why block. The two that
+  matter most here are structural:
+
+    "No essential information is conveyed ONLY through animation"
+    (awwwards-motion, accessibility check). Every line of the argument was
+    clip-path-hidden until scroll, so the section could not be read at
+    rest. That IS the cognitive load: you cannot read ahead, and at any
+    single scroll position you are looking at a half-opened box.
+
+    "No competing motion (two elements fighting for attention at the same
+    time)" (awwwards-motion, composition check). The looping film ran
+    beside text that was itself animating in.
+
+  So: one vertical column, five beats, each a single idea, all of it
+  readable standing still. 04-layouts' own filter row ("editorial,
+  portfolio, art-directed -> One Column") picks the archetype, and the
+  catalogue describes One Column as "one thing at a time", which is
+  exactly what was asked for.
+
+  The layout carries the argument rather than decorating it -- what the
+  aperture was reaching for and missed. The two rooms are the section's
+  only two-column moment, deliberately EQUAL and split by a rule, because
+  the copy's whole point is that neither room won. The third room breaks
+  that symmetry into one dominant block with the film beside it. Symmetry
+  resolving into asymmetry is the turn, and it is legible without
+  scrolling.
+
+  Assets all stay, placed where each is earned instead of running at once:
+  the two stills sit with the origin (people in a room, which is what the
+  line says), the film sits with the resolution (the room that got built).
+  Nothing shares a beat with the film, so nothing competes with it.
+
+  --- 2 Nov, second pass. Client: "i need to be able to understand the
+  message being passed."
+
+  The five beats were right and the vertical column was right, but the
+  section rendered as two monuments with a whisper between them. Beats 1
+  and 5 were set at h3 and h2; beats 2, 3 and 4 -- which carry the actual
+  reason the Glow Tribe exists -- were short grey sentences stretched
+  across a 1184px measure with a 104px void above and below each. The eye
+  jumped monument to monument and the argument in the middle was never
+  read. The visitor got "it started in Warri" and "we made a third room"
+  and no idea what happened in between.
+
+  THE FIX IS THE METAPHOR. The copy is about ROOMS -- two that didn't
+  work and a third we built. So the layout is now three rooms you can
+  count:
+
+    01 and 02 are OUTLINED plates, side by side, sharing a wall. Hairline
+       border, no fill: rooms that existed but stood empty for us.
+    03 is a FILLED plate spanning the width both of them share. Fill
+       against outline is the whole argument in one glance, and a ground
+       change is what DESIGN.md Section 4 names as this system's way of
+       expressing depth -- not a shadow, not a glow.
+
+  Each room is numbered and named, so the sequence is explicit rather
+  than inferred from reading order. The bind sits inside the problem
+  block with the two rooms rather than floating a full section-gap away,
+  because "here are the two rooms" and "here is what they cost you" are
+  one thought and the gap was cutting it in half.
+
+  Nothing about the copy changed. */
 ---
-<section class="why g-ink" id="why" data-fade>
-  <div class="why__inner" data-placeholder="P8">
-    <p class="eyebrow">Why we exist</p>
+<section class="why g-ink" id="why" data-fade aria-labelledby="why-k">
+  <div class="why__inner">
+    <!-- the old markup had no heading element at all, so the section had
+         no accessible name. Same eyebrow styling, real heading. -->
+    <h2 class="eyebrow why__k" id="why-k">Why we exist</h2>
 
-    <p class="why__lead">It started with a handful of people in a room in Warri,
-       trading half-finished songs and rough cuts.</p>
+    <!-- BEAT 1 — the origin, told and shown. The two stills are joined
+         into one object so they read as one room, not two photographs. -->
+    <div class="why__origin">
+      <p class="why__lead">It started with a handful of people in a room in Warri,
+         trading half-finished songs and rough cuts.</p>
+      <!-- 2 Nov: its own photographs at last. These borrowed who-01/who-03,
+           so the Why section was reprinting two images the Who section had
+           already shown two sections earlier. Now they answer the line
+           directly: "half-finished songs" (a guitar in a lit room) and
+           "rough cuts" (the work itself, being passed around). -->
+      <div class="why__shots">
+        <img src="/img/why-01.webp" alt="" width="700" height="875" loading="lazy" decoding="async">
+        <img src="/img/why-02.webp" alt="" width="700" height="875" loading="lazy" decoding="async">
+      </div>
+    </div>
 
-    <div class="why__stage">
-      <!-- THE APERTURE: two illustrations joined, which open — width first,
-           then height, and the height is what reveals the text. -->
-      <div class="why__aperture" id="whyAp">
-        <div class="why__panels">
-          <div class="why__panel" data-placeholder="P4"><img src="/img/who-01.webp" alt=""></div>
-          <div class="why__panel" data-placeholder="P4"><img src="/img/who-03.webp" alt=""></div>
+    <!-- BEATS 2-4 — THE PROBLEM. One unit, because the two rooms and the
+         bind are one thought: here are the two rooms, and here is what
+         they cost you. Splitting them across the section's big gap was
+         what made the middle of the argument disappear. -->
+    <div class="why__problem">
+      <div class="why__rooms">
+        <div class="why__room">
+          <p class="why__roomk"><span>01</span> The craft room</p>
+          <p class="why__roomline">The places that took the craft seriously didn&rsquo;t know what to do
+             with the faith.</p>
         </div>
-
-        <div class="why__rooms">
-          <p class="why__text"><span class="why__reveal">The places that took the craft seriously didn&rsquo;t know what to do
-             with the faith.</span></p>
-          <p class="why__text"><span class="why__reveal">The places that took the faith seriously didn&rsquo;t take the craft
-             seriously at all.</span></p>
-        </div>
-
-        <p class="why__mid"><span class="why__reveal">Everyone we knew was choosing between two rooms, and losing something
-           in whichever one they picked.</span></p>
-
-        <div class="why__third">
-          <p class="why__resolve"><span class="why__reveal">So we stopped choosing,<br>and made a third room.</span></p>
-          <p class="why__tail"><span class="why__reveal">That&rsquo;s all The Glow Tribe is: the room we couldn&rsquo;t find.</span></p>
+        <div class="why__room">
+          <p class="why__roomk"><span>02</span> The faith room</p>
+          <p class="why__roomline">The places that took the faith seriously didn&rsquo;t take the craft
+             seriously at all.</p>
         </div>
       </div>
 
-      <!-- the film, exposed as the aperture opens. preload="none" and
-           poster-first: 3MB on a Nigerian mobile connection (SC7) is not
-           something to spend before a visitor has reached the section. -->
+      <!-- BEAT 4 — the bind, directly under both rooms and tied to them by
+           proximity rather than by a connector graphic. -->
+      <p class="why__bind">Everyone we knew was choosing between two rooms, and losing something
+         in whichever one they picked.</p>
+    </div>
+
+    <!-- BEAT 5 — the third room. The two rooms above are OUTLINES: rooms
+         that existed but stood empty for us. This one is FILLED, and it
+         spans the width both of them share. The fill is the whole point,
+         and it is the ground-change DESIGN.md Section 4 names as this
+         system's way of expressing depth -- no shadow, no border trick. -->
+    <section class="why__turn" aria-label="The third room">
+      <div class="why__turncol">
+        <p class="why__roomk why__roomk--third"><span>03</span> The room we built</p>
+        <div>
+          <!-- no forced <br>: type.css gives this text-wrap: balance, and the
+               hard break fought it into four lines with an awkward "So we
+               stopped / choosing," split. Balanced, it lands in three. -->
+          <p class="why__resolve">So we stopped choosing, and made a third room.</p>
+          <p class="why__tail">That&rsquo;s all The Glow Tribe is: the room we couldn&rsquo;t find.</p>
+        </div>
+      </div>
+      <!-- preload="none" and poster-first: 3MB on a Nigerian mobile
+           connection (SC7) is not something to spend before a visitor has
+           reached the section. home-hero-and-sections.js starts it on
+           intersection and pauses it off-screen, and leaves it paused
+           entirely under prefers-reduced-motion. -->
       <figure class="why__film">
         <video id="whyFilm" muted loop playsinline preload="none"
-               poster="/vid/film-poster.jpg" data-placeholder="P6">
+               poster="/vid/film-poster.jpg">
           <source src="/vid/film.webm" type="video/webm">
           <source src="/vid/film.mp4"  type="video/mp4">
         </video>
         <figcaption class="why__cap">On the set</figcaption>
       </figure>
-    </div>
+    </section>
   </div>
 </section>

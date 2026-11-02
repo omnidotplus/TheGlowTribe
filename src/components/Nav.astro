@@ -20,7 +20,7 @@
    screen breaks that, so on those pages the nav's own CTA steps back to a
    plain outline and lets the page's button be the one flare element. */
 interface Props {
-  current?: 'home' | 'conference' | 'shop';
+  current?: 'home' | 'conference' | 'shop' | 'work';
   ctaMuted?: boolean;
 }
 const { current, ctaMuted } = Astro.props as Props;
@@ -76,10 +76,10 @@ const isCart = Astro.url.pathname === '/shop/cart';
       <Fragment>
         <a href="/" aria-current={current === 'home' ? 'page' : undefined}>Home</a>
         <a href="/conference" aria-current={current === 'conference' ? 'page' : undefined}>Conference</a>
-        {/* Projects / Our Work is Phase 1 (SC2) but NOT BUILT yet. Pointing at the
-            teaser strip is a stand-in so the nav is honest about the IA; it must
-            repoint at the real page before launch. */}
-        <a href="/#teaser">Work</a>
+        {/* 2 Nov: repointed at the real page. This had been a stand-in at
+            /#teaser since the port, with a comment saying it must move
+            before launch -- /work now exists, so it has. */}
+        <a href="/work" aria-current={current === 'work' ? 'page' : undefined}>Work</a>
         {/* 29 Oct, client note: "shop should be on the main nav which
             leads to the marketplace" -- the marketplace's own nav state
             (isShop) never renders this branch, so this link only ever
