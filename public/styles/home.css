@@ -1112,7 +1112,9 @@
 
   /* BEAT 1 — the origin. The two stills are joined at 2px, the same join
      the shop's editorial grid uses, so they read as one room rather than
-     two separate photographs. */
+     two separate photographs. 3 Nov: the sources are 3:2 landscape now, so
+     they stack instead of sitting side by side -- side by side they would
+     have been 239px wide and the faces unreadable. */
   .why__origin {
     display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr);
     gap: clamp(24px,4vw,64px); align-items: center;
@@ -1122,9 +1124,9 @@
      gave the opening beat more visual mass than the 76px payoff. Four lines
      restores the order the type scale already intended. */
   .why__lead { margin: 0; max-width: 24ch; }
-  .why__shots { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .why__shots { display: grid; grid-template-columns: minmax(0,1fr); gap: 2px; }
   .why__shots img {
-    display: block; width: 100%; height: auto; aspect-ratio: 4 / 5;
+    display: block; width: 100%; height: auto; aspect-ratio: 3 / 2;
     object-fit: cover; background: var(--d-2);
   }
 
