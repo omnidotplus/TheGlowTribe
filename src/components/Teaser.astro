@@ -40,7 +40,7 @@ const picks = [
         <figure class="teaser__item" data-cat={w.cat.toLowerCase()}>
           <a class="teaser__link" href={w.href} target="_blank" rel="noopener noreferrer">
             <span class="slot"><img src={`/img/work/${w.img}.webp`} alt="" loading="lazy" decoding="async"></span>
-            <figcaption><b class="teaser__cat">{w.cat}</b> · <span>{w.title}</span></figcaption>
+            <figcaption><b class="teaser__cat">{w.cat}</b><span>{w.title}</span></figcaption>
           </a>
         </figure>
       ))}
@@ -50,7 +50,7 @@ const picks = [
         <figure class="teaser__item" data-cat={w.cat.toLowerCase()}>
           <span class="teaser__link">
             <span class="slot"><img src={`/img/work/${w.img}.webp`} alt="" loading="lazy" decoding="async"></span>
-            <figcaption><b class="teaser__cat">{w.cat}</b> · <span>{w.title}</span></figcaption>
+            <figcaption><b class="teaser__cat">{w.cat}</b><span>{w.title}</span></figcaption>
           </span>
         </figure>
       ))}

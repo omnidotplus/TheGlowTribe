@@ -487,11 +487,13 @@ function heroUpdate(self) {
      poor positioning. */
   const settle = easeOut(at(p, T.b.clear, 0.94)) * (belowH() * 0.5);
 
-  /* — beat 8a: the exposure is withdrawn. The name is never allowed to leave
-       by being cut; it leaves the way it arrived, as light. One write on
-       .mark takes bloom, O, reveal, front and shine down together, and
-       .mark carries no WAAPI opacity animation, so nothing outranks it. — */
-  if (!REDUCE) mark.style.opacity = (1 - ease(at(tail, 0, T.markOut))).toFixed(3);
+  /* — beat 8a: the exposure is withdrawn. 3 Nov: the withdrawal moved OFF
+       the pin and ONTO the exit (see makeHeroExitST below). Fading the name
+       out while the stage was still pinned meant the last stage-height of
+       the hero scrolled past as an empty black rectangle -- the dead space
+       the client flagged, and a third of the whole section on mobile. The
+       name now holds through the entire pin. — */
+  if (!REDUCE) mark.style.opacity = '1';
 
   /* — beat 8b: the ask takes the centre. The extra lift is the rest of the
        way from "group centred" to "the visible card centred", derived from
@@ -528,6 +530,23 @@ function heroUpdate(self) {
   cue.style.opacity = 1 - at(p, 0.005, 0.05);
 }
 
+/* THE EXIT. Runs after the pin releases, across the stage's own travel out
+   of the viewport. The name leaves the way it arrived -- as light, never
+   sliced by the stage's top edge -- but it does it WHILE the hero is
+   leaving instead of before, so there is no empty stage in between. */
+let heroExitST = null;
+const makeHeroExitST = () => ScrollTrigger.create({
+  trigger: '#hero', start: 'bottom bottom', end: 'bottom top',
+  scrub: REDUCE ? 0 : T.scrub,
+  onUpdate: self => {
+    if (REDUCE) return;
+    /* holds full for the first quarter of the exit: ease() front-loads,
+       so fading from 0 left the stage effectively empty by the time it
+       was only half out. */
+    mark.style.opacity = (1 - ease(at(self.progress, 0.25, T.markOut))).toFixed(3);
+  },
+});
+
 /* scrub is fixed at creation, so tuning it live means recreating the trigger */
 const makeHeroST = () => ScrollTrigger.create({
   trigger: '#hero', start: 'top top', end: 'bottom bottom',
@@ -535,6 +554,7 @@ const makeHeroST = () => ScrollTrigger.create({
   onUpdate: heroUpdate
 });
 let heroST = makeHeroST();
+heroExitST = makeHeroExitST();
 
 /* ---- the hero's EXIT, which is a different problem from its choreography.
    The sticky stage un-sticks once the section's bottom meets the stage's
@@ -571,7 +591,8 @@ if (!REDUCE) {
 /* handed to the dialkit rig (?dev=1 only) so tuning needs no reload */
 window.__hero = {
   T, measureO,
-  setScrub: () => { heroST.kill(); heroST = makeHeroST(); },
+  setScrub: () => { heroST.kill(); heroST = makeHeroST();
+                    heroExitST.kill(); heroExitST = makeHeroExitST(); },
   setPin: vh => { heroEl.style.height = vh + 'vh'; measureSeq(); ScrollTrigger.refresh(); },
   shine: markShine,
   refresh: () => { measureO(); measureBelow(); measureSeq(); ScrollTrigger.refresh(); }

@@ -677,8 +677,34 @@
     .who__plate { transition: opacity .3s linear; transform: none !important; opacity: 0; }
     .who__plate[data-state="in"] { opacity: 1; }
   }
+  /* 3 Nov. On desktop the statement STARTS clear of the plate's right edge
+     and only its longest lines cross it -- that crossing is the composition.
+     At 390px there is no room for the manoeuvre: the plate sat at 46% and the
+     statement ran the full width underneath it, so three or four words of
+     every headline landed on a photograph. White type over a light studio
+     wall is unreadable, and it changed with each swap, which is worse than
+     consistently bad.
+     Stacked instead: the plate takes the top-right as a header frame, the
+     statement sits entirely below it. No overlap, no scrim over someone's
+     face, and the statement keeps the full measure. .who__next needs no
+     mobile rule -- positionWhoNext() writes its box from the well's measured
+     one, so it follows. */
   @media (max-width: 760px) {
-    .who__well { left: 46%; top: 8%; width: clamp(120px, 42vw, 190px); }
+    /* The plate CANNOT clear the statement at this width -- measured, the
+       stage has 844px and the three parts want 200 + 334 + 331. Stacking
+       them pushed the longest statement straight into the bottom block.
+       So the crossing stays, and the plate becomes a ghost instead: pinned
+       to the right edge, half-opacity against the #120D0B ground. White
+       38px bold over the worst case (a lit studio wall at 50%) measures
+       4.5:1, where large text needs 3:1 -- against the 1.2:1 it was
+       scoring when the photo ran at full strength. It still swaps with
+       each statement, it just no longer competes with the words on top
+       of it. */
+    .who__well {
+      left: auto; right: 0; top: 2%;
+      width: clamp(132px, 40vw, 200px);
+      opacity: .5;
+    }
   }
 
   /* Was left:38.2%, deliberately crossing the plate's right edge — the
@@ -690,7 +716,11 @@
     left: 54%; right: clamp(16px,5vw,80px);
     top: 18%;                       /* was 34% — the block sat too low in frame */
   }
-  @media (max-width: 760px) { .who__inner { left: clamp(16px,6vw,40px); top: 14%; } }
+  @media (max-width: 760px) {
+    /* 14%, measured: the longest of the three statements runs 8 lines at
+       38px, and anything lower drives it into .who__stable. */
+    .who__inner { left: clamp(16px,6vw,40px); right: clamp(16px,6vw,40px); top: 14%; }
+  }
 
   .who__lines { display: grid; gap: 0; }
   .who__line {

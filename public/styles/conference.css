@@ -481,9 +481,19 @@
     .spk__rail::-webkit-scrollbar { width: 0; height: 0; display: none; }
     .spk__track { display: flex; flex: 0 0 auto; gap: clamp(10px, 3vw, 16px); padding-right: clamp(10px, 3vw, 16px); }
     .spk__card { flex: 0 0 auto; width: clamp(190px, 56vw, 260px); }
+    /* the HOST tag goes on the rail. At 218px the bar held name + HOST +
+       READ BIO and wrapped to two lines on exactly one card, which left
+       that card's bar a row taller than its neighbours'. The tag is
+       redundant here anyway: the subhead directly above says "Hosted by
+       Victor Obute", and his bar is still the only inverted one. */
+    .spk__tag { display: none; }
   }
 
-  .spk__card { position: relative; min-width: 0; }
+  /* column flex so the bar can absorb any height the rail's equal-height
+     cards hand it -- as a block it left a strip of ground showing under
+     the shorter cards' bars */
+  .spk__card { position: relative; min-width: 0; display: flex; flex-direction: column; }
+  .spk__bar { flex: 1 0 auto; }
   .spk__img { display: block; width: 100%; aspect-ratio: 1/1; overflow: hidden; }   /* square, as measured */
   .spk__img img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
@@ -524,12 +534,22 @@
      ==================================================================== */
 
   /* the card is a real <button> now: strip the UA chrome, keep the layout */
+  /* no width:100% here. `button.spk__card` outspecifies the rail's
+     `.spk__card { width: clamp(190px,56vw,260px) }`, so on mobile every
+     real card stretched to the flex track's max-content width (1424px at
+     390px viewport) while the inert clone track, which uses <span>, sized
+     correctly. Grid items stretch by default, so the desktop grid never
+     needed it. */
   button.spk__card {
-    display: block; width: 100%; padding: 0; border: 0;
+    display: flex; flex-direction: column; padding: 0; border: 0;
     background: none; color: inherit; font: inherit; text-align: left;
     cursor: pointer;
   }
-  .spk__card { position: relative; min-width: 0; }
+  /* column flex so the bar can absorb any height the rail's equal-height
+     cards hand it -- as a block it left a strip of ground showing under
+     the shorter cards' bars */
+  .spk__card { position: relative; min-width: 0; display: flex; flex-direction: column; }
+  .spk__bar { flex: 1 0 auto; }
   /* the whole card reacts, not just the badge -- press feedback at the
      0.95-0.97 band the craft floor fixes for every pressable in this build */
   button.spk__card { transition: transform .16s cubic-bezier(.23,1,.32,1); }
